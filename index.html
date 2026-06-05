@@ -425,7 +425,7 @@ function togglePanel(role) { const p = document.getElementById(`panel-${role}`);
 
 function loginPanel(role) {
     const inputField = document.getElementById(`input-${role}`); const log = document.getElementById(`log-${role}`); let val = inputField.value.trim();
-    let mdpCorrect = (role === 'owner' && val === "admin123") || (role === 'admin' && val === "1234");
+    let mdpCorrect = (role === 'owner' && val === "admin123") || (role === 'admin' && val === "admin321");
     if (mdpCorrect) {
         auth[role] = true; document.getElementById(`${role}Header`).textContent = role === 'owner' ? "👑 OWNER SUPRÊME EXECUTOR" : "🛡️ MODÉRATION ADM EXEC";
         document.getElementById(`${role}Prefix`).textContent = ";"; inputField.value = ""; inputField.type = "text"; inputField.placeholder = "Exécuter un abus... (;help)";
