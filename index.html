@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -245,9 +244,9 @@ let frenzyActive=false;
 let frenzyTimer=null;
 let droneInterval = null;
 
-// --- INITIALISATION MULTIJOUEUR EN TEMPS RÉEL ---
-// Tu n'as qu'à mettre ton lien Render ici, la logique reste intacte !
-const socket = io("http://localhost:3000"); 
+// --- CONNEXION REZ-DE-CHAUSSÉE RENDER ---
+// Remplacer l'adresse ci-dessous par l'URL exacte de ton serveur Render !
+const socket = io("https://galaxy-miner-server.onrender.com"); 
 
 socket.on("recevoirAdminAbuse", (data) => {
     const log = document.getElementById('commandLog');
