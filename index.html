@@ -151,7 +151,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
         <button onclick="buyMaxScanner()" class="btn-max">[MAX]</button>
     </div>
     <button onclick="doPrestige()">🔁 Prestige</button>
-    <button onclick="saveScore()">🏆 Save</button>
+    <button onclick="saveScore()">🏆 Envoi LB</button>
 </div>
 
 <div class="left card" id="ui-left">
@@ -166,8 +166,8 @@ Zone Max: <span id="maxzone">1</span>
 </div>
 
 <div class="right card" id="ui-right">
-<h3>Leaderboard (Top 10)</h3>
-<div id="leaderboard"></div>
+<h3>Leaderboard Mondial 🌍</h3>
+<div id="leaderboard">Chargement...</div>
 </div>
 
 <div id="comet">☄️</div>
@@ -221,13 +221,21 @@ let defaultState={
     shards:0,up1:0,up2:0,lastSaveTime:Date.now()
 };
 let s=JSON.parse(JSON.stringify(defaultState));
+let listeLeaderboard = [];
 
 let combo=0; let comboTimer=null; let frenzyActive=false; let frenzyTimer=null; let droneInterval = null;
 let eventMultiplier = 1; let eventTimer = null; let isSlowed = false; let isFrozen = false; let speedHackActive = false;
 
+// --- CONNEXION SOCKET.IO ---
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
+
+// Réception du leaderboard synchronisé globalement
+socket.on("miseAJourLeaderboard", (data) => {
+    listeLeaderboard = data || [];
+    renderLB();
+});
 
 socket.on("recevoirAdminAbuse", (data) => {
     const logOwner = document.getElementById('log-owner'); const logAdmin = document.getElementById('log-admin');
@@ -301,7 +309,6 @@ document.getElementById("planet").onclick=(e)=>{
     ui();
 };
 
-/* --- LOGIQUE DE BOUTIQUE INDIVIDUELLE & BOUTONS [MAX] --- */
 function buyPower(){ if(isFrozen) return; if(s.credits>=s.pCost){s.credits-=s.pCost;s.power++;s.pCost=Math.floor(s.pCost*1.15);ui();}}
 function buyMaxPower(){
     if(isFrozen) return;
@@ -342,9 +349,32 @@ function restartDroneInterval(){
 
 setInterval(()=>{ save(); }, 15000);
 function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; msg(`🔁 Prestige +1 ! (+${gainedShards} Éclats)`); restartDroneInterval(); ui(); }else{ msg("⚠️ Atteins au moins la Zone 5 pour le Prestige !"); }}
-function getLB(){return JSON.parse(localStorage.getItem("gmv3lb")||"[]")}
-function renderLB(){ document.getElementById("leaderboard").innerHTML=getLB().map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");}
-function saveScore(){ let name=player.value.trim(); if(!name){ msg("⚠️ Écris ton nom avant de sauvegarder !"); return; } let lb=getLB(); let i=lb.findIndex(x=>x.name===name); if(i>=0){ lb[i].score=Math.max(lb[i].score,s.credits); lb[i].prestige=Math.max(lb[i].prestige,s.prestige); lb[i].zone=Math.max(lb[i].zone,s.maxzone); }else{ lb.push({name,score:s.credits,prestige:s.prestige,zone:s.maxzone}); } lb.sort((a,b)=>(b.prestige*1000000+b.score)-(a.prestige*1000000+a.score)); lb = lb.slice(0, 10); localStorage.setItem("gmv3lb",JSON.stringify(lb)); renderLB();}
+
+// Rendu graphique du Leaderboard reçu depuis le serveur
+function renderLB(){ 
+    if(listeLeaderboard.length === 0) {
+        document.getElementById("leaderboard").innerHTML = "Aucun score pour le moment.";
+        return;
+    }
+    document.getElementById("leaderboard").innerHTML = listeLeaderboard.map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");
+}
+
+// Fonction pour forcer l'envoi manuel du score au serveur si besoin
+function saveScore(){ 
+    let name=player.value.trim(); 
+    if(!name){ msg("⚠️ Écris ton nom avant d'envoyer !"); return; } 
+    socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone });
+    msg("🏆 Score envoyé au classement !");
+}
+
+// --- ACTUALISATION DU LEADERBOARD TOUTES LES 2 SECONDES ---
+setInterval(() => {
+    let name = player.value.trim();
+    if(name && !isFrozen) {
+        // Envoi automatique du score en tâche de fond au serveur toutes les 2 secondes
+        socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone });
+    }
+}, 2000);
 
 function spawnComet(){
     let c = document.getElementById("comet"); let x = -50; let y = Math.random() * (window.innerHeight - 100) + 50; c.style.left = x + "px"; c.style.top = y + "px"; c.style.display = "block";
@@ -420,7 +450,7 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "zone": s.zone = value; s.maxzone = Math.max(s.maxzone, s.zone); response = `🚀 Téléportation Zone ${value}.`; break;
         case "troll": s.credits = 777; response = "🎲 Score troll forcé à 777."; break;
         case "clear": s.credits = 0; s.power = 1; s.drones = 0; response = "💥 RESET TOTAL EFFECTUÉ !"; break;
-        case "clearlb": localStorage.removeItem("gmv3lb"); renderLB(); response = "🏆 Classement effacé."; break;
+        case "clearlb": socket.emit("demandeEffacerClassement"); response = "🏆 Signal d'effacement LB envoyé au serveur."; break;
         case "giftdrone": let dronesOfferts = value || 5; s.drones += dronesOfferts; response = `🤖 Cadeau global de +${dronesOfferts} Drones !`; restartDroneInterval(); break;
         case "giftpower": let powerOffert = value || 100; s.power += powerOffert; response = `⚡ Cadeau global de +${powerOffert} Power !`; break;
         case "giftscanner": let scanOffert = value || 10; s.scanner += scanOffert; response = `🔭 Cadeau global de +${scanOffert} Scanner !`; break;
@@ -429,8 +459,6 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "unearthquake": document.body.style.animation = "none"; response = "🛑 Fin du tremblement."; break;
         case "cctv": document.body.style.filter = "contrast(1.8) brightness(0.9) sepia(0.3)"; response = "📹 Filtre Caméra CCTV actif."; break;
         case "uncctv": document.body.style.filter = "none"; response = "🛑 Filtre CCTV retiré."; break;
-        
-        // --- NOUVELLES COMMANDES COMPLÉMENTAIRES ---
         case "flash": document.body.classList.add("flash-mode"); response = "⚡ STROBOSCOPE FLASH DÉCLENCHÉ !"; break;
         case "unflash": document.body.classList.remove("flash-mode"); response = "🛑 Flash désactivé."; break;
         case "speedhack": speedHackActive = true; restartDroneInterval(); response = "⚙️ SPEEDHACK DRONES ACTIF (Vitesse x5) !"; break;
@@ -475,7 +503,7 @@ function showHelp(role) {
     log.innerHTML = help + "</div>"; log.scrollTop = log.scrollHeight;
 }
 
-setInterval(renderLB, 120000); document.getElementById("player").value = ""; restartDroneInterval(); scheduleNextComet(); uiWithoutSaving(); renderLB();
+document.getElementById("player").value = ""; restartDroneInterval(); scheduleNextComet(); uiWithoutSaving();
 </script>
 </body>
 </html>
