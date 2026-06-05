@@ -2,15 +2,19 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Galaxy Miner Deluxe V3 - Account System & Multi-Panel Edition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-select=none">
+<title>Galaxy Miner Deluxe V3 - Multi-Device Edition</title>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <style>
-body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow:hidden;transition: filter 0.3s, animation 0.3s, transform 0.3s, transform-origin 0.3s;}
+/* --- STYLES DE BASE (COMMUNS) --- */
+body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow-x:hidden;transition: filter 0.3s, animation 0.3s, transform 0.3s, transform-origin 0.3s;}
 #stars,#stars2{position:fixed;inset:0;pointer-events:none}
 #stars{background-image:radial-gradient(white 1px,transparent 1px);background-size:45px 45px;opacity:.2}
 #stars2{background-image:radial-gradient(cyan 1px,transparent 1px);background-size:90px 90px;opacity:.08;animation:drift 60s linear infinite}
 @keyframes drift{from{transform:translateY(0)}to{transform:translateY(90px)}}
+
+/* --- INTERFACE DE JEU PAR DÉFAUT (PC) --- */
+#game-interface { display: none; padding: 20px; box-sizing: border-box; }
 .top{display:flex;justify-content:center;gap:15px;padding:10px;flex-wrap:wrap;transition: transform 0.5s ease;}
 .card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);transition: transform 0.5s ease;}
 #money{text-align:center;font-size:54px;color:#52ffe0;text-shadow:0 0 15px #52ffe0;margin-top:10px;transition: transform 0.5s ease;}
@@ -18,13 +22,15 @@ body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at ce
 #planet{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
 #planet:active{transform:scale(.85)}
 .shake{animation: click-shake 0.1s ease-in-out infinite alternate;}
-@keyframes click-shake {
-  from { transform: translate(3px, 1px) rotate(0deg); }
-  to { transform: translate(-3px, -1px) rotate(1deg); }
-}
+@keyframes click-shake { from { transform: translate(3px, 1px) rotate(0deg); } to { transform: translate(-3px, -1px) rotate(1deg); } }
 #planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
-.left,.right{position:fixed;top:100px;width:260px;transition: transform 0.5s ease;}
-.left{left:10px}.right{right:10px}
+
+/* Positionnement PC */
+.mode-pc .left { position: fixed; top: 110px; left: 10px; width: 260px; }
+.mode-pc .right { position: fixed; top: 110px; right: 10px; width: 280px; }
+.mode-pc #ui-chat { position: fixed; bottom: 10px; left: 10px; width: 280px; background: rgba(0,0,0,0.85); z-index: 9999; }
+.mode-pc .mobile-only { display: none !important; }
+
 button{border:none;border-radius:10px;padding:10px 14px;margin:4px;cursor:pointer;font-weight:bold;background:#fff;color:#000;transition:0.2s}
 button:hover{background:#52ffe0;transform:translateY(-2px)}
 .btn-max{background:#ffaa00;color:#000;padding:10px 8px;font-size:11px;}
@@ -39,12 +45,56 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 #combo-display{text-align:center;font-size:18px;color:#ffaa00;font-weight:bold;height:24px;text-shadow:0 0 8px #ffaa00}
 #comet{position:fixed;font-size:40px;cursor:pointer;z-index:99;display:none;user-select:none}
 .frenzy-active{animation: neon-glow 1s ease-in-out infinite alternate !important;}
-@keyframes neon-glow {
-  from { text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055; color: #ff99bb; }
-  to { text-shadow: 0 0 20px #ffcc00, 0 0 30px #ffcc00; color: #fff3cc; }
-}
+@keyframes neon-glow { from { text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055; color: #ff99bb; } to { text-shadow: 0 0 20px #ffcc00, 0 0 30px #ffcc00; color: #fff3cc; } }
 
-/* --- EFFETS VISUELS ABUS --- */
+/* 📱 CONFIGURATION ADAPTATIVE VERSION MOBILE */
+.mode-mobile {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 10px 180px 10px !important; /* Espace pour le gros chat en bas */
+    overflow-y: auto;
+}
+.mode-mobile .pc-only { display: none !important; }
+.mode-mobile .card { width: 100%; max-width: 420px; box-sizing: border-box; margin-bottom: 15px; position: static !important; }
+.mode-mobile #main-game-area { order: -1; width: 100%; text-align: center; } /* Met la planète tout en haut */
+.mode-mobile #planet { font-size: 130px !important; }
+.mode-mobile button { width: 100%; padding: 16px !important; font-size: 15px !important; margin: 6px 0 !important; box-sizing: border-box; }
+.mode-mobile .btn-max { width: auto !important; padding: 10px 15px !important; font-size: 12px !important; display: inline-block; margin-left: 5px !important; }
+.mode-mobile .shop { display: block; width: 100%; max-width: 420px; }
+.mode-mobile .shop > div { display: flex !important; align-items: center; width: 100%; }
+.mode-mobile .shop > div > button:first-child { flex: 1; }
+
+/* Fenêtre de chat fixée sur Mobile */
+.mode-mobile #ui-chat {
+    position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important;
+    background: #090e21 !important; border-top: 3px solid #52ffe0; border-radius: 0 !important;
+    padding: 12px !important; box-sizing: border-box; z-index: 99999;
+}
+.mode-mobile #chat-box { height: 80px !important; }
+
+/* MODALS ADMIN CONFIG MOBILE */
+.roblox-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif; color: #ffffff; box-shadow: 0px 10px 30px rgba(0,0,0,0.7); overflow: hidden; z-index: 100000; }
+#panel-owner { background-color: rgba(45, 15, 15, 0.8); border: 1px solid rgba(255, 68, 68, 0.3); }
+#panel-admin { background-color: rgba(15, 30, 45, 0.8); border: 1px solid rgba(68, 136, 255, 0.3); }
+.admin-header { background-color: rgba(20, 20, 20, 0.9); padding: 12px; font-weight: 600; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; }
+.close-admin-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 16px; cursor: pointer; font-weight: bold; padding: 0 5px; margin: 0; }
+.close-admin-btn:hover { color: #ff4444; }
+.admin-body { padding: 12px; }
+.command-log { height: 160px; background-color: rgba(0, 0, 0, 0.6); border-radius: 4px; padding: 10px; font-size: 12px; font-family: 'Courier New', monospace; overflow-y: auto; margin-bottom: 12px; }
+#log-owner { color: #ff5555; }
+#log-admin { color: #55aaff; }
+.input-area { display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; padding: 6px 10px; }
+.prefix { font-family: monospace; margin-right: 8px; font-weight: bold; font-size: 14px; }
+.admin-input-text { flex: 1; background: none; border: none; color: #ffffff; font-size: 13px; outline: none; }
+.panel-btn { background-color: rgba(60, 60, 60, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 4px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; }
+
+/* Boutons mobiles d'urgence pour ouvrir les panels sans clavier */
+#mobile-admin-triggers { display: none; position: fixed; top: 10px; right: 10px; z-index: 9999; gap: 5px; }
+.mode-mobile #mobile-admin-triggers { display: flex !important; }
+.trigger-m-btn { background: rgba(0,0,0,0.7); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 8px; border-radius: 8px; font-size: 11px; font-weight: bold; width: auto !important; }
+
+/* ABUS VISUELS */
 .rainbow-bg { animation: rainbowAnimation 2s linear infinite !important; }
 @keyframes rainbowAnimation { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 .matrix-bg { background: #000 !important; color: #00ff66 !important; font-family: monospace !important; }
@@ -66,58 +116,32 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .lag-mode { animation: lagAnim 1.5s infinite steps(2) !important; }
 @keyframes lagAnim { 0% { transform: translateX(0); } 50% { transform: translateX(30px) translateY(-10px); } }
 
-/* --- INTERFACE D'AUTHENTIFICATION --- */
-#auth-overlay {
-    position: fixed; inset: 0; background: radial-gradient(circle at center, #15224a, #02040a 80%);
-    z-index: 9999999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s ease, visibility 0.5s;
-}
-.auth-card {
-    background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px);
-    padding: 35px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15);
-    width: 340px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center;
-}
-.auth-card h2 { margin-top: 0; color: #52ffe0; text-shadow: 0 0 15px rgba(82, 255, 224, 0.4); font-size: 28px; }
-.auth-input-group { margin-bottom: 18px; text-align: left; }
-.auth-input-group label { display: block; font-size: 11px; color: #9de; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
-.auth-input {
-    width: 100%; padding: 12px; box-sizing: border-box; background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;
-}
+/* --- SYSTÈME COMPTE ET SÉLECTEUR --- */
+#auth-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #15224a, #02040a 80%); z-index: 9999999; display: flex; justify-content: center; align-items: center; }
+.auth-card { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15); width: 340px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center; }
+.auth-card h2 { margin-top: 0; color: #52ffe0; text-shadow: 0 0 15px rgba(82, 255, 224, 0.4); font-size: 26px; }
+.auth-input-group { margin-bottom: 14px; text-align: left; }
+.auth-input-group label { display: block; font-size: 11px; color: #9de; margin-bottom: 6px; text-transform: uppercase; }
+.auth-input { width: 100%; padding: 12px; box-sizing: border-box; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: #fff; font-size: 14px; outline: none; }
 .auth-input:focus { border-color: #52ffe0; }
-.auth-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+
+.device-selector { display: flex; gap: 8px; margin-bottom: 15px; }
+.device-btn { flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 12px; }
+.device-btn.active { background: #52ffe0; color: #02040a; border-color: #52ffe0; }
+
+.auth-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; }
 .auth-btn-login { background: #52ffe0; color: #02040a; }
-.auth-btn-login:hover { background: #3cd2b4; transform: translateY(-1px); }
 .auth-btn-register { background: #ffaa00; color: #02040a; }
-.auth-btn-register:hover { background: #e09600; transform: translateY(-1px); }
-.auth-toggle { margin-top: 18px; font-size: 13px; color: #9de; cursor: pointer; text-decoration: underline; }
-.auth-msg { margin-top: 15px; font-size: 13px; min-height: 20px; font-weight: bold; }
-.auth-success { color: #26ff63; text-shadow: 0 0 8px rgba(38,255,99,0.3); }
-.auth-error { color: #ff4444; text-shadow: 0 0 8px rgba(255,68,68,0.3); }
+.auth-toggle { margin-top: 15px; font-size: 12px; color: #9de; cursor: pointer; text-decoration: underline; }
+.auth-msg { margin-top: 12px; font-size: 13px; min-height: 20px; font-weight: bold; }
+.auth-success { color: #26ff63; } .auth-error { color: #ff4444; }
 
 #fake-crash-screen, #ban-screen, #kick-screen { display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; user-select: none; }
-#fake-crash-screen { background: #0078d7; cursor: pointer; }
-#ban-screen { background: #4a0000; border: 10px solid #ff0000; text-align: center; }
-#kick-screen { background: #222; text-align: center; cursor: pointer; }
-
-#global-chat-alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff0055, #9900ff); color: white; padding: 15px 30px; border-radius: 50px; font-size: 20px; font-weight: bold; box-shadow: 0 5px 25px rgba(255, 0, 85, 0.5); z-index: 20000; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 2px solid #fff; }
-#global-event-banner { display: none; position: fixed; top: 0; left: 0; width: 100%; background: linear-gradient(90deg, #ffcc00, #ff0055, #ffcc00); background-size: 200% auto; animation: rainbowAnimation 3s linear infinite; color: black; text-align: center; padding: 6px 0; font-weight: bold; font-size: 16px; letter-spacing: 1px; box-shadow: 0 3px 15px rgba(255, 204, 0, 0.4); z-index: 15000; }
+#fake-crash-screen { background: #0078d7; } #ban-screen { background: #4a0000; text-align: center; } #kick-screen { background: #222; text-align: center; }
+#global-chat-alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff0055, #9900ff); color: white; padding: 15px 30px; border-radius: 50px; font-size: 20px; font-weight: bold; z-index: 20000; transition: top 0.5s; text-align: center; border: 2px solid #fff; }
+#global-event-banner { display: none; position: fixed; top: 0; left: 0; width: 100%; background: linear-gradient(90deg, #ffcc00, #ff0055, #ffcc00); background-size: 200% auto; animation: rainbowAnimation 3s linear infinite; color: black; text-align: center; padding: 6px 0; font-weight: bold; z-index: 15000; }
 #owner-rainbow-bar { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet, red); background-size: 200% auto; animation: rainbowShift 2s linear infinite; z-index: 999999; }
 @keyframes rainbowShift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-
-.roblox-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif; color: #ffffff; box-shadow: 0px 10px 30px rgba(0,0,0,0.7); overflow: hidden; z-index: 10000; }
-#panel-owner { background-color: rgba(45, 15, 15, 0.8); border: 1px solid rgba(255, 68, 68, 0.3); }
-#panel-admin { background-color: rgba(15, 30, 45, 0.8); border: 1px solid rgba(68, 136, 255, 0.3); }
-.admin-header { background-color: rgba(20, 20, 20, 0.9); padding: 12px; font-weight: 600; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; }
-.close-admin-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 16px; cursor: pointer; font-weight: bold; padding: 0 5px; margin: 0; }
-.close-admin-btn:hover { color: #ff4444; }
-.admin-body { padding: 12px; }
-.command-log { height: 200px; background-color: rgba(0, 0, 0, 0.6); border-radius: 4px; padding: 10px; font-size: 12px; font-family: 'Courier New', monospace; overflow-y: auto; margin-bottom: 12px; }
-#log-owner { color: #ff5555; }
-#log-admin { color: #55aaff; }
-.input-area { display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; padding: 6px 10px; }
-.prefix { font-family: monospace; margin-right: 8px; font-weight: bold; font-size: 14px; }
-.admin-input-text { flex: 1; background: none; border: none; color: #ffffff; font-size: 13px; outline: none; }
-.panel-btn { background-color: rgba(60, 60, 60, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 4px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -125,7 +149,13 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div id="auth-overlay">
     <div id="auth-login-view" class="auth-card">
         <h2>🚀 GALAXY MINER</h2>
-        <p style="font-size: 12px; color: #aaa; margin-bottom: 20px;">Connexion à votre espace de minage</p>
+        <p style="font-size: 11px; color: #aaa; margin-bottom: 15px;">Choisissez votre support de jeu :</p>
+        
+        <div class="device-selector">
+            <button id="dev-pc" class="device-btn active" onclick="choisirSupport('pc')">🖥️ MODE PC</button>
+            <button id="dev-mobile" class="device-btn" onclick="choisirSupport('mobile')">📱 MODE MOBILE</button>
+        </div>
+
         <div class="auth-input-group">
             <label>Nom de mineur</label>
             <input type="text" id="auth-log-user" class="auth-input" placeholder="Ex: MineurCosmique">
@@ -141,7 +171,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 
     <div id="auth-register-view" class="auth-card" style="display: none;">
         <h2>✨ INSCRIPTION</h2>
-        <p style="font-size: 12px; color: #aaa; margin-bottom: 20px;">Enregistrer de nouvelles coordonnées</p>
         <div class="auth-input-group">
             <label>Créer un pseudo (sans émoji)</label>
             <input type="text" id="auth-reg-user" class="auth-input" placeholder="Ex: MineurCosmique">
@@ -156,89 +185,85 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     </div>
 </div>
 
+<div id="mobile-admin-triggers">
+    <button class="trigger-m-btn" onclick="togglePanel('owner')">👑 Owner</button>
+    <button class="trigger-m-btn" onclick="togglePanel('admin')">🛡️ Admin</button>
+</div>
+
 <div id="owner-rainbow-bar"></div>
 <div id="stars"></div><div id="stars2"></div>
-
 <div id="global-event-banner">🔥 ÉVÉNEMENT CASH MULTIPLIÉ ACTIF !</div>
 <div id="global-chat-alert">📢 Message Système !</div>
 
 <div id="fake-crash-screen" onclick="this.style.display='none'">
-    <span style="font-size: 100px;">:(</span>
-    <h2>Votre PC a rencontré un problème et doit redémarrer.</h2>
-    <p>Nous collectons simplement des informations relatives aux erreurs du jeu Galaxy Miner, puis nous allons redémarrer pour vous.</p>
-    <p style="font-size: 14px; margin-top: 50px; color: rgba(255,255,255,0.7);">Code d'arrêt : GALAXY_MINER_CREATOR_ABUSE<br>Cliquez n'importe où pour forcer le redémarrage du jeu.</p>
+    <span style="font-size: 80px;">:(</span>
+    <h2>Votre PC/Appareil a rencontré un problème.</h2>
+    <p>Code d'arrêt : GALAXY_MINER_ABUSE. Cliquez pour relancer.</p>
 </div>
 
-<div id="ban-screen">
-    <span style="font-size: 100px;">🚫</span>
-    <h2>COMPTE VERROUILLÉ / BANNI</h2>
-    <p>Tu as été banni de l'infrastructure de minage par un administrateur principal.</p>
-</div>
+<div id="ban-screen"><h2>🚫 COMPTE BANNI DE L'INFRASTRUCTURE</h2></div>
+<div id="kick-screen" onclick="location.reload();"><h2>👢 EXPULSÉ DE LA SESSION. Cliquez pour recharger.</h2></div>
 
-<div id="kick-screen" onclick="this.style.display='none'; location.reload();">
-    <span style="font-size: 100px;">👢</span>
-    <h2>EXPULSÉ DE LA SESSION</h2>
-    <p>Tu as été déconnecté par un modérateur. Cliquez sur l'écran pour tenter une reconnexon.</p>
-</div>
-
-<div class="top" id="ui-top">
-<div class="card" style="color: #26ff63; font-weight: bold;">🟢 En ligne: <span id="onlineCount">1</span></div>
-<div class="card">💰 <span id="moneyTop">0</span></div>
-<div class="card">🌍 Zone <span id="zone">1</span></div>
-<div class="card">🔁 Prestige <span id="prestige">0</span></div>
-<div class="card">✨ Éclats: <span id="shards">0</span></div>
-<div class="card">👤 <input id="player" readonly style="background:transparent; border:none; color:#52ffe0; font-weight:bold; width:120px; outline:none; text-align:center;"></div>
-</div>
-
-<div id="notice" class="notice">En attente d'authentification...</div>
-
-<div id="money">0</div>
-<div id="planetName">Terra</div>
-<div id="planet-container">
-    <div id="planet">🌍</div>
-</div>
-<div class="progress-bar-container" id="ui-progress"><div id="progress-bar"></div></div>
-<div id="combo-display"></div>
-
-<div class="shop" id="ui-shop">
-    <div style="display:inline-block;">
-        <button onclick="buyPower()"><span id="pIcon">⚡</span> Drill <span id="pc">20</span></button>
-        <button onclick="buyMaxPower()" class="btn-max">[MAX]</button>
+<div id="game-interface">
+    <div class="top" id="ui-top">
+        <div class="card" style="color: #26ff63; font-weight: bold;">🟢 En ligne: <span id="onlineCount">1</span></div>
+        <div class="card">💰 <span id="moneyTop">0</span></div>
+        <div class="card">🌍 Zone <span id="zone">1</span></div>
+        <div class="card">🔁 Prestige <span id="prestige">0</span></div>
+        <div class="card">✨ Éclats: <span id="shards">0</span></div>
+        <div class="card">👤 <input id="player" readonly style="background:transparent; border:none; color:#52ffe0; font-weight:bold; width:110px; outline:none; text-align:center;"></div>
     </div>
-    <div style="display:inline-block;">
-        <button onclick="buyDrone()"><span id="dIcon">🤖</span> Drone <span id="dc">70</span></button>
-        <button onclick="buyMaxDrone()" class="btn-max">[MAX]</button>
+
+    <div id="notice" class="notice">En attente...</div>
+
+    <div id="main-game-area">
+        <div id="money">0</div>
+        <div id="planetName">Terra</div>
+        <div id="planet-container">
+            <div id="planet">🌍</div>
+        </div>
+        <div class="progress-bar-container" id="ui-progress"><div id="progress-bar"></div></div>
+        <div id="combo-display"></div>
     </div>
-    <div style="display:inline-block;">
-        <button onclick="buyScanner()"><span id="sIcon">🔭</span> Scanner <span id="sc">120</span></button>
-        <button onclick="buyMaxScanner()" class="btn-max">[MAX]</button>
+
+    <div class="shop" id="ui-shop">
+        <div>
+            <button onclick="buyPower()"><span id="pIcon">⚡</span> Drill <span id="pc">20</span></button>
+            <button onclick="buyMaxPower()" class="btn-max">[MAX]</button>
+        </div>
+        <div>
+            <button onclick="buyDrone()"><span id="dIcon">🤖</span> Drone <span id="dc">70</span></button>
+            <button onclick="buyMaxDrone()" class="btn-max">[MAX]</button>
+        </div>
+        <div>
+            <button onclick="buyScanner()"><span id="sIcon">🔭</span> Scanner <span id="sc">120</span></button>
+            <button onclick="buyMaxScanner()" class="btn-max">[MAX]</button>
+        </div>
+        <button onclick="doPrestige()" style="background:#52ffe0; color:black;">🔁 Déclencher Prestige</button>
     </div>
-    <button onclick="doPrestige()">🔁 Prestige</button>
-</div>
 
-<div class="left card" id="ui-left">
-<h3>Stats & Boutique ✨</h3>
-Power: <span id="power">1</span><br>
-Drones: <span id="drones">0</span><br>
-Scanner: <span id="scanner">1</span><br>
-Zone Max: <span id="maxzone">1</span>
-<hr style="border:1px solid rgba(255,255,255,0.1)">
-<button onclick="buyPrestigeUpgrade(1)" style="font-size:11px;padding:5px;">🚀 Moteurs Drones (Coût: 2 ✨)<br>Drones x2 plus rapides (Niv: <span id="up1Lvl">0</span>)</button>
-<button onclick="buyPrestigeUpgrade(2)" style="font-size:11px;padding:5px;">🎯 Clic Critique (Coût: 3 ✨)<br>+2% Chance Critique (Niv: <span id="up2Lvl">0</span>)</button>
-<button onclick="deconnexionComplete()" style="font-size:10px; margin-top:10px; background:#ff4444; color:white;">🔒 Se déconnecter</button>
-</div>
+    <div class="left card" id="ui-left">
+        <h3>Stats & Reliques ✨</h3>
+        Power: <span id="power">1</span> | Drones: <span id="drones">0</span> | Scanner: <span id="scanner">1</span><br>
+        Zone Maximale: <span id="maxzone">1</span>
+        <hr style="border:1px solid rgba(255,255,255,0.1)">
+        <button onclick="buyPrestigeUpgrade(1)" style="font-size:11px;padding:8px;">🚀 Moteurs Drones (2 ✨) | Niv: <span id="up1Lvl">0</span></button>
+        <button onclick="buyPrestigeUpgrade(2)" style="font-size:11px;padding:8px;">🎯 Clic Critique (3 ✨) | Niv: <span id="up2Lvl">0</span></button>
+        <button onclick="deconnexionComplete()" style="background:#ff4444; color:white; font-size:11px; margin-top:5px;">🔒 Déconnexion</button>
+    </div>
 
-<div class="right card" id="ui-right">
-<h3>Leaderboard Mondial (TOP 10) 🌍</h3>
-<div id="leaderboard">Chargement...</div>
-</div>
+    <div class="right card pc-only" id="ui-right">
+        <h3>Leaderboard Mondial 🌍</h3>
+        <div id="leaderboard">Chargement...</div>
+    </div>
 
-<div class="card" id="ui-chat" style="position: fixed; bottom: 10px; left: 10px; width: 280px; background: rgba(0,0,0,0.85); z-index: 9999;">
-    <h3>💬 Chat Global</h3>
-    <div id="chat-box" style="height: 130px; overflow-y: auto; font-size: 12px; margin-bottom: 5px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);"></div>
-    <div style="display: flex; gap: 5px;">
-        <input id="chat-input" placeholder="Message..." style="flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 6px; border-radius: 6px; font-size: 12px; outline: none;">
-        <button onclick="envoyerMessage()" style="padding: 4px 10px; margin: 0; font-size: 12px; border-radius: 6px;">Envoyer</button>
+    <div class="card" id="ui-chat">
+        <h3 class="pc-only" style="margin: 0 0 5px 0; font-size:14px;">💬 Chat Global</h3>
+        <div id="chat-box" style="height: 110px; overflow-y: auto; font-size: 12px; margin-bottom: 5px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);"></div>
+        <div style="display: flex; gap: 5px;">
+            <input id="chat-input" placeholder="Message..." style="flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 6px; font-size: 12px; outline: none;">
+            <button onclick="envoyerMessage()" style="padding: 4px 12px; margin: 0; font-size: 12px; border-radius: 6px; background:#52ffe0; color:#000;">Envoyer</button>
+        </div>
     </div>
 </div>
 
@@ -246,40 +271,44 @@ Zone Max: <span id="maxzone">1</span>
 
 <div id="panel-owner" class="roblox-panel">
     <div class="admin-header">
-        <span id="ownerHeader">👑 GALAXY MINER - OWNER PANEL (Touche 1)</span>
+        <span id="ownerHeader">👑 OWNER PANEL</span>
         <button class="close-admin-btn" onclick="document.getElementById('panel-owner').style.display='none'">✕</button>
     </div>
     <div class="admin-body">
-        <div class="command-log" id="log-owner">
-            <div style="color: #ffaa00;">[🔒 VERROUILLÉ] Saisir le mot de passe ROOT du Créateur.</div>
-        </div>
+        <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒 ROOT] Entrer mot de passe.</div></div>
         <div class="input-area">
-            <span class="prefix" id="ownerPrefix" style="color: #ff4444;">🔑</span>
-            <input type="password" id="input-owner" class="admin-input-text" placeholder="Saisir la clé d'accès..." autocomplete="off">
-            <button class="panel-btn" onclick="loginPanel('owner')">Connexion</button>
+            <span class="prefix" id="ownerPrefix" style="color:#ff4444;">🔑</span>
+            <input type="password" id="input-owner" class="admin-input-text" autocomplete="off">
+            <button class="panel-btn" onclick="loginPanel('owner')">OK</button>
         </div>
     </div>
 </div>
 
 <div id="panel-admin" class="roblox-panel">
     <div class="admin-header">
-        <span id="adminHeader">🛡️ GALAXY MINER - ADMIN PANEL (Touche 2)</span>
+        <span id="adminHeader">🛡️ ADMIN PANEL</span>
         <button class="close-admin-btn" onclick="document.getElementById('panel-admin').style.display='none'">✕</button>
     </div>
     <div class="admin-body">
-        <div class="command-log" id="log-admin">
-            <div style="color: #ffaa00;">[🔒 VERROUILLÉ] Saisir le mot de passe MODÉRATEUR du serveur.</div>
-        </div>
+        <div class="command-log" id="log-admin"><div style="color: #ffaa00;">[🔒 MOD] Entrer mot de passe.</div></div>
         <div class="input-area">
-            <span class="prefix" id="adminPrefix" style="color: #4488ff;">🔑</span>
-            <input type="password" id="input-admin" class="admin-input-text" placeholder="Saisir la clé d'accès..." autocomplete="off">
-            <button class="panel-btn" onclick="loginPanel('admin')">Connexion</button>
+            <span class="prefix" id="adminPrefix" style="color:#4488ff;">🔑</span>
+            <input type="password" id="input-admin" class="admin-input-text" autocomplete="off">
+            <button class="panel-btn" onclick="loginPanel('admin')">OK</button>
         </div>
     </div>
 </div>
 
 <script>
-// --- LOGIQUE SYSTEME COMPTE EN AMONT ---
+let supportChoisi = "pc";
+
+function choisirSupport(mode) {
+    supportChoisi = mode;
+    document.getElementById("dev-pc").classList.remove("active");
+    document.getElementById("dev-mobile").classList.remove("active");
+    document.getElementById("dev-" + mode).classList.add("active");
+}
+
 function basculerAuth(mode) {
     document.getElementById("auth-log-msg").textContent = "";
     document.getElementById("auth-reg-msg").textContent = "";
@@ -297,77 +326,56 @@ function gererInscription() {
     let pass = document.getElementById("auth-reg-pass").value;
     let msgEl = document.getElementById("auth-reg-msg");
     if(!user || !pass) { msgEl.className="auth-msg auth-error"; msgEl.textContent="⚠️ Données manquantes."; return; }
-    if(user.length < 3) { msgEl.className="auth-msg auth-error"; msgEl.textContent="⚠️ Pseudo trop court (min 3 car)."; return; }
-    if(localStorage.getItem("gm_pass_" + user)) { msgEl.className="auth-msg auth-error"; msgEl.textContent="❌ Ce nom est déjà déposé."; return; }
-    
+    if(localStorage.getItem("gm_pass_" + user)) { msgEl.className="auth-msg auth-error"; msgEl.textContent="❌ Nom déjà pris."; return; }
     localStorage.setItem("gm_pass_" + user, pass);
-    msgEl.className="auth-msg auth-success"; msgEl.textContent="🚀 Profil généré ! Configuration...";
-    setTimeout(() => {
-        document.getElementById("auth-log-user").value = user;
-        document.getElementById("auth-log-pass").value = "";
-        basculerAuth('login');
-    }, 1200);
+    msgEl.className="auth-msg auth-success"; msgEl.textContent="🚀 Profil généré !";
+    setTimeout(() => { document.getElementById("auth-log-user").value = user; basculerAuth('login'); }, 1000);
 }
 
 function gererConnexion() {
     let user = document.getElementById("auth-log-user").value.trim().replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, '');
     let pass = document.getElementById("auth-log-pass").value;
     let msgEl = document.getElementById("auth-log-msg");
-    if(!user || !pass) { msgEl.className="auth-msg auth-error"; msgEl.textContent="⚠️ Complétez les formulaires."; return; }
     
     let passEnregistre = localStorage.getItem("gm_pass_" + user);
     if(passEnregistre && passEnregistre === pass) {
-        msgEl.className="auth-msg auth-success"; msgEl.textContent="✔ Vecteurs synchronisés ! Connexion...";
+        msgEl.className="auth-msg auth-success"; msgEl.textContent="✔ Connexion réussie...";
         setTimeout(() => {
             document.getElementById("player").value = user;
-            let overlay = document.getElementById("auth-overlay");
-            overlay.style.opacity = "0";
-            setTimeout(() => { overlay.style.visibility = "hidden"; }, 500);
+            document.getElementById("auth-overlay").style.display = "none";
+            
+            // CONFIGURATION ET LANCEMENT INTERFACE SELON SUPPORT
+            const interfaceJeu = document.getElementById("game-interface");
+            interfaceJeu.style.display = "block";
+            interfaceJeu.className = (supportChoisi === "mobile") ? "mode-mobile" : "mode-pc";
+            
             loadPlayerSave();
         }, 1000);
     } else {
-        msgEl.className="auth-msg auth-error"; msgEl.textContent="❌ Identifiants rejetés par l'infrastructure.";
+        msgEl.className="auth-msg auth-error"; msgEl.textContent="❌ Identifiants incorrects.";
     }
 }
 
 function deconnexionComplete() {
     clearInterval(droneInterval);
-    document.getElementById("auth-log-user").value = "";
-    document.getElementById("auth-log-pass").value = "";
-    document.getElementById("auth-log-msg").textContent = "";
-    let overlay = document.getElementById("auth-overlay");
-    overlay.style.visibility = "visible";
-    overlay.style.opacity = "1";
+    document.getElementById("game-interface").style.display = "none";
+    document.getElementById("auth-overlay").style.display = "flex";
     basculerAuth('login');
-    msg("Déconnecté. En attente de session.");
 }
 
-// --- CORE DU JEU GALAXY MINER ---
-const planets=[
-{name:"Terra",emoji:"🌍"},
-{name:"Mars",emoji:"🔴"},
-{name:"Neptune",emoji:"🔵"},
-{name:"Nova Prime",emoji:"🟣"},
-{name:"Titan",emoji:"🪐"},
-{name:"Sol",emoji:"☀️"}
-];
-
-let defaultState={
-    credits:0,power:1,drones:0,scanner:1,zone:1,maxzone:1,prestige:0,pCost:20,dCost:70,sCost:120,
-    shards:0,up1:0,up2:0,lastSaveTime:Date.now()
-};
+// --- LOGIQUE CORE DU JEU (SOCKET.IO) ---
+const planets=[{name:"Terra",emoji:"🌍"},{name:"Mars",emoji:"🔴"},{name:"Neptune",emoji:"🔵"},{name:"Nova Prime",emoji:"🟣"},{name:"Titan",emoji:"🪐"},{name:"Sol",emoji:"☀️"}];
+let defaultState={credits:0,power:1,drones:0,scanner:1,zone:1,maxzone:1,prestige:0,pCost:20,dCost:70,sCost:120,shards:0,up1:0,up2:0};
 let s=JSON.parse(JSON.stringify(defaultState));
 let listeLeaderboard = [];
-
 let combo=0; let comboTimer=null; let frenzyActive=false; let frenzyTimer=null; let droneInterval = null;
 let eventMultiplier = 1; let isSlowed = false; let isFrozen = false; let speedHackActive = false;
-let adminBoostMultiplier = 1; let localBoostTimer = null;
+let adminBoostMultiplier = 1;
 
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
 socket.on("miseAJourLeaderboard", (data) => { listeLeaderboard = data || []; renderLB(); });
-
 socket.on("recevoirMessageGlobal", (data) => {
     const chatBox = document.getElementById("chat-box");
     const nvMessage = document.createElement("div");
@@ -384,19 +392,8 @@ document.getElementById("chat-input").addEventListener("keydown", function(e) { 
 
 socket.on("recevoirAdminAbuse", (data) => {
     let monPseudo = document.getElementById("player").value.trim();
-    const cmdGlobales = [
-        "boost", "unabuse", "chat", "seisme", "rainbow", "flash", "nuclear", "blur", "blackout", 
-        "matrix", "invert", "frenzyall", "kickall", "muteall", "unmuteall", "freezeall", 
-        "unfreezeall", "warnall", "tpall", "slowall", "unslowall", "discomode"
-    ];
+    const cmdGlobales = ["boost", "unabuse", "chat", "seisme", "rainbow", "flash", "nuclear", "blur", "blackout", "matrix", "invert", "frenzyall", "kickall", "muteall", "unmuteall", "freezeall", "unfreezeall", "warnall", "tpall", "slowall", "unslowall", "discomode"];
     if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase() && !cmdGlobales.includes(data.baseCmd)) return; 
-
-    const logOwner = document.getElementById('log-owner'); const logAdmin = document.getElementById('log-admin');
-    let cibleTxt = data.cible ? `@${data.cible}` : "Tous";
-    let msgText = `[🌍 ABUSE] (${data.role.toUpperCase()}) ${data.auteur} -> ${cibleTxt}: ${data.commande}`;
-    if(logOwner) { let lineO = document.createElement('div'); lineO.style.color = '#ffaa00'; lineO.textContent = msgText; logOwner.appendChild(lineO); logOwner.scrollTop = logOwner.scrollHeight; }
-    if(logAdmin) { let lineA = document.createElement('div'); lineA.style.color = '#ffaa00'; lineA.textContent = msgText; logAdmin.appendChild(lineA); logAdmin.scrollTop = logAdmin.scrollHeight; }
-    
     let clean = data.commande.startsWith(';') || data.commande.startsWith(':') ? data.commande.substring(1) : data.commande;
     let parts = clean.split(" "); let arg2 = Number(parts[2] || 0);
     appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, arg2, data.totalConnectes, data.role);
@@ -404,23 +401,13 @@ socket.on("recevoirAdminAbuse", (data) => {
 
 function loadPlayerSave() {
     let name = document.getElementById("player").value.trim();
-    if(!name) return;
-    s=JSON.parse(JSON.stringify(defaultState));
-    try{
-        let loaded=JSON.parse(localStorage.getItem("gmv3save_"+name)||"{}");
-        Object.assign(s,loaded);
-    }catch(e){}
-    restartDroneInterval(); ui(); msg("Système prêt. Bon minage " + name + " !");
+    if(!name) return; s=JSON.parse(JSON.stringify(defaultState));
+    try{let loaded=JSON.parse(localStorage.getItem("gmv3save_"+name)||"{}"); Object.assign(s,loaded);}catch(e){}
+    restartDroneInterval(); ui(); msg("Heureux de vous revoir !");
 }
-
-function save(){ 
-    let name=document.getElementById("player").value.trim(); if(!name) return; 
-    s.lastSaveTime = Date.now(); localStorage.setItem("gmv3save_"+name,JSON.stringify(s)); 
-}
+function save(){ let name=document.getElementById("player").value.trim(); if(name) localStorage.setItem("gmv3save_"+name,JSON.stringify(s)); }
 function msg(t){document.getElementById("notice").textContent=t;}
-function ui(){ updateUIElements(); save(); }
-
-function updateUIElements(){
+function ui(){
     document.getElementById("money").textContent=Math.floor(s.credits); document.getElementById("moneyTop").textContent=Math.floor(s.credits);
     document.getElementById("zone").textContent=s.zone; document.getElementById("prestige").textContent=s.prestige;
     document.getElementById("shards").textContent=s.shards; document.getElementById("power").textContent=s.power;
@@ -430,386 +417,94 @@ function updateUIElements(){
     document.getElementById("up1Lvl").textContent=s.up1; document.getElementById("up2Lvl").textContent=s.up2;
     const p=planets[(s.zone-1)%planets.length]; document.getElementById("planet").textContent=p.emoji; document.getElementById("planetName").textContent=p.name;
     let req = 1500 * Math.pow(s.zone,3); let pct = Math.min(100, (s.credits / req) * 100); document.getElementById("progress-bar").style.width = pct + "%";
+    save();
 }
 
 document.getElementById("planet").onclick=(e)=>{
-    if(isFrozen) { msg("🧊 Tu es gelé par l'administration !"); return; }
+    if(isFrozen) return;
     let baseGain=(s.power*s.scanner)*(1+s.prestige);
     let comboMultiplier = 1 + Math.min(2, combo * 0.04); let gain = baseGain * comboMultiplier;
-    if(frenzyActive) gain *= 3; gain *= eventMultiplier; gain *= adminBoostMultiplier; if(isSlowed) gain /= 4;
-    let isCrit = Math.random() < (s.up2 * 0.02); if(isCrit) gain *= 4;
+    if(frenzyActive) gain *= 3; gain *= eventMultiplier * adminBoostMultiplier; if(isSlowed) gain /= 4;
+    if(Math.random() < (s.up2 * 0.02)) gain *= 4;
     s.credits+=gain; combo++;
-    document.getElementById("combo-display").textContent = `Combo x${comboMultiplier.toFixed(2)} (${combo})`;
+    document.getElementById("combo-display").textContent = `Combo x${comboMultiplier.toFixed(2)}`;
     clearTimeout(comboTimer); comboTimer = setTimeout(() => { combo = 0; document.getElementById("combo-display").textContent = ""; }, 1500);
-    let pl = document.getElementById("planet"); pl.classList.remove("shake"); void pl.offsetWidth; pl.classList.add("shake"); setTimeout(() => pl.classList.remove("shake"), 100);
-    let d=document.createElement("div"); d.className="pop"; d.style.left=e.clientX+"px"; d.style.top=e.clientY+"px"; d.style.color=isCrit?"#ff3300":"#52ffe0"; d.textContent="+"+Math.floor(gain); document.body.appendChild(d); setTimeout(()=>d.remove(),800);
-    if(s.credits > 1500 * Math.pow(s.zone,3)){ s.zone++; s.maxzone=Math.max(s.maxzone,s.zone); msg("🚀 Nouvelle zone "+s.zone); }
+    if(s.credits > 1500 * Math.pow(s.zone,3)){ s.zone++; s.maxzone=Math.max(s.maxzone,s.zone); }
     ui();
 };
 
-function buyPower(){ if(isFrozen) return; if(s.credits>=s.pCost){s.credits-=s.pCost;s.power++;s.pCost=Math.floor(s.pCost*1.15);ui();}}
-function buyMaxPower(){ if(isFrozen) return; while(s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost = Math.floor(s.pCost * 1.15); } ui(); }
-function buyDrone(){ if(isFrozen) return; if(s.credits>=s.dCost){s.credits-=s.dCost;s.drones++;s.dCost=Math.floor(s.dCost*1.18);ui();restartDroneInterval();}}
-function buyMaxDrone(){ if(isFrozen) return; while(s.credits >= s.dCost) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); } restartDroneInterval(); ui(); }
-function buyScanner(){ if(isFrozen) return; if(s.credits>=s.sCost){s.credits-=s.sCost;s.scanner++;s.sCost=Math.floor(s.sCost*1.2);ui();}}
-function buyMaxScanner(){ if(isFrozen) return; while(s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost = Math.floor(s.sCost * 1.2); } ui(); }
-function buyPrestigeUpgrade(type){ if(isFrozen) return; if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); } if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); }}
+function buyPower(){ if(s.credits>=s.pCost){s.credits-=s.pCost;s.power++;s.pCost=Math.floor(s.pCost*1.15);ui();}}
+function buyMaxPower(){ while(s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost = Math.floor(s.pCost * 1.15); } ui(); }
+function buyDrone(){ if(s.credits>=s.dCost){s.credits-=s.dCost;s.drones++;s.dCost=Math.floor(s.dCost*1.18);ui();restartDroneInterval();}}
+function buyMaxDrone(){ while(s.credits >= s.dCost) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); } restartDroneInterval(); ui(); }
+function buyScanner(){ if(s.credits>=s.sCost){s.credits-=s.sCost;s.scanner++;s.sCost=Math.floor(s.sCost*1.2);ui();}}
+function buyMaxScanner(){ while(s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost = Math.floor(s.sCost * 1.2); } ui(); }
+function buyPrestigeUpgrade(type){ if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); } if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); }}
 
 function restartDroneInterval(){
     clearInterval(droneInterval);
     let baseSpeed = 1000 / (1 + s.up1); let speed = speedHackActive ? (baseSpeed / 5) : baseSpeed;
     droneInterval = setInterval(()=>{
         if(s.drones > 0 && !isFrozen){
-            let droneGain = s.drones*s.scanner*(1+s.prestige);
-            if(frenzyActive) droneGain *= 3; droneGain *= eventMultiplier; droneGain *= adminBoostMultiplier; if(isSlowed) droneGain /= 4;
-            s.credits+=droneGain; document.getElementById("money").textContent=Math.floor(s.credits); document.getElementById("moneyTop").textContent=Math.floor(s.credits);
+            let dGain = s.drones*s.scanner*(1+s.prestige)*eventMultiplier*adminBoostMultiplier; if(isSlowed) dGain /= 4;
+            s.credits+=dGain; document.getElementById("money").textContent=Math.floor(s.credits);
         }
     }, speed);
 }
+function doPrestige(){ if(s.zone>=5){ s.shards += s.zone; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; restartDroneInterval(); ui(); }else{ msg("🧱 Requis: Zone 5"); }}
+function renderLB(){ document.getElementById("leaderboard").innerHTML = listeLeaderboard.slice(0, 10).map((p,i)=> `${i+1}. ${p.name} - 💰${Math.floor(p.score)}<hr>` ).join("");}
+setInterval(() => { let name = document.getElementById("player").value.trim(); if(name && !isFrozen) socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone }); }, 2500);
 
-function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; restartDroneInterval(); ui(); }else{ msg("⚠️ Atteins la Zone 5 !"); }}
-function renderLB(){ document.getElementById("leaderboard").innerHTML = listeLeaderboard.slice(0, 10).map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");}
-
-setInterval(() => {
-    let name = document.getElementById("player").value.trim();
-    if(name && !isFrozen) socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone });
-}, 2000);
-
-function triggerFrenzy(){ frenzyActive = true; document.body.classList.add("frenzy-active"); clearTimeout(frenzyTimer); frenzyTimer = setTimeout(() => { frenzyActive = false; document.body.classList.remove("frenzy-active"); }, 10000); }
-
-// --- AUTH PANELS ADMIN ---
+// --- ADMINISTRATION CONTROLS ---
 let auth = { owner: false, admin: false };
 window.addEventListener('keydown', function(e) { if (document.activeElement.tagName === 'INPUT') return; if (e.key === '1') togglePanel('owner'); if (e.key === '2') togglePanel('admin'); });
 function togglePanel(role) { const p = document.getElementById(`panel-${role}`); p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'block' : 'none'; }
-
-// --- DATABASE DES COMMANDES ---
-const commandsDatabase = {
-    "help": "admin", "kick": "admin", "ban": "admin", "mute": "admin", "unmute": "admin",
-    "freeze": "admin", "unfreeze": "admin", "slow": "admin", "unslow": "admin", "warn": "admin",
-    "chat": "admin", "clear": "admin", "tp": "admin", "slock": "admin", "unslock": "admin",
-    "kickall": "admin", "muteall": "admin", "unmuteall": "admin", "spectate": "admin",
-    "freezeall": "admin", "unfreezeall": "admin", "warnall": "admin", "tpall": "admin",
-    "slowall": "admin", "unslowall": "admin",
-    "credits": "owner", "shards": "owner", "power": "owner", "drones": "owner", "scanner": "owner",
-    "prestige": "owner", "zone": "owner", "boost": "owner", "frenzyall": "owner", "crash": "owner",
-    "seisme": "owner", "rainbow": "owner", "invert": "owner", "matrix": "owner", "blur": "owner",
-    "blackout": "owner", "flash": "owner", "nuclear": "owner", "unabuse": "owner", "speedhack": "owner",
-    "godmode": "owner", "ghost": "owner", "superjump": "owner", "size": "owner", "gravity": "owner",
-    "rich": "owner", "broke": "owner", "glitch": "owner", "discomode": "owner", "lag": "owner"
-};
+const commandsDatabase = { "help": "admin", "kick": "admin", "ban": "admin", "mute": "admin", "unmute": "admin", "freeze": "admin", "unfreeze": "admin", "slow": "admin", "unslow": "admin", "warn": "admin", "chat": "admin", "clear": "admin", "kickall": "admin", "freezeall": "admin", "unfreezeall": "admin", "warnall": "admin", "credits": "owner", "shards": "owner", "power": "owner", "drones": "owner", "scanner": "owner", "boost": "owner", "seisme": "owner", "rainbow": "owner", "unabuse": "owner", "speedhack": "owner" };
 
 function loginPanel(role) {
     const inputField = document.getElementById(`input-${role}`); const log = document.getElementById(`log-${role}`); let val = inputField.value.trim();
-    let mdpCorrect = (role === 'owner' && val === "admin123") || (role === 'admin' && val === "1234");
-    if (mdpCorrect) {
-        auth[role] = true; document.getElementById(`${role}Header`).textContent = role === 'owner' ? "👑 OWNER SUPRÊME EXEC" : "🛡️ MODÉRATION ADM EXEC";
-        document.getElementById(`${role}Prefix`).textContent = ";"; inputField.value = ""; inputField.type = "text"; inputField.placeholder = "Taper une commande... (;help)";
-        log.innerHTML = `<div style='color: #26ff63;'>[SYSTEM]: Mode ${role.toUpperCase()} connecté.</div>`;
+    if ((role === 'owner' && val === "admin123") || (role === 'admin' && val === "1234")) {
+        auth[role] = true; document.getElementById(`${role}Header`).textContent = `${role.toUpperCase()} COMPATIBLE`;
+        inputField.value = ""; inputField.type = "text"; inputField.placeholder = "Commande... (;help)";
+        log.innerHTML = `<div style='color: #26ff63;'>Connecté.</div>`;
         inputField.onkeydown = function(e) { if (e.key === 'Enter') runCmd(role); };
-    } else { log.innerHTML += "<div style='color:red;'>[ERROR]: Mot de passe incorrect.</div>"; inputField.value = ""; }
+    } else { log.innerHTML += "<div>Code erroné.</div>"; inputField.value = ""; }
 }
 
 function runCmd(role) {
-    const inputField = document.getElementById(`input-${role}`);
-    const logBox = document.getElementById(`log-${role}`);
-    let fullCmd = inputField.value.trim();
-    if (!fullCmd) return;
-    
-    inputField.value = "";
-    let cleanCmd = fullCmd.startsWith(";") ? fullCmd.substring(1) : fullCmd;
-    let parts = cleanCmd.split(" ");
-    let baseCmd = parts[0].toLowerCase();
-    
-    if (!commandsDatabase[baseCmd]) {
-        logBox.innerHTML += `<div style="color:#ff4444;">[ERREUR]: Commande "${baseCmd}" inconnue. (;help)</div>`;
-        logBox.scrollTop = logBox.scrollHeight;
-        return;
-    }
-    
-    if (role === "admin" && commandsDatabase[baseCmd] === "owner") {
-        logBox.innerHTML += `<div style="color:#ff4444;">[REFUSÉ]: La commande "${baseCmd}" nécessite les droits OWNER.</div>`;
-        logBox.scrollTop = logBox.scrollHeight;
-        return;
-    }
-    
-    let target = parts[1] || "";
-    let valStr = parts[2] || "0";
-    let value = Number(valStr);
-    
-    // ✨ CORRECTION ULTRA PRÉCISE DU CHAT GLOBAL
-    let texteBrut = "";
-    if (baseCmd === "chat") {
-        let indexCoupe = fullCmd.toLowerCase().indexOf("chat");
-        texteBrut = fullCmd.substring(indexCoupe + 4).trim();
-        target = ""; 
-    } else {
-        texteBrut = parts.slice(2).join(" ");
-    }
-    
-    logBox.innerHTML += `<div style="color:#aaa;">&gt; ${fullCmd}</div>`;
-    
+    const inputField = document.getElementById(`input-${role}`); const logBox = document.getElementById(`log-${role}`); let fullCmd = inputField.value.trim(); if (!fullCmd) return;
+    inputField.value = ""; let cleanCmd = fullCmd.startsWith(";") ? fullCmd.substring(1) : fullCmd; let parts = cleanCmd.split(" "); let baseCmd = parts[0].toLowerCase();
+    if (!commandsDatabase[baseCmd] || (role === "admin" && commandsDatabase[baseCmd] === "owner")) return;
+    let target = parts[1] || ""; let value = Number(parts[2] || "0");
+    let texteBrut = (baseCmd === "chat") ? fullCmd.substring(fullCmd.toLowerCase().indexOf("chat") + 4).trim() : parts.slice(2).join(" ");
     appliquerCommandeLocale(baseCmd, value, texteBrut, 0, 1, role);
-    
-    // Envoi synchrone vers l'événement ré-aligné de ton server.js ("envoyerAdminAbuse")
-    socket.emit("envoyerAdminAbuse", {
-        auteur: document.getElementById("player").value.trim() || "Admin",
-        role: role,
-        commande: fullCmd,
-        baseCmd: baseCmd,
-        cible: target,
-        value: value,
-        texteBrut: texteBrut
-    });
-    
-    logBox.scrollTop = logBox.scrollHeight;
+    socket.emit("envoyerAdminAbuse", { auteur: document.getElementById("player").value.trim() || "Admin", role: role, commande: fullCmd, baseCmd: baseCmd, cible: target, value: value, texteBrut: texteBrut });
 }
 
 function appliquerCommandeLocale(baseCmd, valNum, texteBrut, arg2, totalConnectes, role) {
-    const logBox = document.getElementById(`log-${role === 'owner' ? 'owner' : 'admin'}`) || document.getElementById('log-owner');
-    
     switch (baseCmd) {
-        case "help":
-            let helpHtml = `<div style="color:#52ffe0;">--- COMMANDES ACCESSIBLES (${role.toUpperCase()}) ---</div>`;
-            for (let c in commandsDatabase) {
-                if (role === "owner" || commandsDatabase[c] === "admin") {
-                    helpHtml += `<div style="color:#fff;">;${c} <span style="color:#888;">[${commandsDatabase[c]}]</span></div>`;
-                }
-            }
-            logBox.innerHTML += helpHtml;
-            break;
-            
-        case "kick":
-        case "kickall":
-            document.getElementById("kick-screen").style.display = "block";
-            deconnexionComplete();
-            break;
-            
-        case "ban":
-            document.getElementById("ban-screen").style.display = "block";
-            deconnexionComplete();
-            break;
-            
-        case "mute":
-        case "muteall":
-            document.getElementById("chat-input").disabled = true;
-            document.getElementById("chat-input").placeholder = "Tu as été rendu muet par la modération.";
-            break;
-            
-        case "unmute":
-        case "unmuteall":
-            document.getElementById("chat-input").disabled = false;
-            document.getElementById("chat-input").placeholder = "Message...";
-            break;
-            
-        case "freeze":
-        case "freezeall":
-            isFrozen = true;
-            document.body.classList.add("frozen");
-            break;
-            
-        case "unfreeze":
-        case "unfreezeall":
-            isFrozen = false;
-            document.body.classList.remove("frozen");
-            break;
-            
-        case "slow":
-        case "slowall":
-            isSlowed = true;
-            break;
-            
-        case "unslow":
-        case "unslowall":
-            isSlowed = false;
-            break;
-            
-        case "warn":
-        case "warnall":
-            alert(`[AVERTISSEMENT MODÉRATION] :\n\n${texteBrut || "Veuillez respecter les règles du serveur."}`);
-            break;
-            
-        case "chat":
-            const alertEl = document.getElementById("global-chat-alert");
-            alertEl.textContent = `📢 [SYSTEM] : ${texteBrut}`;
-            alertEl.style.top = "20px";
-            setTimeout(() => { alertEl.style.top = "-100px"; }, 6000);
-            break;
-            
-        case "clear":
-            document.getElementById("chat-box").innerHTML = "<div style='color:#ffaa00;'>[SYSTEM]: Le chat a été nettoyé par la modération.</div>";
-            break;
-            
-        case "tp":
-        case "tpall":
-            alert(`[TELEPORT] Déplacement forcé par l'administration.`);
-            break;
-            
-        case "slock":
-            msg("🔒 Serveur verrouillé (ServerLock actif).");
-            break;
-            
-        case "unslock":
-            msg("🔓 Serveur déverrouillé.");
-            break;
-
-        case "spectate":
-            msg(`👁️ Mode spectateur activé.`);
-            break;
-            
-        // --- BOUTIQUE / TRICHE (OWNER) ---
-        case "credits":
-            s.credits = Math.max(0, s.credits + valNum);
-            ui();
-            break;
-            
-        case "shards":
-            s.shards = Math.max(0, s.shards + valNum);
-            ui();
-            break;
-            
-        case "power":
-            s.power = Math.max(1, s.power + valNum);
-            ui();
-            break;
-            
-        case "drones":
-            s.drones = Math.max(0, s.drones + valNum);
-            restartDroneInterval();
-            ui();
-            break;
-            
-        case "scanner":
-            s.scanner = Math.max(1, s.scanner + valNum);
-            ui();
-            break;
-            
-        case "prestige":
-            s.prestige = Math.max(0, s.prestige + valNum);
-            ui();
-            break;
-            
-        case "zone":
-            s.zone = Math.max(1, valNum);
-            s.maxzone = Math.max(s.maxzone, s.zone);
-            ui();
-            break;
-            
-        case "boost":
-            adminBoostMultiplier = valNum > 0 ? valNum : 1;
-            msg(`🔥 Multiplicateur Owner Actif: x${adminBoostMultiplier}`);
-            break;
-            
-        case "frenzyall":
-            triggerFrenzy();
-            break;
-            
-        case "crash":
-            document.getElementById("fake-crash-screen").style.display = "block";
-            break;
-            
-        case "seisme":
-            document.body.classList.toggle("seisme-active");
-            break;
-            
-        case "rainbow":
-            document.body.classList.toggle("rainbow-bg");
-            document.getElementById("owner-rainbow-bar").style.display = document.body.classList.contains("rainbow-bg") ? "block" : "none";
-            break;
-            
-        case "invert":
-            document.body.classList.toggle("invert-colors");
-            break;
-            
-        case "matrix":
-            document.body.classList.toggle("matrix-bg");
-            break;
-            
-        case "blur":
-            document.body.classList.toggle("blur-active");
-            break;
-            
-        case "blackout":
-            document.body.classList.toggle("blackout-active");
-            break;
-            
-        case "flash":
-            document.body.classList.toggle("flash-mode");
-            break;
-            
-        case "nuclear":
-            document.body.classList.toggle("nuclear-mode");
-            const banner = document.getElementById("global-event-banner");
-            banner.textContent = "🚨 ALERTE NUCLÉAIRE DÉCLENCHÉE PAR L'OWNER 🚨";
-            banner.style.display = banner.style.display === "block" ? "none" : "block";
-            break;
-            
-        case "speedhack":
-            speedHackActive = !speedHackActive;
-            restartDroneInterval();
-            msg(`⚙ SpeedHack Drones: ${speedHackActive ? "ACTIF (x5)" : "INACTIF"}`);
-            break;
-
-        case "godmode":
-            msg("🛡️ GODMODE ACTIVÉ (Insensible aux freezes/slows)");
-            isFrozen = false; isSlowed = false;
-            document.body.classList.remove("frozen");
-            break;
-
-        case "ghost":
-            document.body.classList.toggle("ghost-mode");
-            break;
-
-        case "superjump":
-            const planetEl = document.getElementById("planet");
-            planetEl.style.transform = "translateY(-150px) scale(1.2)";
-            setTimeout(() => { planetEl.style.transform = "none"; }, 400);
-            break;
-
-        case "size":
-            let scaleVal = valNum > 0 ? valNum : 1;
-            document.getElementById("planet").style.transform = `scale(${scaleVal})`;
-            break;
-
-        case "gravity":
-            document.body.style.transform = `translateY(${valNum}px)`;
-            break;
-
-        case "rich":
-            s.credits += 999999999999;
-            ui();
-            break;
-
-        case "broke":
-            s.credits = 0;
-            ui();
-            break;
-
-        case "glitch":
-            document.body.classList.toggle("glitch-mode");
-            break;
-
-        case "discomode":
-            document.body.classList.toggle("disco-mode");
-            break;
-
-        case "lag":
-            document.body.classList.toggle("lag-mode");
-            break;
-            
-        case "unabuse":
-            isFrozen = false; isSlowed = false; speedHackActive = false; adminBoostMultiplier = 1;
-            document.body.className = "";
-            document.body.style.transform = "none";
-            document.getElementById("planet").style.transform = "none";
-            document.getElementById("owner-rainbow-bar").style.display = "none";
-            document.getElementById("global-event-banner").style.display = "none";
-            document.getElementById("chat-input").disabled = false;
-            document.getElementById("chat-input").placeholder = "Message...";
-            restartDroneInterval();
-            ui();
-            break;
+        case "help": alert("Commandes: ;credits ;shards ;power ;drones ;boost ;mute ;freeze ;slow ;warn ;chat ;unabuse"); break;
+        case "kick": case "kickall": document.getElementById("kick-screen").style.display = "block"; deconnexionComplete(); break;
+        case "ban": document.getElementById("ban-screen").style.display = "block"; deconnexionComplete(); break;
+        case "mute": document.getElementById("chat-input").disabled = true; break;
+        case "unmute": document.getElementById("chat-input").disabled = false; break;
+        case "freeze": case "freezeall": isFrozen = true; document.body.classList.add("frozen"); break;
+        case "unfreeze": case "unfreezeall": isFrozen = false; document.body.classList.remove("frozen"); break;
+        case "slow": case "slowall": isSlowed = true; break;
+        case "unslow": case "unslowall": isSlowed = false; break;
+        case "warn": case "warnall": alert(`[MOD] : ${texteBrut}`); break;
+        case "chat": const alertEl = document.getElementById("global-chat-alert"); alertEl.textContent = `📢 : ${texteBrut}`; alertEl.style.top = "20px"; setTimeout(() => alertEl.style.top = "-100px", 5000); break;
+        case "clear": document.getElementById("chat-box").innerHTML = ""; break;
+        case "credits": s.credits += valNum; ui(); break;
+        case "shards": s.shards += valNum; ui(); break;
+        case "power": s.power += valNum; ui(); break;
+        case "drones": s.drones += valNum; restartDroneInterval(); ui(); break;
+        case "boost": adminBoostMultiplier = valNum > 0 ? valNum : 1; break;
+        case "seisme": document.body.classList.toggle("seisme-active"); break;
+        case "rainbow": document.body.classList.toggle("rainbow-bg"); break;
+        case "speedhack": speedHackActive = !speedHackActive; restartDroneInterval(); break;
+        case "unabuse": isFrozen = false; isSlowed = false; speedHackActive = false; adminBoostMultiplier = 1; document.body.className = ""; restartDroneInterval(); ui(); break;
     }
-    if(logBox) logBox.scrollTop = logBox.scrollHeight;
 }
 </script>
 </body>
