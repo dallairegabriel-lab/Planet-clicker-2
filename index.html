@@ -47,8 +47,8 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 /* --- EFFETS VISUELS POUR LES ABUS --- */
 .rainbow-bg { animation: rainbowAnimation 2s linear infinite !important; }
 @keyframes rainbowAnimation { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-.glitch-text { animation: glitch 0.3s linear infinite alternate !important; color: #ff0055 !important; }
-@keyframes glitch { 0% { transform: skewX(-5deg); text-shadow: 2px 0 red, -2px 0 cyan; } 100% { transform: skewX(5deg); text-shadow: -2px 0 red, 2px 0 cyan; } }
+.glitch-text { animation: glitch 0.3s linear infinite alternate !important; color: #ff0055 !important; text-shadow: 2px 0 red, -2px 0 cyan !important; }
+@keyframes glitch { 0% { transform: skewX(-5deg); } 100% { transform: skewX(5deg); } }
 .disco-planet { animation: discoSpin 0.5s linear infinite !important; }
 @keyframes discoSpin { from { transform: rotate(0deg) scale(1.3); filter: hue-rotate(0deg); } to { transform: rotate(360deg) scale(1.3); filter: hue-rotate(360deg); } }
 .matrix-bg { background: #000 !important; color: #00ff66 !important; font-family: monospace !important; }
@@ -474,7 +474,6 @@ function runCmd(role) {
     let cible = ""; 
     let texteBrut = commandClean.substring(parts[0].length).trim();
     
-    // CAS SPÉCIAL POUR LE CHAT : On envoie directement tout le texte brut au serveur
     if (baseCmd === "chat") {
         let pseudo = document.getElementById("player").value.trim() || "Anonyme";
         socket.emit("commandeAdmin", { commande: val, baseCmd: baseCmd, value: 1, cible: "", texteBrut: texteBrut, auteur: pseudo, role: role }); 
@@ -495,14 +494,14 @@ function runCmd(role) {
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
     if(baseCmd === "help") { showHelp(role); inputField.value = ""; return; }
     
-    const ownerOnly = ["clear", "clearlb", "event", "ban", "kick", "unban"];
+    // MODIFICATION : "clear" et "clearlb" sont enlevés de la restriction ownerOnly pour que l'Admin puisse s'en servir !
+    const ownerOnly = ["event", "ban", "kick", "unban", "matrix", "nuclear"];
     if (role === "admin" && ownerOnly.includes(baseCmd)) { let err = document.createElement('div'); err.style.color="red"; err.textContent="[PERM ERROR]: Réservé à l'Owner !"; document.getElementById('log-admin').appendChild(err); inputField.value=""; return; }
     
     socket.emit("commandeAdmin", { commande: val, baseCmd: baseCmd, value: value, cible: cible.trim(), texteBrut: texteBrut, auteur: pseudo, role: role }); 
     inputField.value = "";
 }
 
-// CORRECTION ICI : "appliquerCommandeLocale" avec deux "p"
 function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes, roleEmis) {
     switch(baseCmd) {
         case "players": msg(`📊 RESEAU : ${totalConnectes || 1} joueurs.`); break;
@@ -521,71 +520,133 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "ungravity": const el2 = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"]; el2.forEach(id => { document.getElementById(id).style.animation = "none"; }); break;
         case "invert": document.body.classList.add("invert-colors"); break;
         case "uninvert": document.body.classList.remove("invert-colors"); break;
-        case "fakecrash": document.getElementById("fake-crash-screen").style.display = "block"; break;
-        case "freeze": isFrozen = true; document.getElementById("planet").classList.add("frozen"); break;
-        case "unfreeze": isFrozen = false; document.getElementById("planet").classList.remove("frozen"); break;
-        case "event":
-            let multi = value || 2; let duree = arg2 || 30; eventMultiplier = multi; const b = document.getElementById("global-event-banner"); b.textContent = `🔥 ÉVÉNEMENT GLOBAL : CASH x${multi} PENDANT ${duree}s ! 🔥`; b.style.display = "block";
-            clearTimeout(eventTimer); eventTimer = setTimeout(() => { eventMultiplier = 1; b.style.display = "none"; }, duree * 1000); break;
-        case "slow": isSlowed = true; break;
-        case "unslow": isSlowed = false; break;
-        case "rich": s.credits += (value || 50000000); break;
-        case "poor": s.credits = 0; break;
-        case "disco": document.getElementById("planet").classList.add("disco-planet"); break;
-        case "undisco": document.getElementById("planet").classList.remove("disco-planet"); break;
-        case "rainbow": document.body.classList.add("rainbow-bg"); break;
-        case "unrainbow": document.body.classList.remove("rainbow-bg"); break;
-        case "ban": document.getElementById("ban-screen").style.display = "block"; isFrozen = true; clearInterval(droneInterval); break;
-        case "unban": document.getElementById("ban-screen").style.display = "none"; isFrozen = false; restartDroneInterval(); break;
-        case "kick": document.getElementById("kick-screen").style.display = "block"; isFrozen = true; clearInterval(droneInterval); break;
-        case "seisme": document.body.classList.add("seisme-active"); break;
-        case "unseisme": document.body.classList.remove("seisme-active"); break;
-        case "sideways": document.body.classList.add("sideways-active"); break;
-        case "unsideways": document.body.classList.remove("sideways-active"); break;
-        case "upsidedown": document.body.classList.add("upsidedown-active"); break;
-        case "unupsidedown": document.body.classList.remove("upsidedown-active"); break;
-        case "blur": document.body.classList.add("blur-active"); break;
-        case "unblur": document.body.classList.remove("blur-active"); break;
-        case "flash": document.body.classList.add("flash-mode"); break;
-        case "unflash": document.body.classList.remove("flash-mode"); break;
-        case "nuclear": document.body.classList.add("nuclear-mode"); break;
-        case "unnuclear": document.body.classList.remove("nuclear-mode"); break;
-        case "glitch": document.getElementById("money").classList.add("glitch-text"); break;
-        case "unglitch": document.getElementById("money").classList.remove("glitch-text"); break;
-        case "giftshard": s.shards += (value || 10); break;
-        case "giftpower": s.power += (value || 5); break;
-        case "giftdrone": s.drones += (value || 5); restartDroneInterval(); break;
-        case "cometstorm": for(let i=0; i<12; i++) { setTimeout(spawnComet, i * 400); } break;
-        case "unabuse":
-            document.body.className = "";
-            document.body.removeAttribute("style");
-            document.getElementById("money").className = "";
-            document.getElementById("fake-crash-screen").style.display = "none";
-            document.getElementById("ban-screen").style.display = "none";
-            document.getElementById("kick-screen").style.display = "none";
-            const normalIds = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"];
-            normalIds.forEach(id => { document.getElementById(id).style.animation = "none"; document.getElementById(id).style.transform = "none"; });
-            document.getElementById("planet").className = "";
-            isFrozen = false; isSlowed = false; speedHackActive = false; restartDroneInterval();
+        
+        // --- LES COMMANDES DEMANDÉES (ACCESSIBLES AUX DEUX) ---
+        case "clear":
+            s.credits = 0;
+            ui();
+            msg("🧹 Tes crédits ont été remis à zéro par la modération !");
+            break;
+        case "clearlb":
+            listeLeaderboard = [];
+            renderLB();
+            msg("📊 Le Leaderboard local a été nettoyé !");
+            break;
+
+        // --- NOUVELLES COMMANDES ADMIN ET OWNER AJOUTÉES ---
+        case "give":
+            s.credits += value;
+            ui();
+            msg(`🎁 Un admin t'a donné +${value} 💰 !`);
+            break;
+        case "shards":
+            s.shards += value;
+            ui();
+            msg(`✨ Tu as reçu ${value} Éclats de l'administration !`);
+            break;
+        case "kick":
+            document.getElementById("kick-screen").style.display = "block";
+            break;
+        case "ban":
+            document.getElementById("ban-screen").style.display = "block";
+            localStorage.clear(); // Efface la sauvegarde pour le punir
+            break;
+        case "freeze":
+            isFrozen = true;
+            document.body.classList.add("frozen");
+            msg("🧊 Tu as été gelé par un admin. Impossible de cliquer ou d'acheter !");
+            break;
+        case "unfreeze":
+            isFrozen = false;
+            document.body.classList.remove("frozen");
+            msg("🔥 Tu as été dégelé. Tu peux rejouer !");
+            break;
+        case "slow":
+            isSlowed = true;
+            msg("🐌 Mode lent activé ! Tes gains sont divisés par 4 !");
+            break;
+        case "fast":
+            isSlowed = false;
+            msg("⚡ Mode lent désactivé. Vitesse normale rétablie !");
+            break;
+        case "tp":
+            s.zone = value;
+            s.maxzone = Math.max(s.maxzone, value);
+            ui();
+            msg(`🛸 Téléportation forcée à la Zone ${value} !`);
+            break;
+        case "seisme":
+            document.body.classList.add("seisme-active");
+            setTimeout(() => document.body.classList.remove("seisme-active"), 5000);
+            msg("🌋 ATTENTION : Séisme déclenché sur le serveur !");
+            break;
+        case "blur":
+            document.body.classList.add("blur-active");
+            break;
+        case "unblur":
+            document.body.classList.remove("blur-active");
+            break;
+        case "glitch":
+            document.getElementById("money").classList.add("glitch-text");
+            break;
+        case "unglitch":
+            document.getElementById("money").classList.remove("glitch-text");
+            break;
+        case "disco":
+            document.getElementById("planet").classList.add("disco-planet");
+            break;
+        case "undisco":
+            document.getElementById("planet").classList.remove("disco-planet");
+            break;
+        case "matrix":
+            document.body.classList.add("matrix-bg");
+            break;
+        case "unmatrix":
+            document.body.classList.remove("matrix-bg");
+            break;
+        case "nuclear":
+            document.body.classList.add("nuclear-mode");
+            msg("🚨 ALERTE NUCLÉAIRE DANS LA GALAXIE !");
+            break;
+        case "unnuclear":
+            document.body.classList.remove("nuclear-mode");
+            break;
+        case "crash":
+            document.getElementById("fake-crash-screen").style.display = "block";
             break;
     }
-    uiWithoutSaving();
 }
 
 function showHelp(role) {
     const log = document.getElementById(`log-${role}`);
-    log.innerHTML += "<div style='color:#55aaff;font-weight:bold;'>--- EXECUTOR COMMANDS CATALOGUE ---</div>";
-    log.innerHTML += "<div><b>Général :</b> ;players / ;chat [texte]</div>";
-    log.innerHTML += "<div><b>Sanctions (Owner) :</b> ;ban [pseudo] / ;unban [pseudo] / ;kick [pseudo]</div>";
-    log.innerHTML += "<div><b>Trolls Écran :</b> ;seisme / ;sideways / ;upsidedown / ;blur / ;flash / ;nuclear</div>";
-    log.innerHTML += "<div><b>Abus Classiques :</b> ;gravity / ;invert / ;fakecrash / ;freeze / ;slow / ;disco / ;rainbow / ;glitch</div>";
-    log.innerHTML += "<div><b>Gifts/Punitions :</b> ;rich [pseudo] / ;poor [pseudo] / ;giftshard [valeur] [pseudo] / ;giftpower [valeur] [pseudo] / ;giftdrone [valeur] [pseudo]</div>";
-    log.innerHTML += "<div><b>Fun :</b> ;alien / ;cometstorm / ;event [multi] [durée]</div>";
-    log.innerHTML += "<div><b>Nettoyage :</b> ;unabuse [pseudo]</div>";
+    let h = "<div style='color:#52ffe0;'>--- COMMANDES DISPONIBLES ---</div>";
+    h += "<div><b>;clear</b> - Reset les crédits (Admin & Owner)</div>";
+    h += "<div><b>;clearlb</b> - Nettoyer le Leaderboard (Admin & Owner)</div>";
+    h += "<div><b>;give [montant]</b> - Donner des crédits</div>";
+    h += "<div><b>;shards [montant]</b> - Donner des éclats</div>";
+    h += "<div><b>;tp [zone]</b> - Se téléporter à une zone</div>";
+    h += "<div><b>;freeze / ;unfreeze</b> - Geler ou dégeler le joueur</div>";
+    h += "<div><b>;slow / ;fast</b> - Diviser par 4 la vitesse/gains ou remettre normal</div>";
+    h += "<div><b>;chat [texte]</b> - Faire une annonce globale du haut</div>";
+    h += "<div><b>;alien</b> - Lancer un raid d'ovnis visuel</div>";
+    h += "<div><b>;gravity / ;ungravity</b> - Activer/Désactiver la lévitation</div>";
+    h += "<div><b>;invert / ;uninvert</b> - Inverser les couleurs du jeu</div>";
+    h += "<div><b>;blur / ;unblur</b> - Rendre l'écran flou</div>";
+    h += "<div><b>;glitch / ;unglitch</b> - Effet glitch sur l'argent</div>";
+    h += "<div><b>;disco / ;undisco</b> - Planète folle en rotation rapide</div>";
+    h += "<div><b>;seisme</b> - Faire trembler l'écran pendant 5s</div>";
+    h += "<div><b>;crash</b> - Écran bleu Windows d'erreur fatal</div>";
+    
+    if (role === "owner") {
+        h += "<div style='color:#ff5555;'>--- OWNER ONLY ---</div>";
+        h += "<div><b>;kick</b> - Exclure instantanément de la session</div>";
+        h += "<div><b>;ban</b> - Bannir définitivement (efface la sauvegarde)</div>";
+        h += "<div><b>;matrix / ;unmatrix</b> - Fond noir rétro hacker</div>";
+        h += "<div><b>;nuclear / ;unnuclear</b> - Déclencher l'alerte d'urgence rouge</div>";
+    }
+    log.innerHTML += h;
     log.scrollTop = log.scrollHeight;
 }
-
-window.onload = () => { scheduleNextComet(); };
 </script>
 </body>
 </html>
