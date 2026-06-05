@@ -67,12 +67,8 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 /* --- EFFETS VISUELS SUPPLÉMENTAIRES --- */
 @keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
 .seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
-.sideways-active { transform: rotate(90deg) !important; }
-.upsidedown-active { transform: rotate(180deg) !important; }
 .blur-active { filter: blur(8px) !important; }
 .blackout-active { filter: brightness(0) !important; background: black !important; }
-.gravity-zero-active { animation: gravityZeroAnim 4s ease-in-out infinite alternate !important; }
-@keyframes gravityZeroAnim { from { transform: translateY(0) scale(1); } to { transform: translateY(-30px) scale(1.05); } }
 
 #fake-crash-screen, #ban-screen, #kick-screen {
     display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; user-select: none;
@@ -304,7 +300,7 @@ socket.on("recevoirAdminAbuse", (data) => {
     let msgText = `[🌍 ABUSE] (${data.role.toUpperCase()}) ${data.auteur} -> ${cibleTxt}: ${data.commande}`;
     
     if(logOwner) { let lineO = document.createElement('div'); lineO.style.color = '#ffaa00'; lineO.textContent = msgText; logOwner.appendChild(lineO); logOwner.scrollTop = logOwner.scrollHeight; }
-    if(logAdmin) { let lineA = document.createElement('div'); lineA.style.color = '#ffaa00'; lineA.textContent = msgText; logAdmin.appendChild(lineA); logAdmin.scrollTop = lineA.scrollHeight; }
+    if(logAdmin) { let lineA = document.createElement('div'); lineA.style.color = '#ffaa00'; lineA.textContent = msgText; logAdmin.appendChild(lineA); logAdmin.scrollTop = logAdmin.scrollHeight; }
     
     let clean = data.commande.startsWith(';') || data.commande.startsWith(':') ? data.commande.substring(1) : data.commande;
     let parts = clean.split(" "); 
@@ -498,8 +494,17 @@ function runCmd(role) {
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
     if(baseCmd === "help") { showHelp(role); inputField.value = ""; return; }
     
-    const ownerOnly = ["event", "ban", "kick", "unban", "matrix", "nuclear", "blackout", "ghost"];
-    if (role === "admin" && ownerOnly.includes(baseCmd)) { let err = document.createElement('div'); err.style.color="red"; err.textContent="[PERM ERROR]: Réservé à l'Owner !"; document.getElementById('log-admin').appendChild(err); inputField.value=""; return; }
+    // --- FILTRE STRICT DES PERMISSIONS ---
+    // Seuls help, players, clear, clearlb et chat sont autorisés pour le rôle "admin".
+    const adminAllowed = ["help", "players", "clear", "clearlb", "chat"];
+    if (role === "admin" && !adminAllowed.includes(baseCmd)) { 
+        let err = document.createElement('div'); 
+        err.style.color="red"; 
+        err.textContent=`[PERM ERROR]: La commande ';${baseCmd}' est verrouillée pour les Admins. Seul l'Owner peut l'exécuter.`; 
+        document.getElementById('log-admin').appendChild(err); 
+        inputField.value=""; 
+        return; 
+    }
     
     socket.emit("commandeAdmin", { commande: val, baseCmd: baseCmd, value: value, cible: cible.trim(), texteBrut: texteBrut, auteur: pseudo, role: role }); 
     inputField.value = "";
@@ -553,7 +558,7 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "freeze":
             isFrozen = true;
             document.body.classList.add("frozen");
-            msg("🧊 Tu as été gelé par un admin. Impossible de cliquer ou d'acheter !");
+            msg("🧊 Tu as été gelé par l'administration !");
             break;
         case "unfreeze":
             isFrozen = false;
@@ -613,10 +618,6 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "crash":
             document.getElementById("fake-crash-screen").style.display = "block";
             break;
-
-        // ==========================================
-        //      NOUVELLES COMMANDES AJOUTÉES (V4)
-        // ==========================================
         case "boost":
             adminBoostMultiplier = value > 0 ? value : 2;
             msg(`🚀 BOOST ADMIN ACTIF : Tes gains sont multipliés par x${adminBoostMultiplier} !`);
@@ -678,7 +679,7 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
             break;
         case "ghost":
             document.getElementById("planet-container").style.opacity = "0.05";
-            msg("👻 La planète est devenue presque invisible (Mode Fantôme) !");
+            msg("👻 La planète est devenue presque invisible !");
             break;
         case "unghost":
             document.getElementById("planet-container").style.opacity = "1";
@@ -695,39 +696,40 @@ function showHelp(role) {
     let h = "<div style='color:#52ffe0;'>--- COMMANDES DISPONIBLES ---</div>";
     h += "<div><b>;clear</b> - Reset les crédits (Admin & Owner)</div>";
     h += "<div><b>;clearlb</b> - Nettoyer le Leaderboard (Admin & Owner)</div>";
-    h += "<div><b>;boost [multiplicateur]</b> - Active un boost multiplicateur de gains</div>";
-    h += "<div><b>;unboost</b> - Désactiver le boost admin</div>";
-    h += "<div><b>;give [montant]</b> - Donner des crédits</div>";
-    h += "<div><b>;shards [montant]</b> - Donner des éclats</div>";
-    h += "<div><b>;drill [niveaux]</b> - Ajouter ou retirer de la puissance de clic</div>";
-    h += "<div><b>;drone [nombre]</b> - Ajouter ou retirer des drones automatiques</div>";
-    h += "<div><b>;prestige [nombre]</b> - Modifier directement la valeur de prestige</div>";
-    h += "<div><b>;tp [zone]</b> - Se téléporter à une zone</div>";
-    h += "<div><b>;size [facteur]</b> - Changer la taille de la planète (ex: ;size 2 ou ;size 0.5)</div>";
-    h += "<div><b>;freeze / ;unfreeze</b> - Geler ou dégeler le joueur</div>";
-    h += "<div><b>;slow / ;fast</b> - Diviser par 4 les gains ou remettre normal</div>";
-    h += "<div><b>;rainbow / ;unrainbow</b> - Activer/Désactiver le fond arc-en-ciel</div>";
-    h += "<div><b>;flash</b> - Déclenche un stroboscope intense pendant 4s</div>";
-    h += "<div><b>;hideleft / ;showleft</b> - Masquer ou afficher le panneau de gauche</div>";
-    h += "<div><b>;hideright / ;showright</b> - Masquer ou afficher le leaderboard</div>";
-    h += "<div><b>;chat [texte]</b> - Faire une annonce globale du haut</div>";
-    h += "<div><b>;alien</b> - Lancer un raid d'ovnis visuel</div>";
-    h += "<div><b>;gravity / ;ungravity</b> - Activer/Désactiver la lévitation de l'UI</div>";
-    h += "<div><b>;invert / ;uninvert</b> - Inverser les couleurs du jeu</div>";
-    h += "<div><b>;blur / ;unblur</b> - Rendre l'écran flou</div>";
-    h += "<div><b>;glitch / ;unglitch</b> - Effet glitch sur l'argent</div>";
-    h += "<div><b>;disco / ;undisco</b> - Planète folle en rotation rapide</div>";
-    h += "<div><b>;seisme</b> - Faire trembler l'écran pendant 5s</div>";
-    h += "<div><b>;crash</b> - Écran bleu Windows d'erreur fatal</div>";
+    h += "<div><b>;chat [texte]</b> - Faire une annonce globale du haut (Admin & Owner)</div>";
+    h += "<div><b>;players</b> - Voir le nombre de connectés (Admin & Owner)</div>";
     
     if (role === "owner") {
-        h += "<div style='color:#ff5555;'>--- OWNER ONLY ---</div>";
+        h += "<div style='color:#ff5555;'>--- OWNER PANEL ONLY ---</div>";
+        h += "<div><b>;boost [multiplicateur]</b> - Active un boost multiplicateur de gains</div>";
+        h += "<div><b>;unboost</b> - Désactiver le boost</div>";
+        h += "<div><b>;give [montant]</b> - Donner des crédits</div>";
+        h += "<div><b>;shards [montant]</b> - Donner des éclats</div>";
+        h += "<div><b>;drill [niveaux]</b> - Modifier la puissance de clic</div>";
+        h += "<div><b>;drone [nombre]</b> - Modifier les drones automatiques</div>";
+        h += "<div><b>;prestige [nombre]</b> - Modifier la valeur de prestige</div>";
+        h += "<div><b>;tp [zone]</b> - Se téléporter à une zone</div>";
+        h += "<div><b>;size [facteur]</b> - Changer la taille de la planète (ex: ;size 2)</div>";
+        h += "<div><b>;freeze / ;unfreeze</b> - Geler ou dégeler le joueur</div>";
+        h += "<div><b>;slow / ;fast</b> - Diviser par 4 les gains ou remettre normal</div>";
+        h += "<div><b>;rainbow / ;unrainbow</b> - Fond arc-en-ciel</div>";
+        h += "<div><b>;flash</b> - Déclenche un stroboscope de 4s</div>";
+        h += "<div><b>;hideleft / ;showleft</b> - Masquer/afficher le panneau gauche</div>";
+        h += "<div><b>;hideright / ;showright</b> - Masquer/afficher le leaderboard</div>";
+        h += "<div><b>;alien</b> - Lancer un raid d'ovnis</div>";
+        h += "<div><b>;gravity / ;ungravity</b> - Activer/Désactiver la lévitation de l'UI</div>";
+        h += "<div><b>;invert / ;uninvert</b> - Inverser les couleurs</div>";
+        h += "<div><b>;blur / ;unblur</b> - Rendre l'écran flou</div>";
+        h += "<div><b>;glitch / ;unglitch</b> - Effet glitch sur l'argent</div>";
+        h += "<div><b>;disco / ;undisco</b> - Planète folle en rotation</div>";
+        h += "<div><b>;seisme</b> - Faire trembler l'écran pendant 5s</div>";
+        h += "<div><b>;crash</b> - Écran bleu Windows d'erreur fatal</div>";
         h += "<div><b>;kick</b> - Exclure instantanément de la session</div>";
         h += "<div><b>;ban</b> - Bannir définitivement (efface la sauvegarde)</div>";
-        h += "<div><b>;matrix / ;unmatrix</b> - Fond noir rétro hacker</div>";
-        h += "<div><b>;nuclear / ;unnuclear</b> - Déclencher l'alerte d'urgence rouge</div>";
-        h += "<div><b>;blackout / ;unblackout</b> - Éteindre ou rallumer complètement l'écran (Noir total)</div>";
-        h += "<div><b>;ghost / ;unghost</b> - Rendre la planète transparente/invisible</div>";
+        h += "<div><b>;matrix / ;unmatrix</b> - Fond rétro hacker</div>";
+        h += "<div><b>;nuclear / ;unnuclear</b> - Alerte d'urgence rouge</div>";
+        h += "<div><b>;blackout / ;unblackout</b> - Éteindre/rallumer l'écran (Noir total)</div>";
+        h += "<div><b>;ghost / ;unghost</b> - Rendre la planète transparente</div>";
     }
     log.innerHTML += h;
     log.scrollTop = log.scrollHeight;
