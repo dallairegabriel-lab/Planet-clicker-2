@@ -228,7 +228,7 @@ let eventMultiplier = 1; let eventTimer = null; let isSlowed = false; let isFroz
 // --- CONNEXION SOCKET.IO ---
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
-socket.on("majJoueursEn Ligne", (total) => { document.getElementById("onlineCount").textContent = total; });
+socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
 
 // Réception du leaderboard synchronisé globalement
 socket.on("miseAJourLeaderboard", (data) => {
@@ -355,7 +355,6 @@ function renderLB(){
         document.getElementById("leaderboard").innerHTML = "Aucun score pour le moment.";
         return;
     }
-    // On ne prend que les 10 premiers éléments reçus
     let top10 = listeLeaderboard.slice(0, 10);
     document.getElementById("leaderboard").innerHTML = top10.map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");
 }
@@ -364,7 +363,6 @@ function renderLB(){
 setInterval(() => {
     let name = player.value.trim();
     if(name && !isFrozen) {
-        // Envoi automatique du score en tâche de fond au serveur toutes les 2 secondes
         socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone });
     }
 }, 2000);
@@ -446,6 +444,22 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "clearlb": socket.emit("demandeEffacerClassement"); response = "🏆 Signal d'effacement LB envoyé au serveur."; break;
         case "giftdrone": let dronesOfferts = value || 5; s.drones += dronesOfferts; response = `🤖 Cadeau global de +${dronesOfferts} Drones !`; restartDroneInterval(); break;
         case "giftpower": let powerOffert = value || 100; s.power += powerOffert; response = `⚡ Cadeau global de +${powerOffert} Power !`; break;
+        case "unabuse":
+            // Désactiver la gravité
+            const compoGravite = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"];
+            compoGravite.forEach(id => { document.getElementById(id).style.animation = "none"; });
+            // Remettre la taille normale de la planète
+            document.getElementById("planet").style.transform = "scale(1)";
+            // Retirer les classes de filtres/effets
+            isFrozen = false; document.getElementById("planet").classList.remove("frozen");
+            isSlowed = false;
+            document.body.classList.remove("invert-colors");
+            document.getElementById("planet").classList.remove("disco-planet");
+            document.body.classList.remove("rainbow-bg");
+            document.body.classList.remove("matrix-bg");
+            document.getElementById("money").classList.remove("glitch-text");
+            response = "⚙️ NETTOYAGE : Tous les abus visuels ont été nettoyés !";
+            break;
     }
     if (response) {
         let lineO = document.createElement('div'); lineO.textContent = response; logO.appendChild(lineO); logO.scrollTop = logO.scrollHeight;
@@ -456,6 +470,7 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
 function showHelp(role) {
     const log = document.getElementById(`log-${role}`);
     log.innerHTML += "<div style='color:#55aaff;'>--- COMMANDES DISPONIBLES ---</div>";
+    log.innerHTML += "<div>;unabuse - Stopper et nettoyer tous les abus en cours</div>";
     log.innerHTML += "<div>;players - Voir le nombre de connectés</div>";
     log.innerHTML += "<div>;chat [texte] - Alerte message global</div>";
     log.innerHTML += "<div>;alien - Déclencher invasion d'OVNIs</div>";
