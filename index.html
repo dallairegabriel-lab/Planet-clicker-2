@@ -28,7 +28,7 @@ body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at ce
 button{border:none;border-radius:10px;padding:10px 14px;margin:4px;cursor:pointer;font-weight:bold;background:#fff;color:#000;transition:0.2s}
 button:hover{background:#52ffe0;transform:translateY(-2px)}
 .shop{text-align:center;margin-top:15px}
-.notice{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10}
+.notice{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10;transition: 0.3s;}
 .pop{position:fixed;font-weight:bold;pointer-events:none;animation:up .8s forwards;z-index:5}
 @keyframes up{to{opacity:0;transform:translateY(-80px)}}
 #leaderboard{max-height:180px;overflow:auto}
@@ -57,6 +57,27 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 @keyframes discoSpin {
   from { transform: rotate(0deg) scale(1.3); filter: hue-rotate(0deg); }
   to { transform: rotate(360deg) scale(1.3); filter: hue-rotate(360deg); }
+}
+.matrix-bg { background: #000 !important; animation: matrixColor 5s infinite; }
+@keyframes matrixColor { 0%, 100% { color: #0f0; } 50% { color: #00ff66; } }
+
+/* Alerte Chat Global */
+#global-chat-alert {
+    position: fixed;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #ff0055, #9900ff);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-size: 20px;
+    font-weight: bold;
+    box-shadow: 0 5px 25px rgba(255, 0, 85, 0.5);
+    z-index: 20000;
+    transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+    border: 2px solid #fff;
 }
 
 /* Design HD Admin Roblox */
@@ -161,6 +182,8 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <body>
 <div id="stars"></div><div id="stars2"></div>
 
+<div id="global-chat-alert">📢 Message de l'Admin !</div>
+
 <div class="top">
 <div class="card">💰 <span id="moneyTop">0</span></div>
 <div class="card">🌍 Zone <span id="zone">1</span></div>
@@ -244,8 +267,7 @@ let frenzyActive=false;
 let frenzyTimer=null;
 let droneInterval = null;
 
-// --- CONNEXION REZ-DE-CHAUSSÉE RENDER ---
-// Remplacer l'adresse ci-dessous par l'URL exacte de ton serveur Render !
+// --- CONNEXION RENDER ---
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
 socket.on("recevoirAdminAbuse", (data) => {
@@ -257,7 +279,7 @@ socket.on("recevoirAdminAbuse", (data) => {
     log.appendChild(systemLine);
     log.scrollTop = log.scrollHeight;
 
-    appliquerCommandeLocale(data.baseCmd, data.value);
+    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut);
 });
 
 function loadPlayerSave() {
@@ -549,6 +571,7 @@ function handleAdminAction() {
         let parts = commandClean.split(" ");
         let baseCmd = parts[0].toLowerCase();
         let value = Number(parts[1] || 1);
+        let texteBrut = commandClean.substring(parts[0].length).trim();
         let pseudoAdmin = document.getElementById("player").value.trim() || "Un Admin Mystère";
 
         if (baseCmd === "help") {
@@ -561,6 +584,7 @@ function handleAdminAction() {
             commande: inputValue,
             baseCmd: baseCmd,
             value: value,
+            texteBrut: texteBrut,
             auteur: pseudoAdmin
         });
 
@@ -573,12 +597,19 @@ function handleAdminAction() {
     }
 }
 
-// Les meilleures commandes d'Abuse amusantes exécutées en temps réel sur tous les écrans !
-function appliquerCommandeLocale(baseCmd, value) {
+// Les meilleures commandes d'Abuse exécutées en temps réel sur tous les écrans !
+function appliquerCommandeLocale(baseCmd, value, texteBrut) {
     const log = document.getElementById('commandLog');
     let response = "";
 
     switch(baseCmd) {
+        case "chat":
+            const alertBox = document.getElementById("global-chat-alert");
+            alertBox.textContent = "📢 ALERT ADMIN : " + (texteBrut || "Attention tout le monde !");
+            alertBox.style.top = "20px";
+            setTimeout(() => { alertBox.style.top = "-100px"; }, 6000);
+            response = `Message global affiché sur tous les écrans : "${texteBrut}"`;
+            break;
         case "rich":
             s.credits += 50000000;
             response = "💰 PLUIE DE DIAMANTS ! Tout le monde reçoit +50,000,000 crédits !";
@@ -606,6 +637,14 @@ function appliquerCommandeLocale(baseCmd, value) {
         case "unglitch":
             document.getElementById("money").classList.remove("glitch-text");
             response = "🛑 Interface réparée.";
+            break;
+        case "matrix":
+            document.body.classList.add("matrix-bg");
+            response = "📟 CODE MATRIX ACCESSED ! Tout devient noir et vert informatique !";
+            break;
+        case "unmatrix":
+            document.body.classList.remove("matrix-bg");
+            response = "🛑 Retour à la normale.";
             break;
         case "giant":
             document.getElementById("planet").style.transform = "scale(2.2)";
@@ -641,6 +680,12 @@ function appliquerCommandeLocale(baseCmd, value) {
             s.maxzone = Math.max(s.maxzone, s.zone);
             response = `🚀 TÉLÉPORTATION FORCEE ! Tout le monde voyage vers la Zone ${value}.`;
             break;
+        case "clear":
+            s.credits = 0;
+            s.power = 1;
+            s.drones = 0;
+            response = "💥 RENTRÉE ATMOSPHÉRIQUE ! Crash système : les scores de tout le monde tombent à zéro !";
+            break;
         default:
             response = "Commande inconnue ou non implémentée.";
     }
@@ -658,18 +703,21 @@ function executeAdminCommand(fullCommand) {
     let helpBox = document.createElement('div');
     helpBox.style.color = '#ffaa00';
     helpBox.innerHTML = 
-        "=== CATALOGUE D'ABUSE RÉSEAU (HD) ===<br>" +
+        "=== CATALOGUE DE TOUTES LES COMMANDES (HD) ===<br>" +
         "Toutes les commandes affectent TOUS LES JOUEURS connectés :<br>" +
+        "• <b>;chat [ton message]</b> - Envoie une alerte géante au milieu de l'écran.<br>" +
         "• <b>;rich</b> - Donne instantanément 50M de crédits à tout le monde.<br>" +
-        "• <b>;disco</b> / <b>;undisco</b> - Fait tourner la planète à fond la caisse.<br>" +
-        "• <b>;rainbow</b> / <b>;unrainbow</b> - Active un fond d'écran arc-en-ciel animé.<br>" +
-        "• <b>;glitch</b> / <b>;unglitch</b> - Fait trembler l'argent avec un effet rétro.<br>" +
-        "• <b>;giant</b> / <b>;mini</b> / <b>;normal</b> - Modifie la taille de la planète.<br>" +
         "• <b>;frenzy</b> - Déclenche le mode Frénésie global (gains x3).<br>" +
         "• <b>;boost</b> - Ajoute massivement +5k de puissance de clic.<br>" +
-        "• <b>;troll</b> - Change l'argent de tout le monde à 777.<br>" +
         "• <b>;shards [nb]</b> - Donne le nombre d'éclats de ton choix.<br>" +
-        "• <b>;zone [nb]</b> - Téléporte tous les joueurs à la zone choisie.";
+        "• <b>;zone [nb]</b> - Téléporte tous les joueurs à la zone choisie.<br>" +
+        "• <b>;clear</b> - Réinitialise les scores de tout le monde à zéro.<br>" +
+        "• <b>;troll</b> - Égalise l'argent de tout le monde à 777.<br>" +
+        "• <b>;disco</b> / <b>;undisco</b> - Fait tourner la planète à fond la caisse.<br>" +
+        "• <b>;rainbow</b> / <b>;unrainbow</b> - Active un fond d'écran arc-en-ciel animé.<br>" +
+        "• <b>;matrix</b> / <b>;unmatrix</b> - Transforme le jeu en mode terminal de hacker vert.<br>" +
+        "• <b>;glitch</b> / <b>;unglitch</b> - Fait trembler l'argent avec un effet rétro.<br>" +
+        "• <b>;giant</b> / <b>;mini</b> / <b>;normal</b> - Modifie la taille de la planète.";
     log.appendChild(helpBox);
     log.scrollTop = log.scrollHeight;
 }
