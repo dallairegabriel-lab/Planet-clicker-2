@@ -169,6 +169,15 @@ Zone Max: <span id="maxzone">1</span>
 <div id="leaderboard">Chargement...</div>
 </div>
 
+<div class="card" id="ui-chat" style="position: fixed; bottom: 10px; left: 10px; width: 280px; background: rgba(0,0,0,0.85); z-index: 9999;">
+    <h3 style="margin: 0 0 5px 0; font-size: 14px;">💬 Chat Global</h3>
+    <div id="chat-box" style="height: 130px; overflow-y: auto; font-size: 12px; margin-bottom: 5px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);"></div>
+    <div style="display: flex; gap: 5px;">
+        <input id="chat-input" placeholder="Message..." style="flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 6px; border-radius: 6px; font-size: 12px; outline: none;">
+        <button onclick="envoyerMessage()" style="padding: 4px 10px; margin: 0; font-size: 12px; border-radius: 6px;">Envoyer</button>
+    </div>
+</div>
+
 <div id="comet">☄️</div>
 
 <div id="panel-owner" class="roblox-panel">
@@ -230,19 +239,55 @@ const socket = io("https://galaxy-miner-server.onrender.com");
 
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
 
-// Réception du leaderboard synchronisé globalement
 socket.on("miseAJourLeaderboard", (data) => {
     listeLeaderboard = data || [];
     renderLB();
 });
 
+// --- RECEPTION DU CHAT ---
+socket.on("recevoirMessageGlobal", (data) => {
+    const chatBox = document.getElementById("chat-box");
+    const nvMessage = document.createElement("div");
+    nvMessage.innerHTML = `<strong style="color: #52ffe0;">${data.pseudo} :</strong> ${data.texte}`;
+    chatBox.appendChild(nvMessage);
+    chatBox.scrollTop = chatBox.scrollHeight;
+});
+
+function envoyerMessage() {
+    const input = document.getElementById("chat-input");
+    const texte = input.value.trim();
+    const pseudo = document.getElementById("player").value.trim() || "Anonyme";
+    if (texte !== "") {
+        socket.emit("envoyerMessageGlobal", { pseudo: pseudo, texte: texte });
+        input.value = "";
+    }
+}
+
+document.getElementById("chat-input").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") envoyerMessage();
+});
+
+// --- RECEPTION DES COMMANDES D'ADMINISTRATION CIBLÉES ---
 socket.on("recevoirAdminAbuse", (data) => {
-    const logOwner = document.getElementById('log-owner'); const logAdmin = document.getElementById('log-admin');
-    let msgText = `[🌍 ABUSE GLOBAL] (${data.role.toUpperCase()}) ${data.auteur}: ${data.commande}`;
-    let lineO = document.createElement('div'); lineO.style.color = '#ffaa00'; lineO.textContent = msgText; logOwner.appendChild(lineO); logOwner.scrollTop = logOwner.scrollHeight;
-    let lineA = document.createElement('div'); lineA.style.color = '#ffaa00'; lineA.textContent = msgText; logAdmin.appendChild(lineA); logAdmin.scrollTop = logAdmin.scrollHeight;
+    const monPseudo = document.getElementById("player").value.trim();
+    
+    // Si la commande cible quelqu'un en particulier, et que ce n'est pas moi, on l'ignore
+    if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase()) {
+        return; 
+    }
+
+    const logOwner = document.getElementById('log-owner'); 
+    const logAdmin = document.getElementById('log-admin');
+    let cibleTxt = data.cible ? `@${data.cible}` : "Tous";
+    let msgText = `[🌍 ABUSE] (${data.role.toUpperCase()}) ${data.auteur} -> ${cibleTxt}: ${data.commande}`;
+    
+    if(logOwner) { let lineO = document.createElement('div'); lineO.style.color = '#ffaa00'; lineO.textContent = msgText; logOwner.appendChild(lineO); logOwner.scrollTop = logOwner.scrollHeight; }
+    if(logAdmin) { let lineA = document.createElement('div'); lineA.style.color = '#ffaa00'; lineA.textContent = msgText; logAdmin.appendChild(lineA); logAdmin.scrollTop = logAdmin.scrollHeight; }
+    
     let clean = data.commande.startsWith(';') || data.commande.startsWith(':') ? data.commande.substring(1) : data.commande;
-    let parts = clean.split(" "); let arg2 = Number(parts[2] || 0);
+    let parts = clean.split(" "); 
+    let arg2 = Number(parts[2] || 0);
+    
     appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, arg2, data.totalConnectes, data.role);
 });
 
@@ -349,7 +394,6 @@ function restartDroneInterval(){
 setInterval(()=>{ save(); }, 15000);
 function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; msg(`🔁 Prestige +1 ! (+${gainedShards} Éclats)`); restartDroneInterval(); ui(); }else{ msg("⚠️ Atteins au moins la Zone 5 pour le Prestige !"); }}
 
-// Rendu graphique du Leaderboard - STRICTEMENT LIMITÉ AU TOP 10
 function renderLB(){ 
     if(listeLeaderboard.length === 0) {
         document.getElementById("leaderboard").innerHTML = "Aucun score pour le moment.";
@@ -359,7 +403,6 @@ function renderLB(){
     document.getElementById("leaderboard").innerHTML = top10.map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");
 }
 
-// --- ACTUALISATION DU LEADERBOARD TOUTES LES 2 SECONDES ---
 setInterval(() => {
     let name = player.value.trim();
     if(name && !isFrozen) {
@@ -391,15 +434,31 @@ function loginPanel(role) {
     } else { log.innerHTML += "<div style='color:red;'>[ERROR]: Code secret erroné.</div>"; inputField.value = ""; }
 }
 
+// --- LOGIQUE RUNCMD AVEC SÉPARATION DU PSEUDO CIBLE ---
 function runCmd(role) {
     const inputField = document.getElementById(`input-${role}`); let val = inputField.value.trim(); if(!val) return;
     let commandClean = val.startsWith(';') || val.startsWith(':') ? val.substring(1) : val;
-    let parts = commandClean.split(" "); let baseCmd = parts[0].toLowerCase(); let value = Number(parts[1] || 1); let texteBrut = commandClean.substring(parts[0].length).trim();
+    let parts = commandClean.split(" "); let baseCmd = parts[0].toLowerCase(); 
+    
+    let value = 1; let cible = ""; let texteBrut = commandClean.substring(parts[0].length).trim();
+    
+    if (parts[1]) {
+        if (!isNaN(parts[1])) {
+            value = Number(parts[1]);
+            cible = parts.slice(2).join(" ");
+        } else {
+            cible = parts.slice(1).join(" ");
+        }
+    }
+    
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
     if(baseCmd === "help") { showHelp(role); inputField.value = ""; return; }
+    
     const ownerOnly = ["clear", "clearlb", "event", "troll"];
     if (role === "admin" && ownerOnly.includes(baseCmd)) { let err = document.createElement('div'); err.style.color="red"; err.textContent="[PERM ERROR]: Réservé à l'Owner !"; document.getElementById('log-admin').appendChild(err); inputField.value=""; return; }
-    socket.emit("commandeAdmin", { commande: val, baseCmd, value, texteBrut, auteur: pseudo, role: role }); inputField.value = "";
+    
+    socket.emit("commandeAdmin", { commande: val, baseCmd, value, cible: cible.trim(), texteBrut, auteur: pseudo, role: role }); 
+    inputField.value = "";
 }
 
 function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes, roleEmis) {
@@ -442,15 +501,12 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "troll": s.credits = 777; response = "🎲 Score troll forcé à 777."; break;
         case "clear": s.credits = 0; s.power = 1; s.drones = 0; response = "💥 RESET TOTAL EFFECTUÉ !"; break;
         case "clearlb": socket.emit("demandeEffacerClassement"); response = "🏆 Signal d'effacement LB envoyé au serveur."; break;
-        case "giftdrone": let dronesOfferts = value || 5; s.drones += dronesOfferts; response = `🤖 Cadeau global de +${dronesOfferts} Drones !`; restartDroneInterval(); break;
-        case "giftpower": let powerOffert = value || 100; s.power += powerOffert; response = `⚡ Cadeau global de +${powerOffert} Power !`; break;
+        case "giftdrone": let dronesOfferts = value || 5; s.drones += dronesOfferts; response = `🤖 Cadeau de +${dronesOfferts} Drones !`; restartDroneInterval(); break;
+        case "giftpower": let powerOffert = value || 100; s.power += powerOffert; response = `⚡ Cadeau de +${powerOffert} Power !`; break;
         case "unabuse":
-            // Désactiver la gravité
             const compoGravite = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"];
             compoGravite.forEach(id => { document.getElementById(id).style.animation = "none"; });
-            // Remettre la taille normale de la planète
             document.getElementById("planet").style.transform = "scale(1)";
-            // Retirer les classes de filtres/effets
             isFrozen = false; document.getElementById("planet").classList.remove("frozen");
             isSlowed = false;
             document.body.classList.remove("invert-colors");
@@ -462,14 +518,14 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
             break;
     }
     if (response) {
-        let lineO = document.createElement('div'); lineO.textContent = response; logO.appendChild(lineO); logO.scrollTop = logO.scrollHeight;
-        let lineA = document.createElement('div'); lineA.textContent = response; logA.appendChild(lineA); logA.scrollTop = logA.scrollHeight;
+        if (logO) { let lineO = document.createElement('div'); lineO.textContent = response; logO.appendChild(lineO); logO.scrollTop = logO.scrollHeight; }
+        if (logA) { let lineA = document.createElement('div'); lineA.textContent = response; logA.appendChild(lineA); logA.scrollTop = logA.scrollHeight; }
     }
 }
 
 function showHelp(role) {
     const log = document.getElementById(`log-${role}`);
-    log.innerHTML += "<div style='color:#55aaff;'>--- COMMANDES DISPONIBLES ---</div>";
+    log.innerHTML += "<div style='color:#55aaff;'>--- COMMANDES DISPONIBLES (Ajouter le pseudo à la fin pour cibler) ---</div>";
     log.innerHTML += "<div>;unabuse - Stopper et nettoyer tous les abus en cours</div>";
     log.innerHTML += "<div>;players - Voir le nombre de connectés</div>";
     log.innerHTML += "<div>;chat [texte] - Alerte message global</div>";
@@ -500,7 +556,6 @@ function showHelp(role) {
     log.scrollTop = log.scrollHeight;
 }
 
-// Initialisation globale au chargement
 window.onload = () => { scheduleNextComet(); };
 </script>
 </body>
