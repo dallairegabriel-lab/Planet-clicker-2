@@ -267,7 +267,8 @@ let frenzyActive=false;
 let frenzyTimer=null;
 let droneInterval = null;
 
-// --- CONNEXION RENDER ---
+// --- CONFIGURATION DE LA CONNEXION RESEAU ---
+// Remplace cette adresse par le lien de ton serveur Render actuel !
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
 socket.on("recevoirAdminAbuse", (data) => {
