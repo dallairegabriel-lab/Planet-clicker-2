@@ -80,6 +80,26 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     border: 2px solid #fff;
 }
 
+/* Bannière d'Événement Cash Multiplié */
+#global-event-banner {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(90deg, #ffcc00, #ff0055, #ffcc00);
+    background-size: 200% auto;
+    animation: rainbowAnimation 3s linear infinite;
+    color: black;
+    text-align: center;
+    padding: 6px 0;
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 1px;
+    box-shadow: 0 3px 15px rgba(255, 204, 0, 0.4);
+    z-index: 15000;
+}
+
 /* Design HD Admin Roblox */
 #roblox-admin-panel {
     display: none; 
@@ -182,6 +202,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <body>
 <div id="stars"></div><div id="stars2"></div>
 
+<div id="global-event-banner">🔥 ÉVÉNEMENT CASH MULTIPLIÉ ACTIF !</div>
 <div id="global-chat-alert">📢 Message de l'Admin !</div>
 
 <div class="top">
@@ -267,8 +288,13 @@ let frenzyActive=false;
 let frenzyTimer=null;
 let droneInterval = null;
 
+// Variables pour les nouveaux buffs d'Abuse
+let eventMultiplier = 1;
+let eventTimer = null;
+let isSlowed = false;
+
 // --- CONFIGURATION DE LA CONNEXION RESEAU ---
-// Remplace cette adresse par le lien de ton serveur Render actuel !
+// Remplace cette adresse par le lien de ton serveur Render si nécessaire !
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
 socket.on("recevoirAdminAbuse", (data) => {
@@ -280,7 +306,12 @@ socket.on("recevoirAdminAbuse", (data) => {
     log.appendChild(systemLine);
     log.scrollTop = log.scrollHeight;
 
-    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut);
+    // Extraction des arguments complexes pour la commande ;event
+    let clean = data.commande.startsWith(';') || data.commande.startsWith(':') ? data.commande.substring(1) : data.commande;
+    let parts = clean.split(" ");
+    let arg2 = Number(parts[2] || 0); // Récupère le 3ème mot (les secondes pour ;event)
+
+    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, arg2);
 });
 
 function loadPlayerSave() {
@@ -362,6 +393,12 @@ document.getElementById("planet").onclick=(e)=>{
     let gain = baseGain * comboMultiplier;
 
     if(frenzyActive) gain *= 3;
+    
+    // Application de l'évenement Admin (x2, x5, x20...)
+    gain *= eventMultiplier;
+    
+    // Application du malus Admin slow (divisé par 4)
+    if(isSlowed) gain /= 4;
 
     let isCrit = Math.random() < (s.up2 * 0.02);
     if(isCrit) { gain *= 4; }
@@ -419,6 +456,11 @@ function restartDroneInterval(){
         if(s.drones > 0){
             let droneGain = s.drones*s.scanner*(1+s.prestige);
             if(frenzyActive) droneGain *= 3;
+            
+            // Multiplicateurs et malus Admin
+            droneGain *= eventMultiplier;
+            if(isSlowed) droneGain /= 4;
+            
             s.credits+=droneGain;
             document.getElementById("money").textContent=Math.floor(s.credits);
             document.getElementById("moneyTop").textContent=Math.floor(s.credits);
@@ -577,6 +619,7 @@ function handleAdminAction() {
 
         if (baseCmd === "help") {
             executeAdminCommand(inputValue);
+            inputField.value = "";
             return;
         }
 
@@ -599,11 +642,48 @@ function handleAdminAction() {
 }
 
 // Les meilleures commandes d'Abuse exécutées en temps réel sur tous les écrans !
-function appliquerCommandeLocale(baseCmd, value, texteBrut) {
+function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2) {
     const log = document.getElementById('commandLog');
     let response = "";
 
     switch(baseCmd) {
+        case "event":
+            let multi = value || 2;
+            let duree = arg2 || 30; // 30 secondes par défaut si non précisé
+            eventMultiplier = multi;
+            
+            const banner = document.getElementById("global-event-banner");
+            banner.textContent = `🔥 ÉVÉNEMENT GLOBAL : TOUS LES GAINS SONT MULTIPLIÉS PAR x${multi} PENDANT ${duree}s ! 🔥`;
+            banner.style.display = "block";
+            
+            clearTimeout(eventTimer);
+            eventTimer = setTimeout(() => {
+                eventMultiplier = 1;
+                banner.style.display = "none";
+                msg("L'événement multiplicateur est terminé.");
+            }, duree * 1000);
+            
+            response = `Événement lancé : Multiplicateur x${multi} activé pour ${duree} secondes !`;
+            break;
+        case "slow":
+            isSlowed = true;
+            response = "🐢 ENLISEMENT ! La vitesse de minage de tout le monde est divisée par 4 !";
+            break;
+        case "unslow":
+            isSlowed = false;
+            response = "🛑 Vitesse normale rétablie.";
+            break;
+        case "unabuse":
+            // Désactive TOUS les effets d'un coup
+            eventMultiplier = 1;
+            document.getElementById("global-event-banner").style.display = "none";
+            isSlowed = false;
+            document.getElementById("planet").classList.remove("disco-planet");
+            document.body.classList.remove("rainbow-bg", "matrix-bg");
+            document.getElementById("money").classList.remove("glitch-text");
+            document.getElementById("planet").style.transform = "scale(1)";
+            response = "🛡️ PROTECTION DE LA MATRICE : Tous les effets d'abus ont été annulés !";
+            break;
         case "chat":
             const alertBox = document.getElementById("global-chat-alert");
             alertBox.textContent = "📢 ALERT ADMIN : " + (texteBrut || "Attention tout le monde !");
@@ -653,7 +733,7 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut) {
             break;
         case "mini":
             document.getElementById("planet").style.transform = "scale(0.3)";
-            response = "🐜 PLANÈTE ATOME ! La planète devient minuscule et presque impossible à rater !";
+            response = "🐜 PLANÈTE ATOME ! La planète devient minuscule !";
             break;
         case "normal":
             document.getElementById("planet").style.transform = "scale(1)";
@@ -661,7 +741,7 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut) {
             break;
         case "frenzy":
             triggerFrenzy();
-            response = "☄️ HYPER-FRÉNÉSIE ! L'admin force l'activation du mode frénésie (x3) pour tout le monde !";
+            response = "☄️ HYPER-FRÉNÉSIE ! L'admin active le mode frénésie (x3) pour tout le monde !";
             break;
         case "boost":
             s.power += 5000;
@@ -685,7 +765,7 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut) {
             s.credits = 0;
             s.power = 1;
             s.drones = 0;
-            response = "💥 RENTRÉE ATMOSPHÉRIQUE ! Crash système : les scores de tout le monde tombent à zéro !";
+            response = "💥 RENTRÉE ATMOSPHÉRIQUE ! Crash système : les scores tombent à zéro !";
             break;
         default:
             response = "Commande inconnue ou non implémentée.";
@@ -706,6 +786,9 @@ function executeAdminCommand(fullCommand) {
     helpBox.innerHTML = 
         "=== CATALOGUE DE TOUTES LES COMMANDES (HD) ===<br>" +
         "Toutes les commandes affectent TOUS LES JOUEURS connectés :<br>" +
+        "• <b>;event [multi] [secondes]</b> - Ex: <i>;event 20 60</i> (Gains x20 pendant 60s).<br>" +
+        "• <b>;unabuse</b> - Arrête instantanément toutes les folies visuelles/boosts/malus.<br>" +
+        "• <b>;slow</b> / <b>;unslow</b> - Divise ou rétablit la vitesse de gains par 4.<br>" +
         "• <b>;chat [ton message]</b> - Envoie une alerte géante au milieu de l'écran.<br>" +
         "• <b>;rich</b> - Donne instantanément 50M de crédits à tout le monde.<br>" +
         "• <b>;frenzy</b> - Déclenche le mode Frénésie global (gains x3).<br>" +
@@ -716,8 +799,8 @@ function executeAdminCommand(fullCommand) {
         "• <b>;troll</b> - Égalise l'argent de tout le monde à 777.<br>" +
         "• <b>;disco</b> / <b>;undisco</b> - Fait tourner la planète à fond la caisse.<br>" +
         "• <b>;rainbow</b> / <b>;unrainbow</b> - Active un fond d'écran arc-en-ciel animé.<br>" +
-        "• <b>;matrix</b> / <b>;unmatrix</b> - Transforme le jeu en mode terminal de hacker vert.<br>" +
-        "• <b>;glitch</b> / <b>;unglitch</b> - Fait trembler l'argent avec un effet rétro.<br>" +
+        "• <b>;matrix</b> / <b>;unmatrix</b> - Mode hacker vert.<br>" +
+        "• <b>;glitch</b> / <b>;unglitch</b> - Effet de texte qui tremble.<br>" +
         "• <b>;giant</b> / <b>;mini</b> / <b>;normal</b> - Modifie la taille de la planète.";
     log.appendChild(helpBox);
     log.scrollTop = log.scrollHeight;
