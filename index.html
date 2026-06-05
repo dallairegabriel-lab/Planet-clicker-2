@@ -539,11 +539,17 @@ function runCmd(role) {
         return;
     }
     
-    let target = parts[1] || "";
-    let valStr = parts[2] || "0";
-    let value = Number(valStr);
-    let texteBrut = parts.slice(2).join(" ");
-    let monPseudo = document.getElementById("player").value.trim();
+   let target = parts[1] || "";
+let valStr = parts[2] || "0";
+let value = Number(valStr);
+
+// ✨ CORRECTION : Si c'est la commande chat, on prend TOUT le texte après ";chat "
+let texteBrut = "";
+if (baseCmd === "chat") {
+    texteBrut = cleanCmd.substring(5).trim(); // Enlève "chat " et garde TOUT le reste
+} else {
+    texteBrut = parts.slice(2).join(" ");
+}
     
     logBox.innerHTML += `<div style="color:#aaa;">&gt; ${fullCmd}</div>`;
     
