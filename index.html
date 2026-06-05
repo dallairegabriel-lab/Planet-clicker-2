@@ -54,21 +54,14 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .matrix-bg { background: #000 !important; color: #00ff66 !important; font-family: monospace !important; }
 .invert-colors { filter: invert(1) hue-rotate(180deg) !important; }
 .frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
-@keyframes floatGravity {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-15px) rotate(3deg); }
-}
-.ufo { position: fixed; font-size: 50px; z-index: 18000; pointer-events: none; transition: transform 4s linear; }
+.seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
+@keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
+.blur-active { filter: blur(8px) !important; }
+.blackout-active { filter: brightness(0) !important; background: black !important; }
 .flash-mode { animation: flashAnim 0.1s steps(2) infinite !important; }
 @keyframes flashAnim { from { background: #000; } to { background: #fff; } }
 .nuclear-mode { animation: alertAnim 0.8s ease-in-out infinite alternate !important; filter: saturate(2) contrast(1.5) !important; }
 @keyframes alertAnim { from { background-color: #101a3a; } to { background-color: #660000; } }
-
-/* --- EFFETS VISUELS SUPPLÉMENTAIRES --- */
-@keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
-.seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
-.blur-active { filter: blur(8px) !important; }
-.blackout-active { filter: brightness(0) !important; background: black !important; }
 
 #fake-crash-screen, #ban-screen, #kick-screen {
     display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; user-select: none;
@@ -91,8 +84,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     padding: 6px 0; font-weight: bold; font-size: 16px; letter-spacing: 1px;
     box-shadow: 0 3px 15px rgba(255, 204, 0, 0.4); z-index: 15000;
 }
-
-/* --- BARRE DE BOOST RAINBOW --- */
 #owner-rainbow-bar {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 6px;
     background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet, red);
@@ -125,13 +116,13 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div id="stars"></div><div id="stars2"></div>
 
 <div id="global-event-banner">🔥 ÉVÉNEMENT CASH MULTIPLIÉ ACTIF !</div>
-<div id="global-chat-alert">📢 Message de l'Admin !</div>
+<div id="global-chat-alert">📢 Message Système !</div>
 
 <div id="fake-crash-screen" onclick="this.style.display='none'">
     <span style="font-size: 100px;">:(</span>
     <h2>Votre PC a rencontré un problème et doit redémarrer.</h2>
     <p>Nous collectons simplement des informations relatives aux erreurs du jeu Galaxy Miner, puis nous allons redémarrer pour vous.</p>
-    <p style="font-size: 14px; margin-top: 50px; color: rgba(255,255,255,0.7);">Code d'arrêt : GALAXY_MINER_ADMIN_ABUSE<br>Cliquez n'importe où pour forcer le redémarrage du jeu.</p>
+    <p style="font-size: 14px; margin-top: 50px; color: rgba(255,255,255,0.7);">Code d'arrêt : GALAXY_MINER_CREATOR_ABUSE<br>Cliquez n'importe où pour forcer le redémarrage du jeu.</p>
 </div>
 
 <div id="ban-screen">
@@ -266,11 +257,7 @@ let adminBoostMultiplier = 1; let localBoostTimer = null;
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
-
-socket.on("miseAJourLeaderboard", (data) => {
-    listeLeaderboard = data || [];
-    renderLB();
-});
+socket.on("miseAJourLeaderboard", (data) => { listeLeaderboard = data || []; renderLB(); });
 
 socket.on("recevoirMessageGlobal", (data) => {
     const chatBox = document.getElementById("chat-box");
@@ -291,15 +278,14 @@ function envoyerMessage() {
     }
 }
 
-document.getElementById("chat-input").addEventListener("keydown", function(e) {
-    if (e.key === "Enter") envoyerMessage();
-});
+document.getElementById("chat-input").addEventListener("keydown", function(e) { if (e.key === "Enter") envoyerMessage(); });
 
 socket.on("recevoirAdminAbuse", (data) => {
     let monPseudo = document.getElementById("player").value.trim();
     monPseudo = monPseudo.replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, ''); 
 
-    if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase() && data.baseCmd !== "boost" && data.baseCmd !== "unabuse") {
+    const cmdGlobales = ["boost", "unabuse", "chat", "seisme", "rainbow", "flash", "nuclear", "blur", "blackout", "matrix", "invert", "frenzyall"];
+    if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase() && !cmdGlobales.includes(data.baseCmd)) {
         return; 
     }
 
@@ -322,37 +308,20 @@ function loadPlayerSave() {
     let inputEl = document.getElementById("player");
     inputEl.value = inputEl.value.replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, ''); 
     let name = inputEl.value.trim();
-
     if(!name){ s=JSON.parse(JSON.stringify(defaultState)); uiWithoutSaving(); restartDroneInterval(); return; }
     s=JSON.parse(JSON.stringify(defaultState));
     try{
         let loaded=JSON.parse(localStorage.getItem("gmv3save_"+name)||"{}");
         Object.assign(s,loaded);
-        if(loaded.lastSaveTime && s.drones > 0){
-            let elapsedSec = Math.floor((Date.now() - loaded.lastSaveTime) / 1000);
-            if(elapsedSec > 10){
-                let maxOfflineSec = 4 * 60 * 60; if(elapsedSec > maxOfflineSec) elapsedSec = maxOfflineSec;
-                let droneSpeed = 1000 / (1 + s.up1);
-                let intervals = Math.floor((elapsedSec * 1000) / droneSpeed);
-                let offlineGain = intervals * s.drones * s.scanner * (1 + s.prestige);
-                s.credits += offlineGain;
-                setTimeout(() => msg(`💤 Absent ! Tes drones ont miné +${Math.floor(offlineGain)} 💰`), 1000);
-            }
-        }
     }catch(e){}
     restartDroneInterval(); ui();
 }
-
 function changePlayer() { loadPlayerSave(); }
-
 function save(){ 
     let name=document.getElementById("player").value.trim(); 
     name = name.replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, '');
-    if(!name) return; 
-    s.lastSaveTime = Date.now(); 
-    localStorage.setItem("gmv3save_"+name,JSON.stringify(s)); 
+    if(!name) return; s.lastSaveTime = Date.now(); localStorage.setItem("gmv3save_"+name,JSON.stringify(s)); 
 }
-
 function msg(t){document.getElementById("notice").textContent=t;}
 function ui(){ updateUIElements(); save(); }
 function uiWithoutSaving(){ updateUIElements(); }
@@ -366,9 +335,6 @@ function updateUIElements(){
     document.getElementById("maxzone").textContent=s.maxzone; document.getElementById("pc").textContent=Math.floor(s.pCost);
     document.getElementById("dc").textContent=Math.floor(s.dCost); document.getElementById("sc").textContent=Math.floor(s.sCost);
     document.getElementById("up1Lvl").textContent=s.up1; document.getElementById("up2Lvl").textContent=s.up2;
-    document.getElementById("pIcon").textContent = s.power < 10 ? "⚡" : (s.power < 30 ? "⚙️" : "💎");
-    document.getElementById("dIcon").textContent = s.drones < 10 ? "🤖" : (s.drones < 30 ? "🛸" : "🛸⚙️");
-    document.getElementById("sIcon").textContent = s.scanner < 10 ? "🔭" : (s.scanner < 25 ? "📡" : "👁️");
     const p=planets[(s.zone-1)%planets.length]; document.getElementById("planet").textContent=p.emoji; document.getElementById("planetName").textContent=p.name;
     let req = 1500 * Math.pow(s.zone,3); let pct = Math.min(100, (s.credits / req) * 100); document.getElementById("progress-bar").style.width = pct + "%";
 }
@@ -380,41 +346,22 @@ document.getElementById("planet").onclick=(e)=>{
     let gain = baseGain * comboMultiplier;
     if(frenzyActive) gain *= 3; gain *= eventMultiplier; gain *= adminBoostMultiplier; if(isSlowed) gain /= 4;
     let isCrit = Math.random() < (s.up2 * 0.02); if(isCrit) { gain *= 4; }
-    let roll=Math.random(); let color="#52ffe0";
-    if(roll<0.01){gain*=25;color="gold";msg("🌟 Légendaire !");} else if(roll<0.05){gain*=5;color="violet";}
-    if(isCrit && roll>=0.05) { color="#ff3300"; msg("🎯 CRITIQUE !"); }
     s.credits+=gain; combo++;
     document.getElementById("combo-display").textContent = `Combo x${comboMultiplier.toFixed(2)} (${combo})`;
     clearTimeout(comboTimer); comboTimer = setTimeout(() => { combo = 0; document.getElementById("combo-display").textContent = ""; }, 1500);
     let pl = document.getElementById("planet"); pl.classList.remove("shake"); void pl.offsetWidth; pl.classList.add("shake"); setTimeout(() => pl.classList.remove("shake"), 100);
-    let d=document.createElement("div"); d.className="pop"; d.style.left=e.clientX+"px"; d.style.top=e.clientY+"px"; d.style.color=color; d.style.fontSize = isCrit ? "28px" : "20px"; d.textContent="+"+Math.floor(gain); document.body.appendChild(d); setTimeout(()=>d.remove(),800);
+    let d=document.createElement("div"); d.className="pop"; d.style.left=e.clientX+"px"; d.style.top=e.clientY+"px"; d.style.color=isCrit?"#ff3300":"#52ffe0"; d.textContent="+"+Math.floor(gain); document.body.appendChild(d); setTimeout(()=>d.remove(),800);
     if(s.credits > 1500 * Math.pow(s.zone,3)){ s.zone++; s.maxzone=Math.max(s.maxzone,s.zone); msg("🚀 Nouvelle zone "+s.zone); }
     ui();
 };
 
 function buyPower(){ if(isFrozen) return; if(s.credits>=s.pCost){s.credits-=s.pCost;s.power++;s.pCost=Math.floor(s.pCost*1.15);ui();}}
-function buyMaxPower(){
-    if(isFrozen) return;
-    let achetés = 0;
-    while(s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost = Math.floor(s.pCost * 1.15); achetés++; }
-    if(achetés > 0) { msg(`⚡ Drill MAX : +${achetés} Niveaux achetés !`); ui(); }
-}
+function buyMaxPower(){ if(isFrozen) return; while(s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost = Math.floor(s.pCost * 1.15); } ui(); }
 function buyDrone(){ if(isFrozen) return; if(s.credits>=s.dCost){s.credits-=s.dCost;s.drones++;s.dCost=Math.floor(s.dCost*1.18);ui();restartDroneInterval();}}
-function buyMaxDrone(){
-    if(isFrozen) return;
-    let achetés = 0;
-    while(s.credits >= s.dCost) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); achetés++; }
-    if(achetés > 0) { msg(`🤖 Drones MAX : +${achetés} Drones déployés !`); restartDroneInterval(); ui(); }
-}
+function buyMaxDrone(){ if(isFrozen) return; while(s.credits >= s.dCost) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); } restartDroneInterval(); ui(); }
 function buyScanner(){ if(isFrozen) return; if(s.credits>=s.sCost){s.credits-=s.sCost;s.scanner++;s.sCost=Math.floor(s.sCost*1.2);ui();}}
-function buyMaxScanner(){
-    if(isFrozen) return;
-    let achetés = 0;
-    while(s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost = Math.floor(s.sCost * 1.2); achetés++; }
-    if(achetés > 0) { msg(`🔭 Scanner MAX : +${achetés} Optiques ajoutées !`); ui(); }
-}
-
-function buyPrestigeUpgrade(type){ if(isFrozen) return; if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); msg("🤖 Drones accélérés !"); } if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); msg("🎯 Chances critiques augmentées !"); }}
+function buyMaxScanner(){ if(isFrozen) return; while(s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost = Math.floor(s.sCost * 1.2); } ui(); }
+function buyPrestigeUpgrade(type){ if(isFrozen) return; if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); } if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); }}
 
 function restartDroneInterval(){
     clearInterval(droneInterval);
@@ -425,53 +372,34 @@ function restartDroneInterval(){
             let droneGain = s.drones*s.scanner*(1+s.prestige);
             if(frenzyActive) droneGain *= 3; droneGain *= eventMultiplier; droneGain *= adminBoostMultiplier; if(isSlowed) droneGain /= 4;
             s.credits+=droneGain; document.getElementById("money").textContent=Math.floor(s.credits); document.getElementById("moneyTop").textContent=Math.floor(s.credits);
-            let req = 1500 * Math.pow(s.zone,3); let pct = Math.min(100, (s.credits / req) * 100); document.getElementById("progress-bar").style.width = pct + "%";
         }
     }, speed);
 }
 
-setInterval(()=>{ save(); }, 15000);
-function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; msg(`🔁 Prestige +1 ! (+${gainedShards} Éclats)`); restartDroneInterval(); ui(); }else{ msg("⚠️ Atteins au moins la Zone 5 pour le Prestige !"); }}
-
-function renderLB(){ 
-    if(listeLeaderboard.length === 0) {
-        document.getElementById("leaderboard").innerHTML = "Aucun score pour le moment.";
-        return;
-    }
-    let top10 = listeLeaderboard.slice(0, 10);
-    document.getElementById("leaderboard").innerHTML = top10.map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");
-}
+function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; restartDroneInterval(); ui(); }else{ msg("⚠️ Atteins au moins la Zone 5 !"); }}
+function renderLB(){ document.getElementById("leaderboard").innerHTML = listeLeaderboard.slice(0, 10).map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");}
 
 setInterval(() => {
-    let name = document.getElementById("player").value.trim();
-    name = name.replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, '');
-    if(name && !isFrozen) {
-        socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone });
-    }
+    let name = document.getElementById("player").value.trim().replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, '');
+    if(name && !isFrozen) socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone });
 }, 2000);
 
-function spawnComet(){
-    let c = document.getElementById("comet"); let x = -50; let y = Math.random() * (window.innerHeight - 100) + 50; c.style.left = x + "px"; c.style.top = y + "px"; c.style.display = "block";
-    let anim = setInterval(()=>{ x += 6; y += 2; c.style.left = x + "px"; c.style.top = y + "px"; if(x > window.innerWidth + 50){ clearInterval(anim); c.style.display = "none"; scheduleNextComet(); } }, 20);
-    c.onclick = () => { clearInterval(anim); c.style.display = "none"; triggerFrenzy(); scheduleNextComet(); };
-}
-function scheduleNextComet(){ setTimeout(spawnComet, Math.random() * 30000 + 30000); }
-function triggerFrenzy(){ frenzyActive = true; msg("☄️ MODE FRÉNÉSIE ACTIVÉ (GAINS x3) ! ☄️"); document.body.classList.add("frenzy-active"); clearTimeout(frenzyTimer); frenzyTimer = setTimeout(() => { frenzyActive = false; document.body.classList.remove("frenzy-active"); msg("La frénésie est terminée."); }, 10000); }
+function triggerFrenzy(){ frenzyActive = true; document.body.classList.add("frenzy-active"); clearTimeout(frenzyTimer); frenzyTimer = setTimeout(() => { frenzyActive = false; document.body.classList.remove("frenzy-active"); }, 10000); }
 
-// --- AUTHENTIFICATION ---
+// --- LOGIQUE COMMANDE AVANCÉE AVEC RE-VÉRIFICATION DE RÔLE ---
 let auth = { owner: false, admin: false };
-window.addEventListener('keydown', function(e) { if (document.activeElement.tagName === 'INPUT') return; if (e.key === '1') { togglePanel('owner'); } if (e.key === '2') { togglePanel('admin'); } });
+window.addEventListener('keydown', function(e) { if (document.activeElement.tagName === 'INPUT') return; if (e.key === '1') togglePanel('owner'); if (e.key === '2') togglePanel('admin'); });
 function togglePanel(role) { const p = document.getElementById(`panel-${role}`); p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'block' : 'none'; }
 
 function loginPanel(role) {
     const inputField = document.getElementById(`input-${role}`); const log = document.getElementById(`log-${role}`); let val = inputField.value.trim();
     let mdpCorrect = (role === 'owner' && val === "admin123") || (role === 'admin' && val === "1234");
     if (mdpCorrect) {
-        auth[role] = true; document.getElementById(`${role}Header`).textContent = role === 'owner' ? "👑 OWNER SUPRÊME EXECUTOR" : "🛡️ MODÉRATION ADM EXEC";
-        document.getElementById(`${role}Prefix`).textContent = ";"; inputField.value = ""; inputField.type = "text"; inputField.placeholder = "Exécuter un abus... (;help)";
-        log.innerHTML = `<div style='color: #26ff63;'>[SYSTEM]: Mode ${role.toUpperCase()} validé. Tapez ;help.</div>`;
+        auth[role] = true; document.getElementById(`${role}Header`).textContent = role === 'owner' ? "👑 OWNER SUPRÊME EXEC" : "🛡️ MODÉRATION ADM EXEC";
+        document.getElementById(`${role}Prefix`).textContent = ";"; inputField.value = ""; inputField.type = "text"; inputField.placeholder = "Taper une commande... (;help)";
+        log.innerHTML = `<div style='color: #26ff63;'>[SYSTEM]: Mode ${role.toUpperCase()} connecté.</div>`;
         inputField.removeAttribute("onkeydown"); inputField.addEventListener('keydown', function(e) { if (e.key === 'Enter') runCmd(role); });
-    } else { log.innerHTML += "<div style='color:red;'>[ERROR]: Code secret erroné.</div>"; inputField.value = ""; }
+    } else { log.innerHTML += "<div style='color:red;'>[ERROR]: Mot de passe incorrect.</div>"; inputField.value = ""; }
 }
 
 function runCmd(role) {
@@ -479,39 +407,23 @@ function runCmd(role) {
     let commandClean = val.startsWith(';') || val.startsWith(':') ? val.substring(1) : val;
     let parts = commandClean.split(" "); let baseCmd = parts[0].toLowerCase(); 
     
-    let value = 1; 
-    let cible = ""; 
-    let texteBrut = commandClean.substring(parts[0].length).trim();
-    
-    if (baseCmd === "chat") {
-        let pseudo = document.getElementById("player").value.trim() || "Anonyme";
-        socket.emit("commandeAdmin", { commande: val, baseCmd: baseCmd, value: 1, cible: "", texteBrut: texteBrut, auteur: pseudo, role: role }); 
-        inputField.value = "";
-        return;
-    }
-    
+    let value = 1; let cible = ""; let texteBrut = commandClean.substring(parts[0].length).trim();
     if (parts[1]) {
-        if (!isNaN(parts[1])) {
-            value = Number(parts[1]);
-            cible = parts.slice(2).join(" ");
-            texteBrut = parts.slice(2).join(" ");
-        } else {
-            cible = parts.slice(1).join(" ");
-        }
+        if (!isNaN(parts[1])) { value = Number(parts[1]); cible = parts.slice(2).join(" "); texteBrut = parts.slice(2).join(" "); }
+        else { cible = parts.slice(1).join(" "); texteBrut = parts.slice(1).join(" "); }
     }
     
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
     if(baseCmd === "help") { showHelp(role); inputField.value = ""; return; }
     
-    // --- FILTRE STRICT DES PERMISSIONS ---
-    const adminAllowed = ["help", "players", "clear", "clearlb", "chat"];
-    if (role === "admin" && !adminAllowed.includes(baseCmd)) { 
-        let err = document.createElement('div'); 
-        err.style.color="red"; 
-        err.textContent=`[PERM ERROR]: La commande ';${baseCmd}' est verrouillée pour les Admins. Seul l'Owner peut l'exécuter.`; 
-        document.getElementById('log-admin').appendChild(err); 
-        inputField.value=""; 
-        return; 
+    // --- LISTE DE COMMANDE INTERDITES AUX SIMPLE ADMINS (RESERVED OWNER) ---
+    const listExclusiveOwner = ["ban", "crash", "givemoney", "setmoney", "giveshards", "setzone", "setprestige", "speedhack", "frenzyall", "clear", "boost", "unabuse"];
+    
+    // Si l'utilisateur est connecté en Admin (et PAS en Owner) et tente d'utiliser une commande exclusive
+    if (role === "admin" && listExclusiveOwner.includes(baseCmd)) { 
+        let err = document.createElement('div'); err.style.color="red"; 
+        err.textContent=`[PERM ERROR]: La commande ';${baseCmd}' requiert impérativement le rôle OWNER.`; 
+        document.getElementById('log-admin').appendChild(err); inputField.value=""; return; 
     }
     
     socket.emit("commandeAdmin", { commande: val, baseCmd: baseCmd, value: value, cible: cible.trim(), texteBrut: texteBrut, auteur: pseudo, role: role }); 
@@ -520,70 +432,94 @@ function runCmd(role) {
 
 function showHelp(role) {
     const log = document.getElementById(`log-${role}`);
-    log.innerHTML += `<div style="color:#fff;margin-top:5px;">--- COMMANDES DISPONIBLES ---</div>`;
-    log.innerHTML += `<div>;chat [msg] : Alerte générale écran</div>`;
-    log.innerHTML += `<div>;players : Affiche le nombre de joueurs en ligne</div>`;
+    log.innerHTML = `<div style="color:#fff;margin-top:5px;">--- CATALOGUE DE COMMANDES RECONNU (<span style="color:#55aaff;">ADMIN</span> + <span style="color:#ff5555;">OWNER</span>) ---</div>`;
+    log.innerHTML += `<div><b>;chat [msg]</b> : Notification globale en haut d'écran</div>`;
+    log.innerHTML += `<div><b>;msg [pseudo] [texte]</b> : Alerte pop-up sur le jeu de la cible</div>`;
+    log.innerHTML += `<div><b>;players</b> : Indique les connexions actuelles</div>`;
+    log.innerHTML += `<div><b>;kick [pseudo]</b> : Expulse temporairement l'utilisateur</div>`;
+    log.innerHTML += `<div><b>;freeze [pseudo]</b> : Gèle l'infrastructure (clics & drones arrêtés)</div>`;
+    log.innerHTML += `<div><b>;unfreeze [pseudo]</b> : Restaure l'infrastructure gelée</div>`;
+    log.innerHTML += `<div><b>;slow [pseudo]</b> : Divise par 4 la productivité</div>`;
+    log.innerHTML += `<div><b>;unslow [pseudo]</b> : Restaure la vitesse standard</div>`;
+    log.innerHTML += `<div><b>;seisme / ;blur / ;blackout</b> : Déclencheurs de filtres d'ambiance de zone</div>`;
+    log.innerHTML += `<div><b>;rainbow / ;flash / ;nuclear / ;matrix / ;invert</b> : Thèmes visuels globaux</div>`;
+    
+    // L'Owner voit s'afficher la liste complète des privilèges du Créateur
     if(role === 'owner') {
-        log.innerHTML += `<div style="color:#ff5555;">;boost [xX] [minutes] : Lance un boost global avec barre rainbow (Ex: ;boost 10 5)</div>`;
-        log.innerHTML += `<div style="color:#ff5555;">;unabuse : Annule instantanément tous les abus et les boosts</div>`;
+        log.innerHTML += `<div style="color:#ff5555;margin-top:5px;">--- PRIVILÈGES EXCLUSIFS DE L'OWNER ---</div>`;
+        log.innerHTML += `<div><b>;ban [pseudo]</b> : Verrouillage et suppression définitive de sauvegarde</div>`;
+        log.innerHTML += `<div><b>;crash [pseudo]</b> : Provoque un plantage système (Faux écran bleu Windows)</div>`;
+        log.innerHTML += `<div><b>;givemoney [pseudo] [valeur]</b> : Injecte des crédits</div>`;
+        log.innerHTML += `<div><b>;setmoney [pseudo] [valeur]</b> : Écrase le montant des crédits</div>`;
+        log.innerHTML += `<div><b>;giveshards [pseudo] [valeur]</b> : Ajoute des fragments de prestige</div>`;
+        log.innerHTML += `<div><b>;setzone [pseudo] [niveau]</b> : Modifie le secteur de la cible</div>`;
+        log.innerHTML += `<div><b>;setprestige [pseudo] [niveau]</b> : Modifie le rang cosmique</div>`;
+        log.innerHTML += `<div><b>;speedhack [pseudo]</b> : Multiplie par 5 la cadence des drones de la cible</div>`;
+        log.innerHTML += `<div><b>;frenzyall</b> : Active la Frénésie x3 mondiale immédiate</div>`;
+        log.innerHTML += `<div><b>;clear [pseudo]</b> : Wipe complet de la progression locale</div>`;
+        log.innerHTML += `<div><b>;boost [multiplicateur] [temps en min]</b> : Déploie un multiplicateur de gains</div>`;
+        log.innerHTML += `<div><b>;unabuse</b> : Supprime instantanément toute altération ou boost sur le serveur</div>`;
     }
     log.scrollTop = log.scrollHeight;
 }
 
 function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes, roleEmis) {
+    let argumentsCmd = texteBrut ? texteBrut.split(" ") : [];
+    
     switch(baseCmd) {
-        case "players": msg(`📊 RESEAU : ${totalConnectes || 1} joueurs.`); break;
+        case "players": msg(`📊 RESEAU : ${totalConnectes || 1} joueurs connectés.`); break;
         case "chat":
             const alertBox = document.getElementById("global-chat-alert"); 
-            if (alertBox) {
-                alertBox.textContent = `📢 [${roleEmis.toUpperCase()}] : ${texteBrut || "Attention !"}`;
-                alertBox.style.top = "20px"; 
-                if (window.chatAlertTimer) clearTimeout(window.chatAlertTimer);
-                window.chatAlertTimer = setTimeout(() => { alertBox.style.top = "-100px"; }, 6000); 
-            }
+            if (alertBox) { alertBox.textContent = `📢 [${roleEmis.toUpperCase()}] : ${texteBrut}`; alertBox.style.top = "20px"; setTimeout(() => { alertBox.style.top = "-100px"; }, 6000); }
             break;
-        case "alien":
-            for(let i=0; i<5; i++){ let ufo = document.createElement('div'); ufo.className = 'ufo'; ufo.textContent = '🛸'; ufo.style.top = Math.random() * window.innerHeight + 'px'; ufo.style.left = '-60px'; document.body.appendChild(ufo); setTimeout(() => { ufo.style.transform = `translateX(${window.innerWidth + 100}px) translateY(${Math.random()*100 - 50}px)`; }, 100); setTimeout(() => ufo.remove(), 4200); } break;
-        case "gravity": const el = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"]; el.forEach(id => { document.getElementById(id).style.animation = "floatGravity 6s ease-in-out infinite"; }); break;
-        case "ungravity": const el2 = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"]; el2.forEach(id => { document.getElementById(id).style.animation = ""; }); break;
-        
+        case "msg":
+            let messageAlerte = argumentsCmd.slice(1).join(" ");
+            alert(`💬 MESSAGE DE L'ADMINISTRATION :\n\n${messageAlerte}`);
+            break;
+        case "kick": document.getElementById("kick-screen").style.display = "block"; break;
+        case "freeze": isFrozen = true; document.body.classList.add("frozen"); msg("🧊 Tu as été gelé !"); break;
+        case "unfreeze": isFrozen = false; document.body.classList.remove("frozen"); msg("☀️ Tu es dégelé !"); break;
+        case "slow": isSlowed = true; msg("🐢 Gravité augmentée : gains divisés par 4 !"); break;
+        case "unslow": isSlowed = false; msg("🏃 Vitesse restaurée."); break;
+
+        // EFFETS VISUELS
+        case "seisme": document.body.classList.toggle("seisme-active"); break;
+        case "blur": document.body.classList.toggle("blur-active"); break;
+        case "blackout": document.body.classList.toggle("blackout-active"); break;
+        case "rainbow": document.body.classList.toggle("rainbow-bg"); break;
+        case "flash": document.body.classList.toggle("flash-mode"); break;
+        case "nuclear": document.body.classList.toggle("nuclear-mode"); break;
+        case "matrix": document.body.classList.toggle("matrix-bg"); break;
+        case "invert": document.body.classList.toggle("invert-colors"); break;
+
+        // FONCTIONNALITÉS EXCLUSIVES OWNER
+        case "ban": document.getElementById("ban-screen").style.display = "block"; localStorage.clear(); break;
+        case "crash": document.getElementById("fake-crash-screen").style.display = "block"; break;
+        case "givemoney":
+            let mntA = Number(argumentsCmd[1]) || 0; s.credits += mntA; msg(`💰 L'owner t'a fait un don de +${mntA} 💰`); ui(); break;
+        case "setmoney":
+            let mntB = Number(argumentsCmd[1]) || 0; s.credits = mntB; msg(`💰 Crédits fixés à : ${mntB}`); ui(); break;
+        case "giveshards":
+            let frg = Number(argumentsCmd[1]) || 0; s.shards += frg; msg(`✨ +${frg} Éclats reçus du Créateur !`); ui(); break;
+        case "setzone":
+            let nZ = Number(argumentsCmd[1]) || 1; s.zone = nZ; s.maxzone = Math.max(s.maxzone, nZ); msg(`🚀 Téléportation en Zone ${nZ}`); ui(); break;
+        case "setprestige":
+            let nP = Number(argumentsCmd[1]) || 0; s.prestige = nP; msg(`🔁 Prestige fixé à ${nP}`); ui(); break;
+        case "speedhack": speedHackActive = true; restartDroneInterval(); msg("⚡ Surcharge : tes drones vont à 5x plus vite !"); break;
+        case "frenzyall": triggerFrenzy(); break;
+        case "clear": s = JSON.parse(JSON.stringify(defaultState)); msg("♻️ Progression réinitialisée par l'Owner."); restartDroneInterval(); ui(); break;
         case "boost":
-            if (roleEmis === "owner") {
-                let mult = value; 
-                let minutes = Number(texteBrut.split(" ")[0]) || 1; 
-                adminBoostMultiplier = mult;
-                
-                document.getElementById("owner-rainbow-bar").style.display = "block";
-                msg(`👑 L'OWNER A BOOSTÉ LE SERVEUR x${mult} PENDANT ${minutes} MIN ! 🔥`);
-                
-                clearTimeout(localBoostTimer);
-                localBoostTimer = setTimeout(() => {
-                    adminBoostMultiplier = 1;
-                    document.getElementById("owner-rainbow-bar").style.display = "none";
-                    msg("Le boost de l'owner est terminé.");
-                }, minutes * 60 * 1000);
-            }
+            let multiplicateur = value; let minutes = arg2 || 1; adminBoostMultiplier = multiplicateur;
+            document.getElementById("owner-rainbow-bar").style.display = "block";
+            msg(`🔥 BOOST GLOBAL ACTIF : Gains x${multiplicateur} pendant ${minutes} min !`);
+            clearTimeout(localBoostTimer);
+            localBoostTimer = setTimeout(() => { adminBoostMultiplier = 1; document.getElementById("owner-rainbow-bar").style.display = "none"; }, minutes * 60000);
             break;
-            
         case "unabuse":
-            if (roleEmis === "owner") {
-                adminBoostMultiplier = 1;
-                isFrozen = false;
-                isSlowed = false;
-                speedHackActive = false;
-                document.getElementById("owner-rainbow-bar").style.display = "none";
-                
-                const components = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"];
-                components.forEach(id => { 
-                    let element = document.getElementById(id);
-                    if(element) element.style.animation = ""; 
-                });
-                
-                document.body.className = "";
-                msg("👑 Tout abus/boost a été nettoyé et annulé par l'Owner !");
-                restartDroneInterval();
-                ui();
-            }
+            isSlowed = false; isFrozen = false; speedHackActive = false; adminBoostMultiplier = 1;
+            document.body.className = ""; document.getElementById("owner-rainbow-bar").style.display = "none";
+            document.getElementById("fake-crash-screen").style.display = "none"; document.getElementById("ban-screen").style.display = "none"; document.getElementById("kick-screen").style.display = "none";
+            msg("♻️ Tout a été réinitialisé."); restartDroneInterval(); ui();
             break;
     }
 }
