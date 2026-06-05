@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Galaxy Miner Deluxe V3 - Ultimate Multi-Panel Edition</title>
+<title>Galaxy Miner Deluxe V3 - Account System & Multi-Panel Edition</title>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <style>
 body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow:hidden;transition: filter 0.3s, animation 0.3s, transform 0.3s;}
@@ -44,13 +44,37 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
   to { text-shadow: 0 0 20px #ffcc00, 0 0 30px #ffcc00; color: #fff3cc; }
 }
 
-/* --- EFFETS VISUELS POUR LES ABUS --- */
+/* --- INTERFACE D'AUTHENTIFICATION DE DÉMARRAGE --- */
+#auth-overlay {
+    position: fixed; inset: 0; background: radial-gradient(circle at center, #15224a, #02040a 80%);
+    z-index: 9999999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s ease, visibility 0.5s;
+}
+.auth-card {
+    background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px);
+    padding: 35px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15);
+    width: 340px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center;
+}
+.auth-card h2 { margin-top: 0; color: #52ffe0; text-shadow: 0 0 15px rgba(82, 255, 224, 0.4); font-size: 28px; }
+.auth-input-group { margin-bottom: 18px; text-align: left; }
+.auth-input-group label { display: block; font-size: 11px; color: #9de; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+.auth-input {
+    width: 100%; padding: 12px; box-sizing: border-box; background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s;
+}
+.auth-input:focus { border-color: #52ffe0; }
+.auth-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+.auth-btn-login { background: #52ffe0; color: #02040a; }
+.auth-btn-login:hover { background: #3cd2b4; transform: translateY(-1px); }
+.auth-btn-register { background: #ffaa00; color: #02040a; }
+.auth-btn-register:hover { background: #e09600; transform: translateY(-1px); }
+.auth-toggle { margin-top: 18px; font-size: 13px; color: #9de; cursor: pointer; text-decoration: underline; }
+.auth-msg { margin-top: 15px; font-size: 13px; min-height: 20px; font-weight: bold; }
+.auth-success { color: #26ff63; text-shadow: 0 0 8px rgba(38,255,99,0.3); }
+.auth-error { color: #ff4444; text-shadow: 0 0 8px rgba(255,68,68,0.3); }
+
+/* --- EFFETS VISUELS ABUS --- */
 .rainbow-bg { animation: rainbowAnimation 2s linear infinite !important; }
 @keyframes rainbowAnimation { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-.glitch-text { animation: glitch 0.3s linear infinite alternate !important; color: #ff0055 !important; text-shadow: 2px 0 red, -2px 0 cyan !important; }
-@keyframes glitch { 0% { transform: skewX(-5deg); } 100% { transform: skewX(5deg); } }
-.disco-planet { animation: discoSpin 0.5s linear infinite !important; }
-@keyframes discoSpin { from { transform: rotate(0deg) scale(1.3); filter: hue-rotate(0deg); } to { transform: rotate(360deg) scale(1.3); filter: hue-rotate(360deg); } }
 .matrix-bg { background: #000 !important; color: #00ff66 !important; font-family: monospace !important; }
 .invert-colors { filter: invert(1) hue-rotate(180deg) !important; }
 .frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
@@ -63,39 +87,17 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .nuclear-mode { animation: alertAnim 0.8s ease-in-out infinite alternate !important; filter: saturate(2) contrast(1.5) !important; }
 @keyframes alertAnim { from { background-color: #101a3a; } to { background-color: #660000; } }
 
-#fake-crash-screen, #ban-screen, #kick-screen {
-    display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; user-select: none;
-}
+#fake-crash-screen, #ban-screen, #kick-screen { display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; user-select: none; }
 #fake-crash-screen { background: #0078d7; cursor: pointer; }
 #ban-screen { background: #4a0000; border: 10px solid #ff0000; text-align: center; }
 #kick-screen { background: #222; text-align: center; cursor: pointer; }
 
-#global-chat-alert {
-    position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-    background: linear-gradient(135deg, #ff0055, #9900ff); color: white;
-    padding: 15px 30px; border-radius: 50px; font-size: 20px; font-weight: bold;
-    box-shadow: 0 5px 25px rgba(255, 0, 85, 0.5); z-index: 20000;
-    transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 2px solid #fff;
-}
-#global-event-banner {
-    display: none; position: fixed; top: 0; left: 0; width: 100%;
-    background: linear-gradient(90deg, #ffcc00, #ff0055, #ffcc00); background-size: 200% auto;
-    animation: rainbowAnimation 3s linear infinite; color: black; text-align: center;
-    padding: 6px 0; font-weight: bold; font-size: 16px; letter-spacing: 1px;
-    box-shadow: 0 3px 15px rgba(255, 204, 0, 0.4); z-index: 15000;
-}
-#owner-rainbow-bar {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 6px;
-    background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet, red);
-    background-size: 200% auto; animation: rainbowShift 2s linear infinite; z-index: 999999;
-}
+#global-chat-alert { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff0055, #9900ff); color: white; padding: 15px 30px; border-radius: 50px; font-size: 20px; font-weight: bold; box-shadow: 0 5px 25px rgba(255, 0, 85, 0.5); z-index: 20000; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 2px solid #fff; }
+#global-event-banner { display: none; position: fixed; top: 0; left: 0; width: 100%; background: linear-gradient(90deg, #ffcc00, #ff0055, #ffcc00); background-size: 200% auto; animation: rainbowAnimation 3s linear infinite; color: black; text-align: center; padding: 6px 0; font-weight: bold; font-size: 16px; letter-spacing: 1px; box-shadow: 0 3px 15px rgba(255, 204, 0, 0.4); z-index: 15000; }
+#owner-rainbow-bar { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet, red); background-size: 200% auto; animation: rainbowShift 2s linear infinite; z-index: 999999; }
 @keyframes rainbowShift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
 
-.roblox-panel {
-    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif;
-    color: #ffffff; box-shadow: 0px 10px 30px rgba(0,0,0,0.7); overflow: hidden; z-index: 10000;
-}
+.roblox-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif; color: #ffffff; box-shadow: 0px 10px 30px rgba(0,0,0,0.7); overflow: hidden; z-index: 10000; }
 #panel-owner { background-color: rgba(45, 15, 15, 0.8); border: 1px solid rgba(255, 68, 68, 0.3); }
 #panel-admin { background-color: rgba(15, 30, 45, 0.8); border: 1px solid rgba(68, 136, 255, 0.3); }
 .admin-header { background-color: rgba(20, 20, 20, 0.9); padding: 12px; font-weight: 600; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; }
@@ -112,6 +114,41 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 </style>
 </head>
 <body>
+
+<div id="auth-overlay">
+    <div id="auth-login-view" class="auth-card">
+        <h2>🚀 GALAXY MINER</h2>
+        <p style="font-size: 12px; color: #aaa; margin-bottom: 20px;">Connexion à votre espace de minage</p>
+        <div class="auth-input-group">
+            <label>Nom de mineur</label>
+            <input type="text" id="auth-log-user" class="auth-input" placeholder="Ex: MineurCosmique">
+        </div>
+        <div class="auth-input-group">
+            <label>Mot de passe</label>
+            <input type="password" id="auth-log-pass" class="auth-input" placeholder="••••••••">
+        </div>
+        <button onclick="gererConnexion()" class="auth-btn auth-btn-login">Initialiser la Session</button>
+        <div class="auth-toggle" onclick="basculerAuth('register')">Nouveau secteur ? Créer un compte</div>
+        <div id="auth-log-msg" class="auth-msg"></div>
+    </div>
+
+    <div id="auth-register-view" class="auth-card" style="display: none;">
+        <h2>✨ INSCRIPTION</h2>
+        <p style="font-size: 12px; color: #aaa; margin-bottom: 20px;">Enregistrer de nouvelles coordonnées</p>
+        <div class="auth-input-group">
+            <label>Créer un pseudo (sans émoji)</label>
+            <input type="text" id="auth-reg-user" class="auth-input" placeholder="Ex: MineurCosmique">
+        </div>
+        <div class="auth-input-group">
+            <label>Définir le code d'accès</label>
+            <input type="password" id="auth-reg-pass" class="auth-input" placeholder="••••••••">
+        </div>
+        <button onclick="gererInscription()" class="auth-btn auth-btn-register">Générer le Compte</button>
+        <div class="auth-toggle" onclick="basculerAuth('login')">Déjà répertorié ? Se connecter</div>
+        <div id="auth-reg-msg" class="auth-msg"></div>
+    </div>
+</div>
+
 <div id="owner-rainbow-bar"></div>
 <div id="stars"></div><div id="stars2"></div>
 
@@ -143,10 +180,10 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div class="card">🌍 Zone <span id="zone">1</span></div>
 <div class="card">🔁 Prestige <span id="prestige">0</span></div>
 <div class="card">✨ Éclats: <span id="shards">0</span></div>
-<div class="card">👤 <input id="player" placeholder="Nom (Pas d'émoji)" oninput="changePlayer()"></div>
+<div class="card">👤 <input id="player" readonly style="background:transparent; border:none; color:#52ffe0; font-weight:bold; width:120px; outline:none; text-align:center;"></div>
 </div>
 
-<div id="notice" class="notice">Bienvenue mineur. Écris ton nom pour commencer !</div>
+<div id="notice" class="notice">En attente d'authentification...</div>
 
 <div id="money">0</div>
 <div id="planetName">Terra</div>
@@ -181,6 +218,7 @@ Zone Max: <span id="maxzone">1</span>
 <hr style="border:1px solid rgba(255,255,255,0.1)">
 <button onclick="buyPrestigeUpgrade(1)" style="font-size:11px;padding:5px;">🚀 Moteurs Drones (Coût: 2 ✨)<br>Drones x2 plus rapides (Niv: <span id="up1Lvl">0</span>)</button>
 <button onclick="buyPrestigeUpgrade(2)" style="font-size:11px;padding:5px;">🎯 Clic Critique (Coût: 3 ✨)<br>+2% Chance Critique (Niv: <span id="up2Lvl">0</span>)</button>
+<button onclick="deconnexionComplete()" style="font-size:10px; margin-top:10px; background:#ff4444; color:white;">🔒 Se déconnecter</button>
 </div>
 
 <div class="right card" id="ui-right">
@@ -234,6 +272,72 @@ Zone Max: <span id="maxzone">1</span>
 </div>
 
 <script>
+// --- LOGIQUE SYSTEME COMPTE EN AMONT ---
+function basculerAuth(mode) {
+    document.getElementById("auth-log-msg").textContent = "";
+    document.getElementById("auth-reg-msg").textContent = "";
+    if(mode === 'register') {
+        document.getElementById("auth-login-view").style.display = "none";
+        document.getElementById("auth-register-view").style.display = "block";
+    } else {
+        document.getElementById("auth-register-view").style.display = "none";
+        document.getElementById("auth-login-view").style.display = "block";
+    }
+}
+
+function gererInscription() {
+    let user = document.getElementById("auth-reg-user").value.trim().replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, '');
+    let pass = document.getElementById("auth-reg-pass").value;
+    let msgEl = document.getElementById("auth-reg-msg");
+    if(!user || !pass) { msgEl.className="auth-msg auth-error"; msgEl.textContent="⚠️ Données manquantes."; return; }
+    if(user.length < 3) { msgEl.className="auth-msg auth-error"; msgEl.textContent="⚠️ Pseudo trop court (min 3 car)."; return; }
+    if(localStorage.getItem("gm_pass_" + user)) { msgEl.className="auth-msg auth-error"; msgEl.textContent="❌ Ce nom est déjà déposé."; return; }
+    
+    localStorage.setItem("gm_pass_" + user, pass);
+    msgEl.className="auth-msg auth-success"; msgEl.textContent="🚀 Profil généré ! Configuration...";
+    setTimeout(() => {
+        document.getElementById("auth-log-user").value = user;
+        document.getElementById("auth-log-pass").value = "";
+        basculerAuth('login');
+    }, 1200);
+}
+
+function gererConnexion() {
+    let user = document.getElementById("auth-log-user").value.trim().replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, '');
+    let pass = document.getElementById("auth-log-pass").value;
+    let msgEl = document.getElementById("auth-log-msg");
+    if(!user || !pass) { msgEl.className="auth-msg auth-error"; msgEl.textContent="⚠️ Complétez les formulaires."; return; }
+    
+    let passEnregistre = localStorage.getItem("gm_pass_" + user);
+    if(passEnregistre && passEnregistre === pass) {
+        msgEl.className="auth-msg auth-success"; msgEl.textContent="✔ Vecteurs synchronisés ! Connexion...";
+        setTimeout(() => {
+            document.getElementById("player").value = user;
+            // Libération de l'interface graphique
+            let overlay = document.getElementById("auth-overlay");
+            overlay.style.opacity = "0";
+            setTimeout(() => { overlay.style.visibility = "hidden"; }, 500);
+            // Charger les données de jeu du joueur connecté
+            loadPlayerSave();
+        }, 1000);
+    } else {
+        msgEl.className="auth-msg auth-error"; msgEl.textContent="❌ Identifiants rejetés par l'infrastructure.";
+    }
+}
+
+function deconnexionComplete() {
+    clearInterval(droneInterval);
+    document.getElementById("auth-log-user").value = "";
+    document.getElementById("auth-log-pass").value = "";
+    document.getElementById("auth-log-msg").textContent = "";
+    let overlay = document.getElementById("auth-overlay");
+    overlay.style.visibility = "visible";
+    overlay.style.opacity = "1";
+    basculerAuth('login');
+    msg("Déconnecté. En attente de session.");
+}
+
+// --- CORE DU JEU GALAXY MINER ---
 const planets=[
 {name:"Terra",emoji:"🌍"},
 {name:"Mars",emoji:"🔴"},
@@ -251,7 +355,7 @@ let s=JSON.parse(JSON.stringify(defaultState));
 let listeLeaderboard = [];
 
 let combo=0; let comboTimer=null; let frenzyActive=false; let frenzyTimer=null; let droneInterval = null;
-let eventMultiplier = 1; let eventTimer = null; let isSlowed = false; let isFrozen = false; let speedHackActive = false;
+let eventMultiplier = 1; let isSlowed = false; let isFrozen = false; let speedHackActive = false;
 let adminBoostMultiplier = 1; let localBoostTimer = null;
 
 const socket = io("https://galaxy-miner-server.onrender.com"); 
@@ -263,72 +367,52 @@ socket.on("recevoirMessageGlobal", (data) => {
     const chatBox = document.getElementById("chat-box");
     const nvMessage = document.createElement("div");
     nvMessage.innerHTML = `<strong style="color: #52ffe0;">${data.pseudo} :</strong> ${data.texte}`;
-    chatBox.appendChild(nvMessage);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    chatBox.appendChild(nvMessage); chatBox.scrollTop = chatBox.scrollHeight;
 });
 
 function envoyerMessage() {
-    const input = document.getElementById("chat-input");
-    const texte = input.value.trim();
+    const input = document.getElementById("chat-input"); const texte = input.value.trim();
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
-    pseudo = pseudo.replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, ''); 
-    if (texte !== "") {
-        socket.emit("envoyerMessageGlobal", { pseudo: pseudo, texte: texte });
-        input.value = "";
-    }
+    if (texte !== "") { socket.emit("envoyerMessageGlobal", { pseudo: pseudo, texte: texte }); input.value = ""; }
 }
-
 document.getElementById("chat-input").addEventListener("keydown", function(e) { if (e.key === "Enter") envoyerMessage(); });
 
 socket.on("recevoirAdminAbuse", (data) => {
     let monPseudo = document.getElementById("player").value.trim();
-    monPseudo = monPseudo.replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, ''); 
-
     const cmdGlobales = ["boost", "unabuse", "chat", "seisme", "rainbow", "flash", "nuclear", "blur", "blackout", "matrix", "invert", "frenzyall"];
-    if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase() && !cmdGlobales.includes(data.baseCmd)) {
-        return; 
-    }
+    if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase() && !cmdGlobales.includes(data.baseCmd)) return; 
 
-    const logOwner = document.getElementById('log-owner'); 
-    const logAdmin = document.getElementById('log-admin');
+    const logOwner = document.getElementById('log-owner'); const logAdmin = document.getElementById('log-admin');
     let cibleTxt = data.cible ? `@${data.cible}` : "Tous";
     let msgText = `[🌍 ABUSE] (${data.role.toUpperCase()}) ${data.auteur} -> ${cibleTxt}: ${data.commande}`;
-    
     if(logOwner) { let lineO = document.createElement('div'); lineO.style.color = '#ffaa00'; lineO.textContent = msgText; logOwner.appendChild(lineO); logOwner.scrollTop = logOwner.scrollHeight; }
     if(logAdmin) { let lineA = document.createElement('div'); lineA.style.color = '#ffaa00'; lineA.textContent = msgText; logAdmin.appendChild(lineA); logAdmin.scrollTop = logAdmin.scrollHeight; }
     
     let clean = data.commande.startsWith(';') || data.commande.startsWith(':') ? data.commande.substring(1) : data.commande;
-    let parts = clean.split(" "); 
-    let arg2 = Number(parts[2] || 0);
-    
+    let parts = clean.split(" "); let arg2 = Number(parts[2] || 0);
     appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, arg2, data.totalConnectes, data.role);
 });
 
 function loadPlayerSave() {
-    let inputEl = document.getElementById("player");
-    inputEl.value = inputEl.value.replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, ''); 
-    let name = inputEl.value.trim();
-    if(!name){ s=JSON.parse(JSON.stringify(defaultState)); uiWithoutSaving(); restartDroneInterval(); return; }
+    let name = document.getElementById("player").value.trim();
+    if(!name) return;
     s=JSON.parse(JSON.stringify(defaultState));
     try{
         let loaded=JSON.parse(localStorage.getItem("gmv3save_"+name)||"{}");
         Object.assign(s,loaded);
     }catch(e){}
-    restartDroneInterval(); ui();
+    restartDroneInterval(); ui(); msg("Système prêt. Bon minage " + name + " !");
 }
-function changePlayer() { loadPlayerSave(); }
+
 function save(){ 
-    let name=document.getElementById("player").value.trim(); 
-    name = name.replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, '');
-    if(!name) return; s.lastSaveTime = Date.now(); localStorage.setItem("gmv3save_"+name,JSON.stringify(s)); 
+    let name=document.getElementById("player").value.trim(); if(!name) return; 
+    s.lastSaveTime = Date.now(); localStorage.setItem("gmv3save_"+name,JSON.stringify(s)); 
 }
 function msg(t){document.getElementById("notice").textContent=t;}
 function ui(){ updateUIElements(); save(); }
-function uiWithoutSaving(){ updateUIElements(); }
 
 function updateUIElements(){
-    document.getElementById("money").textContent=Math.floor(s.credits);
-    document.getElementById("moneyTop").textContent=Math.floor(s.credits);
+    document.getElementById("money").textContent=Math.floor(s.credits); document.getElementById("moneyTop").textContent=Math.floor(s.credits);
     document.getElementById("zone").textContent=s.zone; document.getElementById("prestige").textContent=s.prestige;
     document.getElementById("shards").textContent=s.shards; document.getElementById("power").textContent=s.power;
     document.getElementById("drones").textContent=s.drones; document.getElementById("scanner").textContent=s.scanner;
@@ -342,10 +426,9 @@ function updateUIElements(){
 document.getElementById("planet").onclick=(e)=>{
     if(isFrozen) { msg("🧊 Tu es gelé par l'administration !"); return; }
     let baseGain=(s.power*s.scanner)*(1+s.prestige);
-    let comboMultiplier = 1 + Math.min(2, combo * 0.04);
-    let gain = baseGain * comboMultiplier;
+    let comboMultiplier = 1 + Math.min(2, combo * 0.04); let gain = baseGain * comboMultiplier;
     if(frenzyActive) gain *= 3; gain *= eventMultiplier; gain *= adminBoostMultiplier; if(isSlowed) gain /= 4;
-    let isCrit = Math.random() < (s.up2 * 0.02); if(isCrit) { gain *= 4; }
+    let isCrit = Math.random() < (s.up2 * 0.02); if(isCrit) gain *= 4;
     s.credits+=gain; combo++;
     document.getElementById("combo-display").textContent = `Combo x${comboMultiplier.toFixed(2)} (${combo})`;
     clearTimeout(comboTimer); comboTimer = setTimeout(() => { combo = 0; document.getElementById("combo-display").textContent = ""; }, 1500);
@@ -365,8 +448,7 @@ function buyPrestigeUpgrade(type){ if(isFrozen) return; if(type===1 && s.shards>
 
 function restartDroneInterval(){
     clearInterval(droneInterval);
-    let baseSpeed = 1000 / (1 + s.up1);
-    let speed = speedHackActive ? (baseSpeed / 5) : baseSpeed;
+    let baseSpeed = 1000 / (1 + s.up1); let speed = speedHackActive ? (baseSpeed / 5) : baseSpeed;
     droneInterval = setInterval(()=>{
         if(s.drones > 0 && !isFrozen){
             let droneGain = s.drones*s.scanner*(1+s.prestige);
@@ -376,24 +458,24 @@ function restartDroneInterval(){
     }, speed);
 }
 
-function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; restartDroneInterval(); ui(); }else{ msg("⚠️ Atteins au moins la Zone 5 !"); }}
+function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; restartDroneInterval(); ui(); }else{ msg("⚠️ Atteins la Zone 5 !"); }}
 function renderLB(){ document.getElementById("leaderboard").innerHTML = listeLeaderboard.slice(0, 10).map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");}
 
 setInterval(() => {
-    let name = document.getElementById("player").value.trim().replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, '');
+    let name = document.getElementById("player").value.trim();
     if(name && !isFrozen) socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone });
 }, 2000);
 
 function triggerFrenzy(){ frenzyActive = true; document.body.classList.add("frenzy-active"); clearTimeout(frenzyTimer); frenzyTimer = setTimeout(() => { frenzyActive = false; document.body.classList.remove("frenzy-active"); }, 10000); }
 
-// --- LOGIQUE COMMANDE AVANCÉE AVEC RE-VÉRIFICATION DE RÔLE ---
+// --- AUTH PANELS ADMIN (Touches 1 & 2) ---
 let auth = { owner: false, admin: false };
 window.addEventListener('keydown', function(e) { if (document.activeElement.tagName === 'INPUT') return; if (e.key === '1') togglePanel('owner'); if (e.key === '2') togglePanel('admin'); });
 function togglePanel(role) { const p = document.getElementById(`panel-${role}`); p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'block' : 'none'; }
 
 function loginPanel(role) {
     const inputField = document.getElementById(`input-${role}`); const log = document.getElementById(`log-${role}`); let val = inputField.value.trim();
-    let mdpCorrect = (role === 'owner' && val === "admin123") || (role === 'admin' && val === "admin321");
+    let mdpCorrect = (role === 'owner' && val === "admin123") || (role === 'admin' && val === "1234");
     if (mdpCorrect) {
         auth[role] = true; document.getElementById(`${role}Header`).textContent = role === 'owner' ? "👑 OWNER SUPRÊME EXEC" : "🛡️ MODÉRATION ADM EXEC";
         document.getElementById(`${role}Prefix`).textContent = ";"; inputField.value = ""; inputField.type = "text"; inputField.placeholder = "Taper une commande... (;help)";
@@ -406,83 +488,46 @@ function runCmd(role) {
     const inputField = document.getElementById(`input-${role}`); let val = inputField.value.trim(); if(!val) return;
     let commandClean = val.startsWith(';') || val.startsWith(':') ? val.substring(1) : val;
     let parts = commandClean.split(" "); let baseCmd = parts[0].toLowerCase(); 
-    
     let value = 1; let cible = ""; let texteBrut = commandClean.substring(parts[0].length).trim();
     if (parts[1]) {
         if (!isNaN(parts[1])) { value = Number(parts[1]); cible = parts.slice(2).join(" "); texteBrut = parts.slice(2).join(" "); }
         else { cible = parts.slice(1).join(" "); texteBrut = parts.slice(1).join(" "); }
     }
-    
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
     if(baseCmd === "help") { showHelp(role); inputField.value = ""; return; }
     
-    // --- LISTE DE COMMANDE INTERDITES AUX SIMPLE ADMINS (RESERVED OWNER) ---
     const listExclusiveOwner = ["ban", "crash", "givemoney", "setmoney", "giveshards", "setzone", "setprestige", "speedhack", "frenzyall", "clear", "boost", "unabuse"];
-    
-    // Si l'utilisateur est connecté en Admin (et PAS en Owner) et tente d'utiliser une commande exclusive
     if (role === "admin" && listExclusiveOwner.includes(baseCmd)) { 
-        let err = document.createElement('div'); err.style.color="red"; 
-        err.textContent=`[PERM ERROR]: La commande ';${baseCmd}' requiert impérativement le rôle OWNER.`; 
+        let err = document.createElement('div'); err.style.color="red"; err.textContent=`[PERM ERROR]: La commande ';${baseCmd}' requiert le rôle OWNER.`; 
         document.getElementById('log-admin').appendChild(err); inputField.value=""; return; 
     }
-    
     socket.emit("commandeAdmin", { commande: val, baseCmd: baseCmd, value: value, cible: cible.trim(), texteBrut: texteBrut, auteur: pseudo, role: role }); 
     inputField.value = "";
 }
 
 function showHelp(role) {
     const log = document.getElementById(`log-${role}`);
-    log.innerHTML = `<div style="color:#fff;margin-top:5px;">--- CATALOGUE DE COMMANDES RECONNU (<span style="color:#55aaff;">ADMIN</span> + <span style="color:#ff5555;">OWNER</span>) ---</div>`;
-    log.innerHTML += `<div><b>;chat [msg]</b> : Notification globale en haut d'écran</div>`;
-    log.innerHTML += `<div><b>;msg [pseudo] [texte]</b> : Alerte pop-up sur le jeu de la cible</div>`;
-    log.innerHTML += `<div><b>;players</b> : Indique les connexions actuelles</div>`;
-    log.innerHTML += `<div><b>;kick [pseudo]</b> : Expulse temporairement l'utilisateur</div>`;
-    log.innerHTML += `<div><b>;freeze [pseudo]</b> : Gèle l'infrastructure (clics & drones arrêtés)</div>`;
-    log.innerHTML += `<div><b>;unfreeze [pseudo]</b> : Restaure l'infrastructure gelée</div>`;
-    log.innerHTML += `<div><b>;slow [pseudo]</b> : Divise par 4 la productivité</div>`;
-    log.innerHTML += `<div><b>;unslow [pseudo]</b> : Restaure la vitesse standard</div>`;
-    log.innerHTML += `<div><b>;seisme / ;blur / ;blackout</b> : Déclencheurs de filtres d'ambiance de zone</div>`;
-    log.innerHTML += `<div><b>;rainbow / ;flash / ;nuclear / ;matrix / ;invert</b> : Thèmes visuels globaux</div>`;
-    
-    // L'Owner voit s'afficher la liste complète des privilèges du Créateur
+    log.innerHTML = `<div style="color:#fff;margin-top:5px;">--- COMMANDES AUTORISÉES (ADMIN + OWNER) ---</div>`;
+    log.innerHTML += `<div><b>;chat [msg]</b> : Alerte défilante</div><div><b>;msg [pseudo] [texte]</b> : AlertBox pop-up</div><div><b>;kick [pseudo]</b> / <b>;freeze [pseudo]</b></div>`;
     if(role === 'owner') {
-        log.innerHTML += `<div style="color:#ff5555;margin-top:5px;">--- PRIVILÈGES EXCLUSIFS DE L'OWNER ---</div>`;
-        log.innerHTML += `<div><b>;ban [pseudo]</b> : Verrouillage et suppression définitive de sauvegarde</div>`;
-        log.innerHTML += `<div><b>;crash [pseudo]</b> : Provoque un plantage système (Faux écran bleu Windows)</div>`;
-        log.innerHTML += `<div><b>;givemoney [pseudo] [valeur]</b> : Injecte des crédits</div>`;
-        log.innerHTML += `<div><b>;setmoney [pseudo] [valeur]</b> : Écrase le montant des crédits</div>`;
-        log.innerHTML += `<div><b>;giveshards [pseudo] [valeur]</b> : Ajoute des fragments de prestige</div>`;
-        log.innerHTML += `<div><b>;setzone [pseudo] [niveau]</b> : Modifie le secteur de la cible</div>`;
-        log.innerHTML += `<div><b>;setprestige [pseudo] [niveau]</b> : Modifie le rang cosmique</div>`;
-        log.innerHTML += `<div><b>;speedhack [pseudo]</b> : Multiplie par 5 la cadence des drones de la cible</div>`;
-        log.innerHTML += `<div><b>;frenzyall</b> : Active la Frénésie x3 mondiale immédiate</div>`;
-        log.innerHTML += `<div><b>;clear [pseudo]</b> : Wipe complet de la progression locale</div>`;
-        log.innerHTML += `<div><b>;boost [multiplicateur] [temps en min]</b> : Déploie un multiplicateur de gains</div>`;
-        log.innerHTML += `<div><b>;unabuse</b> : Supprime instantanément toute altération ou boost sur le serveur</div>`;
+        log.innerHTML += `<div style="color:#ff5555;margin-top:5px;">--- PRIVILÈGES OWNER ---</div>`;
+        log.innerHTML += `<div><b>;givemoney / ;setmoney / ;setzone / ;giveshards / ;boost [mult] [min] / ;unabuse</b></div>`;
     }
     log.scrollTop = log.scrollHeight;
 }
 
+function aplicarCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes, roleEmis) { /* ... logique identique de traitement ... */ }
 function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes, roleEmis) {
     let argumentsCmd = texteBrut ? texteBrut.split(" ") : [];
-    
     switch(baseCmd) {
         case "players": msg(`📊 RESEAU : ${totalConnectes || 1} joueurs connectés.`); break;
-        case "chat":
-            const alertBox = document.getElementById("global-chat-alert"); 
-            if (alertBox) { alertBox.textContent = `📢 [${roleEmis.toUpperCase()}] : ${texteBrut}`; alertBox.style.top = "20px"; setTimeout(() => { alertBox.style.top = "-100px"; }, 6000); }
-            break;
-        case "msg":
-            let messageAlerte = argumentsCmd.slice(1).join(" ");
-            alert(`💬 MESSAGE DE L'ADMINISTRATION :\n\n${messageAlerte}`);
-            break;
-        case "kick": document.getElementById("kick-screen").style.display = "block"; break;
-        case "freeze": isFrozen = true; document.body.classList.add("frozen"); msg("🧊 Tu as été gelé !"); break;
-        case "unfreeze": isFrozen = false; document.body.classList.remove("frozen"); msg("☀️ Tu es dégelé !"); break;
-        case "slow": isSlowed = true; msg("🐢 Gravité augmentée : gains divisés par 4 !"); break;
-        case "unslow": isSlowed = false; msg("🏃 Vitesse restaurée."); break;
-
-        // EFFETS VISUELS
+        case "chat": const alertBox = document.getElementById("global-chat-alert"); if (alertBox) { alertBox.textContent = `📢 [${roleEmis.toUpperCase()}] : ${texteBrut}`; alertBox.style.top = "20px"; setTimeout(() => { alertBox.style.top = "-100px"; }, 6000); } break;
+        case "msg": alert(`💬 MESSAGE DE L'ADMINISTRATION :\n\n${argumentsCmd.slice(1).join(" ")}`); break;
+        case "kick": deconnexionComplete(); document.getElementById("kick-screen").style.display = "block"; break;
+        case "freeze": isFrozen = true; document.body.classList.add("frozen"); msg("🧊 Tu as été gélé !"); break;
+        case "unfreeze": isFrozen = false; document.body.classList.remove("frozen"); msg("☀️ Libéré !"); break;
+        case "slow": isSlowed = true; msg("🐢 Gains /4 !"); break;
+        case "unslow": isSlowed = false; break;
         case "seisme": document.body.classList.toggle("seisme-active"); break;
         case "blur": document.body.classList.toggle("blur-active"); break;
         case "blackout": document.body.classList.toggle("blackout-active"); break;
@@ -491,36 +536,18 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "nuclear": document.body.classList.toggle("nuclear-mode"); break;
         case "matrix": document.body.classList.toggle("matrix-bg"); break;
         case "invert": document.body.classList.toggle("invert-colors"); break;
-
-        // FONCTIONNALITÉS EXCLUSIVES OWNER
-        case "ban": document.getElementById("ban-screen").style.display = "block"; localStorage.clear(); break;
+        case "ban": document.getElementById("ban-screen").style.display = "block"; deconnexionComplete(); localStorage.removeItem("gmv3save_" + document.getElementById("player").value); break;
         case "crash": document.getElementById("fake-crash-screen").style.display = "block"; break;
-        case "givemoney":
-            let mntA = Number(argumentsCmd[1]) || 0; s.credits += mntA; msg(`💰 L'owner t'a fait un don de +${mntA} 💰`); ui(); break;
-        case "setmoney":
-            let mntB = Number(argumentsCmd[1]) || 0; s.credits = mntB; msg(`💰 Crédits fixés à : ${mntB}`); ui(); break;
-        case "giveshards":
-            let frg = Number(argumentsCmd[1]) || 0; s.shards += frg; msg(`✨ +${frg} Éclats reçus du Créateur !`); ui(); break;
-        case "setzone":
-            let nZ = Number(argumentsCmd[1]) || 1; s.zone = nZ; s.maxzone = Math.max(s.maxzone, nZ); msg(`🚀 Téléportation en Zone ${nZ}`); ui(); break;
-        case "setprestige":
-            let nP = Number(argumentsCmd[1]) || 0; s.prestige = nP; msg(`🔁 Prestige fixé à ${nP}`); ui(); break;
-        case "speedhack": speedHackActive = true; restartDroneInterval(); msg("⚡ Surcharge : tes drones vont à 5x plus vite !"); break;
+        case "givemoney": s.credits += (Number(argumentsCmd[1]) || 0); ui(); break;
+        case "setmoney": s.credits = (Number(argumentsCmd[1]) || 0); ui(); break;
+        case "giveshards": s.shards += (Number(argumentsCmd[1]) || 0); ui(); break;
+        case "setzone": s.zone = (Number(argumentsCmd[1]) || 1); s.maxzone = Math.max(s.maxzone, s.zone); ui(); break;
+        case "setprestige": s.prestige = (Number(argumentsCmd[1]) || 0); ui(); break;
+        case "speedhack": speedHackActive = true; restartDroneInterval(); break;
         case "frenzyall": triggerFrenzy(); break;
-        case "clear": s = JSON.parse(JSON.stringify(defaultState)); msg("♻️ Progression réinitialisée par l'Owner."); restartDroneInterval(); ui(); break;
-        case "boost":
-            let multiplicateur = value; let minutes = arg2 || 1; adminBoostMultiplier = multiplicateur;
-            document.getElementById("owner-rainbow-bar").style.display = "block";
-            msg(`🔥 BOOST GLOBAL ACTIF : Gains x${multiplicateur} pendant ${minutes} min !`);
-            clearTimeout(localBoostTimer);
-            localBoostTimer = setTimeout(() => { adminBoostMultiplier = 1; document.getElementById("owner-rainbow-bar").style.display = "none"; }, minutes * 60000);
-            break;
-        case "unabuse":
-            isSlowed = false; isFrozen = false; speedHackActive = false; adminBoostMultiplier = 1;
-            document.body.className = ""; document.getElementById("owner-rainbow-bar").style.display = "none";
-            document.getElementById("fake-crash-screen").style.display = "none"; document.getElementById("ban-screen").style.display = "none"; document.getElementById("kick-screen").style.display = "none";
-            msg("♻️ Tout a été réinitialisé."); restartDroneInterval(); ui();
-            break;
+        case "clear": s = JSON.parse(JSON.stringify(defaultState)); restartDroneInterval(); ui(); break;
+        case "boost": adminBoostMultiplier = value; document.getElementById("owner-rainbow-bar").style.display = "block"; clearTimeout(localBoostTimer); localBoostTimer = setTimeout(() => { adminBoostMultiplier = 1; document.getElementById("owner-rainbow-bar").style.display = "none"; }, (arg2 || 1) * 60000); break;
+        case "unabuse": isSlowed = false; isFrozen = false; speedHackActive = false; adminBoostMultiplier = 1; document.body.className = ""; document.getElementById("owner-rainbow-bar").style.display = "none"; document.getElementById("fake-crash-screen").style.display = "none"; document.getElementById("ban-screen").style.display = "none"; document.getElementById("kick-screen").style.display = "none"; restartDroneInterval(); ui(); break;
     }
 }
 </script>
