@@ -44,7 +44,29 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
   to { text-shadow: 0 0 20px #ffcc00, 0 0 30px #ffcc00; color: #fff3cc; }
 }
 
-/* --- INTERFACE D'AUTHENTIFICATION DE DÉMARRAGE --- */
+/* --- EFFETS VISUELS ABUS --- */
+.rainbow-bg { animation: rainbowAnimation 2s linear infinite !important; }
+@keyframes rainbowAnimation { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+.matrix-bg { background: #000 !important; color: #00ff66 !important; font-family: monospace !important; }
+.invert-colors { filter: invert(1) hue-rotate(180deg) !important; }
+.frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
+.seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
+@keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
+.blur-active { filter: blur(8px) !important; }
+.blackout-active { filter: brightness(0) !important; background: black !important; }
+.flash-mode { animation: flashAnim 0.1s steps(2) infinite !important; }
+@keyframes flashAnim { from { background: #000; } to { background: #fff; } }
+.nuclear-mode { animation: alertAnim 0.8s ease-in-out infinite alternate !important; filter: saturate(2) contrast(1.5) !important; }
+@keyframes alertAnim { from { background-color: #101a3a; } to { background-color: #660000; } }
+.ghost-mode { opacity: 0.2 !important; }
+.glitch-mode { animation: glitchAnim 0.2s infinite linear !important; }
+@keyframes glitchAnim { 0% { transform: skewX(0deg); filter: hue-rotate(0deg); } 50% { transform: skewX(10deg); filter: hue-rotate(90deg); } 100% { transform: skewX(-10deg); filter: hue-rotate(180deg); } }
+.disco-mode { animation: discoAnim 0.5s infinite steps(1) !important; }
+@keyframes discoAnim { 0% { background: #ff0055; } 25% { background: #00ff66; } 50% { background: #0077ff; } 75% { background: #ffcc00; } }
+.lag-mode { animation: lagAnim 1.5s infinite steps(2) !important; }
+@keyframes lagAnim { 0% { transform: translateX(0); } 50% { transform: translateX(30px) translateY(-10px); } }
+
+/* --- INTERFACE D'AUTHENTIFICATION --- */
 #auth-overlay {
     position: fixed; inset: 0; background: radial-gradient(circle at center, #15224a, #02040a 80%);
     z-index: 9999999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s ease, visibility 0.5s;
@@ -71,28 +93,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .auth-msg { margin-top: 15px; font-size: 13px; min-height: 20px; font-weight: bold; }
 .auth-success { color: #26ff63; text-shadow: 0 0 8px rgba(38,255,99,0.3); }
 .auth-error { color: #ff4444; text-shadow: 0 0 8px rgba(255,68,68,0.3); }
-
-/* --- EFFETS VISUELS ABUS --- */
-.rainbow-bg { animation: rainbowAnimation 2s linear infinite !important; }
-@keyframes rainbowAnimation { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-.matrix-bg { background: #000 !important; color: #00ff66 !important; font-family: monospace !important; }
-.invert-colors { filter: invert(1) hue-rotate(180deg) !important; }
-.frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
-.seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
-@keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
-.blur-active { filter: blur(8px) !important; }
-.blackout-active { filter: brightness(0) !important; background: black !important; }
-.flash-mode { animation: flashAnim 0.1s steps(2) infinite !important; }
-@keyframes flashAnim { from { background: #000; } to { background: #fff; } }
-.nuclear-mode { animation: alertAnim 0.8s ease-in-out infinite alternate !important; filter: saturate(2) contrast(1.5) !important; }
-@keyframes alertAnim { from { background-color: #101a3a; } to { background-color: #660000; } }
-.ghost-mode { opacity: 0.2 !important; }
-.glitch-mode { animation: glitchAnim 0.2s infinite linear !important; }
-@keyframes glitchAnim { 0% { transform: skewX(0deg); filter: hue-rotate(0deg); } 50% { transform: skewX(10deg); filter: hue-rotate(90deg); } 100% { transform: skewX(-10deg); filter: hue-rotate(180deg); } }
-.disco-mode { animation: discoAnim 0.5s infinite steps(1) !important; }
-@keyframes discoAnim { 0% { background: #ff0055; } 25% { background: #00ff66; } 50% { background: #0077ff; } 75% { background: #ffcc00; } }
-.lag-mode { animation: lagAnim 1.5s infinite steps(2) !important; }
-@keyframes lagAnim { 0% { transform: translateX(0); } 50% { transform: translateX(30px) translateY(-10px); } }
 
 #fake-crash-screen, #ban-screen, #kick-screen { display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; user-select: none; }
 #fake-crash-screen { background: #0078d7; cursor: pointer; }
@@ -477,30 +477,23 @@ setInterval(() => {
 
 function triggerFrenzy(){ frenzyActive = true; document.body.classList.add("frenzy-active"); clearTimeout(frenzyTimer); frenzyTimer = setTimeout(() => { frenzyActive = false; document.body.classList.remove("frenzy-active"); }, 10000); }
 
-// --- AUTH PANELS ADMIN (Touches 1 & 2) ---
+// --- AUTH PANELS ADMIN ---
 let auth = { owner: false, admin: false };
 window.addEventListener('keydown', function(e) { if (document.activeElement.tagName === 'INPUT') return; if (e.key === '1') togglePanel('owner'); if (e.key === '2') togglePanel('admin'); });
 function togglePanel(role) { const p = document.getElementById(`panel-${role}`); p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'block' : 'none'; }
 
-// --- BASE DE DONNÉES DES COMMANDES COMPLÈTE (+20 NOUVELLES COMMANDES) ---
+// --- DATABASE DES COMMANDES ---
 const commandsDatabase = {
-    // --- 15 Commandes de Base (ADMIN & OWNER) ---
     "help": "admin", "kick": "admin", "ban": "admin", "mute": "admin", "unmute": "admin",
     "freeze": "admin", "unfreeze": "admin", "slow": "admin", "unslow": "admin", "warn": "admin",
     "chat": "admin", "clear": "admin", "tp": "admin", "slock": "admin", "unslock": "admin",
-    
-    // --- 10 Nouvelles Commandes de Modération Globale (ADMIN & OWNER) ---
     "kickall": "admin", "muteall": "admin", "unmuteall": "admin", "spectate": "admin",
     "freezeall": "admin", "unfreezeall": "admin", "warnall": "admin", "tpall": "admin",
     "slowall": "admin", "unslowall": "admin",
-
-    // --- 20 Anciennes Commandes Triche / Visuel (OWNER UNIQUEMENT) ---
     "credits": "owner", "shards": "owner", "power": "owner", "drones": "owner", "scanner": "owner",
     "prestige": "owner", "zone": "owner", "boost": "owner", "frenzyall": "owner", "crash": "owner",
     "seisme": "owner", "rainbow": "owner", "invert": "owner", "matrix": "owner", "blur": "owner",
     "blackout": "owner", "flash": "owner", "nuclear": "owner", "unabuse": "owner", "speedhack": "owner",
-
-    // --- 10 Nouvelles Commandes Fun / Triche Ultime (OWNER UNIQUEMENT) ---
     "godmode": "owner", "ghost": "owner", "superjump": "owner", "size": "owner", "gravity": "owner",
     "rich": "owner", "broke": "owner", "glitch": "owner", "discomode": "owner", "lag": "owner"
 };
@@ -539,24 +532,27 @@ function runCmd(role) {
         return;
     }
     
-   let target = parts[1] || "";
-let valStr = parts[2] || "0";
-let value = Number(valStr);
-
-// ✨ CORRECTION : Si c'est la commande chat, on prend TOUT le texte après ";chat "
-let texteBrut = "";
-if (baseCmd === "chat") {
-    texteBrut = cleanCmd.substring(5).trim(); // Enlève "chat " et garde TOUT le reste
-} else {
-    texteBrut = parts.slice(2).join(" ");
-}
+    let target = parts[1] || "";
+    let valStr = parts[2] || "0";
+    let value = Number(valStr);
+    
+    // ✨ CORRECTION ULTRA PRÉCISE DU CHAT GLOBAL
+    let texteBrut = "";
+    if (baseCmd === "chat") {
+        let indexCoupe = fullCmd.toLowerCase().indexOf("chat");
+        texteBrut = fullCmd.substring(indexCoupe + 4).trim();
+        target = ""; 
+    } else {
+        texteBrut = parts.slice(2).join(" ");
+    }
     
     logBox.innerHTML += `<div style="color:#aaa;">&gt; ${fullCmd}</div>`;
     
     appliquerCommandeLocale(baseCmd, value, texteBrut, 0, 1, role);
     
+    // Envoi synchrone vers l'événement ré-aligné de ton server.js ("envoyerAdminAbuse")
     socket.emit("envoyerAdminAbuse", {
-        auteur: monPseudo || "Admin",
+        auteur: document.getElementById("player").value.trim() || "Admin",
         role: role,
         commande: fullCmd,
         baseCmd: baseCmd,
@@ -657,10 +653,10 @@ function appliquerCommandeLocale(baseCmd, valNum, texteBrut, arg2, totalConnecte
             break;
 
         case "spectate":
-            msg(`👁️ Mode spectateur activé sur la cible.`);
+            msg(`👁️ Mode spectateur activé.`);
             break;
             
-        // --- SECTION OWNER UNIQUEMENT ---
+        // --- BOUTIQUE / TRICHE (OWNER) ---
         case "credits":
             s.credits = Math.max(0, s.credits + valNum);
             ui();
