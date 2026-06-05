@@ -92,6 +92,14 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     box-shadow: 0 3px 15px rgba(255, 204, 0, 0.4); z-index: 15000;
 }
 
+/* --- BARRE DE BOOST RAINBOW --- */
+#owner-rainbow-bar {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 6px;
+    background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet, red);
+    background-size: 200% auto; animation: rainbowShift 2s linear infinite; z-index: 999999;
+}
+@keyframes rainbowShift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+
 .roblox-panel {
     display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif;
@@ -113,6 +121,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 </style>
 </head>
 <body>
+<div id="owner-rainbow-bar"></div>
 <div id="stars"></div><div id="stars2"></div>
 
 <div id="global-event-banner">🔥 ÉVÉNEMENT CASH MULTIPLIÉ ACTIF !</div>
@@ -252,7 +261,7 @@ let listeLeaderboard = [];
 
 let combo=0; let comboTimer=null; let frenzyActive=false; let frenzyTimer=null; let droneInterval = null;
 let eventMultiplier = 1; let eventTimer = null; let isSlowed = false; let isFrozen = false; let speedHackActive = false;
-let adminBoostMultiplier = 1;
+let adminBoostMultiplier = 1; let localBoostTimer = null;
 
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
@@ -290,7 +299,7 @@ socket.on("recevoirAdminAbuse", (data) => {
     let monPseudo = document.getElementById("player").value.trim();
     monPseudo = monPseudo.replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, ''); 
 
-    if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase()) {
+    if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase() && data.baseCmd !== "boost" && data.baseCmd !== "unabuse") {
         return; 
     }
 
@@ -495,7 +504,6 @@ function runCmd(role) {
     if(baseCmd === "help") { showHelp(role); inputField.value = ""; return; }
     
     // --- FILTRE STRICT DES PERMISSIONS ---
-    // Seuls help, players, clear, clearlb et chat sont autorisés pour le rôle "admin".
     const adminAllowed = ["help", "players", "clear", "clearlb", "chat"];
     if (role === "admin" && !adminAllowed.includes(baseCmd)) { 
         let err = document.createElement('div'); 
@@ -508,6 +516,18 @@ function runCmd(role) {
     
     socket.emit("commandeAdmin", { commande: val, baseCmd: baseCmd, value: value, cible: cible.trim(), texteBrut: texteBrut, auteur: pseudo, role: role }); 
     inputField.value = "";
+}
+
+function showHelp(role) {
+    const log = document.getElementById(`log-${role}`);
+    log.innerHTML += `<div style="color:#fff;margin-top:5px;">--- COMMANDES DISPONIBLES ---</div>`;
+    log.innerHTML += `<div>;chat [msg] : Alerte générale écran</div>`;
+    log.innerHTML += `<div>;players : Affiche le nombre de joueurs en ligne</div>`;
+    if(role === 'owner') {
+        log.innerHTML += `<div style="color:#ff5555;">;boost [xX] [minutes] : Lance un boost global avec barre rainbow (Ex: ;boost 10 5)</div>`;
+        log.innerHTML += `<div style="color:#ff5555;">;unabuse : Annule instantanément tous les abus et les boosts</div>`;
+    }
+    log.scrollTop = log.scrollHeight;
 }
 
 function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes, roleEmis) {
@@ -525,214 +545,47 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "alien":
             for(let i=0; i<5; i++){ let ufo = document.createElement('div'); ufo.className = 'ufo'; ufo.textContent = '🛸'; ufo.style.top = Math.random() * window.innerHeight + 'px'; ufo.style.left = '-60px'; document.body.appendChild(ufo); setTimeout(() => { ufo.style.transform = `translateX(${window.innerWidth + 100}px) translateY(${Math.random()*100 - 50}px)`; }, 100); setTimeout(() => ufo.remove(), 4200); } break;
         case "gravity": const el = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"]; el.forEach(id => { document.getElementById(id).style.animation = "floatGravity 6s ease-in-out infinite"; }); break;
-        case "ungravity": const el2 = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"]; el2.forEach(id => { document.getElementById(id).style.animation = "none"; }); break;
-        case "invert": document.body.classList.add("invert-colors"); break;
-        case "uninvert": document.body.classList.remove("invert-colors"); break;
-        case "clear":
-            s.credits = 0;
-            ui();
-            msg("🧹 Tes crédits ont été remis à zéro par la modération !");
-            break;
-        case "clearlb":
-            listeLeaderboard = [];
-            renderLB();
-            msg("📊 Le Leaderboard local a été nettoyé !");
-            break;
-        case "give":
-            s.credits += value;
-            ui();
-            msg(`🎁 Un admin t'a donné +${value} 💰 !`);
-            break;
-        case "shards":
-            s.shards += value;
-            ui();
-            msg(`✨ Tu as reçu ${value} Éclats de l'administration !`);
-            break;
-        case "kick":
-            document.getElementById("kick-screen").style.display = "block";
-            break;
-        case "ban":
-            document.getElementById("ban-screen").style.display = "block";
-            localStorage.clear();
-            break;
-        case "freeze":
-            isFrozen = true;
-            document.body.classList.add("frozen");
-            msg("🧊 Tu as été gelé par l'administration !");
-            break;
-        case "unfreeze":
-            isFrozen = false;
-            document.body.classList.remove("frozen");
-            msg("🔥 Tu as été dégelé. Tu peux rejouer !");
-            break;
-        case "slow":
-            isSlowed = true;
-            msg("🐌 Mode lent activé ! Tes gains sont divisés par 4 !");
-            break;
-        case "fast":
-            isSlowed = false;
-            msg("⚡ Mode lent désactivé. Vitesse normale rétablie !");
-            break;
-        case "tp":
-            s.zone = value;
-            s.maxzone = Math.max(s.maxzone, value);
-            ui();
-            msg(`🛸 Téléportation forcée à la Zone ${value} !`);
-            break;
-        case "seisme":
-            document.body.classList.add("seisme-active");
-            setTimeout(() => document.body.classList.remove("seisme-active"), 5000);
-            msg("🌋 ATTENTION : Séisme déclenché sur le serveur !");
-            break;
-        case "blur":
-            document.body.classList.add("blur-active");
-            break;
-        case "unblur":
-            document.body.classList.remove("blur-active");
-            break;
-        case "glitch":
-            document.getElementById("money").classList.add("glitch-text");
-            break;
-        case "unglitch":
-            document.getElementById("money").classList.remove("glitch-text");
-            break;
-        case "disco":
-            document.getElementById("planet").classList.add("disco-planet");
-            break;
-        case "undisco":
-            document.getElementById("planet").classList.remove("disco-planet");
-            break;
-        case "matrix":
-            document.body.classList.add("matrix-bg");
-            break;
-        case "unmatrix":
-            document.body.classList.remove("matrix-bg");
-            break;
-        case "nuclear":
-            document.body.classList.add("nuclear-mode");
-            msg("🚨 ALERTE NUCLÉAIRE DANS LA GALAXIE !");
-            break;
-        case "unnuclear":
-            document.body.classList.remove("nuclear-mode");
-            break;
-        case "crash":
-            document.getElementById("fake-crash-screen").style.display = "block";
-            break;
+        case "ungravity": const el2 = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"]; el2.forEach(id => { document.getElementById(id).style.animation = ""; }); break;
+        
         case "boost":
-            adminBoostMultiplier = value > 0 ? value : 2;
-            msg(`🚀 BOOST ADMIN ACTIF : Tes gains sont multipliés par x${adminBoostMultiplier} !`);
-            document.getElementById("money").style.color = "#ffaa00";
+            if (roleEmis === "owner") {
+                let mult = value; 
+                let minutes = Number(texteBrut.split(" ")[0]) || 1; 
+                adminBoostMultiplier = mult;
+                
+                document.getElementById("owner-rainbow-bar").style.display = "block";
+                msg(`👑 L'OWNER A BOOSTÉ LE SERVEUR x${mult} PENDANT ${minutes} MIN ! 🔥`);
+                
+                clearTimeout(localBoostTimer);
+                localBoostTimer = setTimeout(() => {
+                    adminBoostMultiplier = 1;
+                    document.getElementById("owner-rainbow-bar").style.display = "none";
+                    msg("Le boost de l'owner est terminé.");
+                }, minutes * 60 * 1000);
+            }
             break;
-        case "unboost":
-            adminBoostMultiplier = 1;
-            msg("🛑 Le boost admin est terminé. Retour aux gains normaux.");
-            document.getElementById("money").style.color = "#52ffe0";
-            break;
-        case "prestige":
-            s.prestige += value;
-            s.power = 1 + s.prestige;
-            ui();
-            msg(`🔁 Niveau de Prestige modifié à +${value} par l'administration !`);
-            break;
-        case "drill":
-            s.power += value;
-            ui();
-            msg(`⚡ Puissance du Drill modifiée de +${value} par l'administration !`);
-            break;
-        case "drone":
-            s.drones += value;
-            restartDroneInterval();
-            ui();
-            msg(`🤖 Nombre de Drones modifié de +${value} par l'administration !`);
-            break;
-        case "rainbow":
-            document.body.classList.add("rainbow-bg");
-            msg("🌈 Mode Arc-en-ciel activé !");
-            break;
-        case "unrainbow":
-            document.body.classList.remove("rainbow-bg");
-            break;
-        case "flash":
-            document.body.classList.add("flash-mode");
-            setTimeout(() => document.body.classList.remove("flash-mode"), 4000);
-            msg("⚡ ATTENTION : Mode Flash de 4 secondes déclenché !");
-            break;
-        case "hideright":
-            document.getElementById("ui-right").style.display = "none";
-            break;
-        case "showright":
-            document.getElementById("ui-right").style.display = "block";
-            break;
-        case "hideleft":
-            document.getElementById("ui-left").style.display = "none";
-            break;
-        case "showleft":
-            document.getElementById("ui-left").style.display = "block";
-            break;
-        case "blackout":
-            document.body.classList.add("blackout-active");
-            msg("⚫ PANNE DE COURANT GLOBALE ! Tout est éteint !");
-            break;
-        case "unblackout":
-            document.body.classList.remove("blackout-active");
-            msg("💡 Le courant est rétabli.");
-            break;
-        case "ghost":
-            document.getElementById("planet-container").style.opacity = "0.05";
-            msg("👻 La planète est devenue presque invisible !");
-            break;
-        case "unghost":
-            document.getElementById("planet-container").style.opacity = "1";
-            break;
-        case "size":
-            document.getElementById("planet").style.transform = `scale(${value})`;
-            msg(`🪐 Taille de la planète modifiée à l'échelle : ${value}`);
+            
+        case "unabuse":
+            if (roleEmis === "owner") {
+                adminBoostMultiplier = 1;
+                isFrozen = false;
+                isSlowed = false;
+                speedHackActive = false;
+                document.getElementById("owner-rainbow-bar").style.display = "none";
+                
+                const components = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"];
+                components.forEach(id => { 
+                    let element = document.getElementById(id);
+                    if(element) element.style.animation = ""; 
+                });
+                
+                document.body.className = "";
+                msg("👑 Tout abus/boost a été nettoyé et annulé par l'Owner !");
+                restartDroneInterval();
+                ui();
+            }
             break;
     }
-}
-
-function showHelp(role) {
-    const log = document.getElementById(`log-${role}`);
-    let h = "<div style='color:#52ffe0;'>--- COMMANDES DISPONIBLES ---</div>";
-    h += "<div><b>;clear</b> - Reset les crédits (Admin & Owner)</div>";
-    h += "<div><b>;clearlb</b> - Nettoyer le Leaderboard (Admin & Owner)</div>";
-    h += "<div><b>;chat [texte]</b> - Faire une annonce globale du haut (Admin & Owner)</div>";
-    h += "<div><b>;players</b> - Voir le nombre de connectés (Admin & Owner)</div>";
-    
-    if (role === "owner") {
-        h += "<div style='color:#ff5555;'>--- OWNER PANEL ONLY ---</div>";
-        h += "<div><b>;boost [multiplicateur]</b> - Active un boost multiplicateur de gains</div>";
-        h += "<div><b>;unboost</b> - Désactiver le boost</div>";
-        h += "<div><b>;give [montant]</b> - Donner des crédits</div>";
-        h += "<div><b>;shards [montant]</b> - Donner des éclats</div>";
-        h += "<div><b>;drill [niveaux]</b> - Modifier la puissance de clic</div>";
-        h += "<div><b>;drone [nombre]</b> - Modifier les drones automatiques</div>";
-        h += "<div><b>;prestige [nombre]</b> - Modifier la valeur de prestige</div>";
-        h += "<div><b>;tp [zone]</b> - Se téléporter à une zone</div>";
-        h += "<div><b>;size [facteur]</b> - Changer la taille de la planète (ex: ;size 2)</div>";
-        h += "<div><b>;freeze / ;unfreeze</b> - Geler ou dégeler le joueur</div>";
-        h += "<div><b>;slow / ;fast</b> - Diviser par 4 les gains ou remettre normal</div>";
-        h += "<div><b>;rainbow / ;unrainbow</b> - Fond arc-en-ciel</div>";
-        h += "<div><b>;flash</b> - Déclenche un stroboscope de 4s</div>";
-        h += "<div><b>;hideleft / ;showleft</b> - Masquer/afficher le panneau gauche</div>";
-        h += "<div><b>;hideright / ;showright</b> - Masquer/afficher le leaderboard</div>";
-        h += "<div><b>;alien</b> - Lancer un raid d'ovnis</div>";
-        h += "<div><b>;gravity / ;ungravity</b> - Activer/Désactiver la lévitation de l'UI</div>";
-        h += "<div><b>;invert / ;uninvert</b> - Inverser les couleurs</div>";
-        h += "<div><b>;blur / ;unblur</b> - Rendre l'écran flou</div>";
-        h += "<div><b>;glitch / ;unglitch</b> - Effet glitch sur l'argent</div>";
-        h += "<div><b>;disco / ;undisco</b> - Planète folle en rotation</div>";
-        h += "<div><b>;seisme</b> - Faire trembler l'écran pendant 5s</div>";
-        h += "<div><b>;crash</b> - Écran bleu Windows d'erreur fatal</div>";
-        h += "<div><b>;kick</b> - Exclure instantanément de la session</div>";
-        h += "<div><b>;ban</b> - Bannir définitivement (efface la sauvegarde)</div>";
-        h += "<div><b>;matrix / ;unmatrix</b> - Fond rétro hacker</div>";
-        h += "<div><b>;nuclear / ;unnuclear</b> - Alerte d'urgence rouge</div>";
-        h += "<div><b>;blackout / ;unblackout</b> - Éteindre/rallumer l'écran (Noir total)</div>";
-        h += "<div><b>;ghost / ;unghost</b> - Rendre la planète transparente</div>";
-    }
-    log.innerHTML += h;
-    log.scrollTop = log.scrollHeight;
 }
 </script>
 </body>
