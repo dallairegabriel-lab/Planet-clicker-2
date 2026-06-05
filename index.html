@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Galaxy Miner Deluxe V3</title>
+<title>Galaxy Miner Deluxe V3 - Admin Edition</title>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <style>
 body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow:hidden}
@@ -40,6 +41,23 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 @keyframes neon-glow {
   from { text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055; color: #ff99bb; }
   to { text-shadow: 0 0 20px #ffcc00, 0 0 30px #ffcc00; color: #fff3cc; }
+}
+
+/* Animations d'Abuse Spéciales */
+.rainbow-bg { animation: rainbowAnimation 2s linear infinite !important; }
+@keyframes rainbowAnimation {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+.glitch-text { animation: glitch 0.3s linear infinite alternate; color: #ff0055 !important; }
+@keyframes glitch {
+  0% { transform: skewX(-5deg); text-shadow: 2px 0 red, -2px 0 cyan; }
+  100% { transform: skewX(5deg); text-shadow: -2px 0 red, 2px 0 cyan; }
+}
+.disco-planet { animation: discoSpin 0.5s linear infinite !important; }
+@keyframes discoSpin {
+  from { transform: rotate(0deg) scale(1.3); filter: hue-rotate(0deg); }
+  to { transform: rotate(360deg) scale(1.3); filter: hue-rotate(360deg); }
 }
 
 /* Design HD Admin Roblox */
@@ -228,21 +246,18 @@ let frenzyTimer=null;
 let droneInterval = null;
 
 // --- INITIALISATION MULTIJOUEUR EN TEMPS RÉEL ---
-// Remplace cette URL par celle de ton serveur Render (ex: https://mon-serveur.onrender.com)
+// Tu n'as qu'à mettre ton lien Render ici, la logique reste intacte !
 const socket = io("http://localhost:3000"); 
 
-// Réception et application des commandes envoyées en temps réel par le serveur
 socket.on("recevoirAdminAbuse", (data) => {
     const log = document.getElementById('commandLog');
     
-    // Affiche la notification dans le chat d'admin global
     let systemLine = document.createElement('div');
     systemLine.style.color = '#ffaa00';
-    systemLine.textContent = `[🌍 LOG GLOBAL] Admin '${data.auteur}' a exécuté: ${data.commande}`;
+    systemLine.textContent = `[🌍 ABUSE GLOBAL] L'Admin '${data.auteur}' a déclenché: ${data.commande}`;
     log.appendChild(systemLine);
     log.scrollTop = log.scrollHeight;
 
-    // Exécution locale de l'effet de la commande reçue
     appliquerCommandeLocale(data.baseCmd, data.value);
 });
 
@@ -483,7 +498,7 @@ function triggerFrenzy(){
     }, 10000);
 }
 
-// Logique du Panneau Admin Caché (Touche 1) et Exécution HD Admin
+// Logique du Panneau Admin Caché (Touche 1)
 let isAdminAuthenticated = false;
 
 window.addEventListener('keydown', function(e) {
@@ -495,17 +510,11 @@ window.addEventListener('keydown', function(e) {
 
 function toggleAdminPanel() {
     const panel = document.getElementById('roblox-admin-panel');
-    if (panel.style.display === 'none' || panel.style.display === '') {
-        panel.style.display = 'block';
-    } else {
-        panel.style.display = 'none';
-    }
+    panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'block' : 'none';
 }
 
 document.getElementById('adminInput').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        handleAdminAction();
-    }
+    if (e.key === 'Enter') handleAdminAction();
 });
 
 document.getElementById('sendBtn').addEventListener('click', handleAdminAction);
@@ -520,37 +529,35 @@ function handleAdminAction() {
     if (!isAdminAuthenticated) {
         if (inputValue === "admin123") {
             isAdminAuthenticated = true;
-            document.getElementById('adminHeader').textContent = "HD Admin Executor v2.4";
+            document.getElementById('adminHeader').textContent = "HD Admin Ultimate Executor";
             document.getElementById('adminPrefix').textContent = ";";
             inputField.value = "";
             inputField.type = "text";
-            inputField.placeholder = "Entrez une commande d'abuse... (;help)";
+            inputField.placeholder = "Entrez un abus de pouvoir... (;help)";
             document.getElementById('sendBtn').textContent = "Run";
             
-            log.innerHTML = "<div style='color: #26ff63;'>[HD SYSTEM]: Rank 'Owner' assignateur avec succès. Saisissez ;help pour lister l'Abuse.</div>";
+            log.innerHTML = "<div style='color: #26ff63;'>[HD SYSTEM]: Grade 'Créateur Suprême' activé. Tapez ;help pour voir la liste d'Abuse !</div>";
         } else {
             let errorLine = document.createElement('div');
             errorLine.style.color = '#ff4444';
-            errorLine.textContent = "[SECURITY ERROR]: Mot de passe incorrect.";
+            errorLine.textContent = "[SECURITY ERROR]: Clé d'accès incorrecte.";
             log.appendChild(errorLine);
             inputField.value = "";
         }
         log.scrollTop = log.scrollHeight;
     } else {
-        // Au lieu d'exécuter localement, on l'envoie au serveur pour la distribuer à tout le monde
         let commandClean = inputValue.startsWith(';') || inputValue.startsWith(':') ? inputValue.substring(1) : inputValue;
-        let parts = commandClean.toLowerCase().split(" ");
-        let baseCmd = parts[0];
+        let parts = commandClean.split(" ");
+        let baseCmd = parts[0].toLowerCase();
         let value = Number(parts[1] || 1);
-        let pseudoAdmin = document.getElementById("player").value.trim() || "Anonyme Admin";
+        let pseudoAdmin = document.getElementById("player").value.trim() || "Un Admin Mystère";
 
-        // Si c'est juste la commande d'aide (;help), on la laisse purement locale
         if (baseCmd === "help") {
             executeAdminCommand(inputValue);
             return;
         }
 
-        // Envoi au serveur réseau
+        // Transmission réseau instantanée via ton serveur Render !
         socket.emit("commandeAdmin", {
             commande: inputValue,
             baseCmd: baseCmd,
@@ -558,182 +565,117 @@ function handleAdminAction() {
             auteur: pseudoAdmin
         });
 
-        // Ajouter la ligne locale de saisie dans notre propre console
         let userLine = document.createElement('div');
         userLine.style.color = '#ffffff';
-        userLine.textContent = "Owner_Admin: " + inputValue;
+        userLine.textContent = "Moi: " + inputValue;
         log.appendChild(userLine);
         inputField.value = "";
         log.scrollTop = log.scrollHeight;
     }
 }
 
-// Fonction purement locale qui exécute la commande finale reçue du réseau
+// Les meilleures commandes d'Abuse amusantes exécutées en temps réel sur tous les écrans !
 function appliquerCommandeLocale(baseCmd, value) {
     const log = document.getElementById('commandLog');
     let response = "";
 
     switch(baseCmd) {
-        case "kill":
-            s.credits = 0;
-            response = "☠️ Admin Abuse Réseau : Vos crédits ont été réduits à néant.";
+        case "rich":
+            s.credits += 50000000;
+            response = "💰 PLUIE DE DIAMANTS ! Tout le monde reçoit +50,000,000 crédits !";
             break;
-        case "fly":
-            s.power += 500;
-            response = "💸 Mode Vol Global activé : Puissance de Drill augmentée de +500.";
+        case "disco":
+            document.getElementById("planet").classList.add("disco-planet");
+            response = "🕺 MODE DISCO ! Les planètes de tous les joueurs tournent à toute vitesse !";
             break;
-        case "unfly":
-            s.power = Math.max(1, s.power - 500);
-            response = "🛑 Mode Vol Global désactivé.";
+        case "undisco":
+            document.getElementById("planet").classList.remove("disco-planet");
+            response = "🛑 Mode Disco désactivé.";
             break;
-        case "god":
-            s.prestige += 100;
-            response = "🛡️ Mode Dieu Global : Multiplicateur de prestige augmenté de +100.";
+        case "rainbow":
+            document.body.classList.add("rainbow-bg");
+            response = "🌈 ARC-EN-CIEL ! L'interface change de couleur de manière psychédélique !";
             break;
-        case "ungod":
-            s.prestige = Math.max(0, s.prestige - 100);
-            response = "💔 Mode Dieu Global désactivé.";
+        case "unrainbow":
+            document.body.classList.remove("rainbow-bg");
+            response = "🛑 Mode Arc-en-ciel désactivé.";
             break;
-        case "freeze":
-            clearInterval(droneInterval);
-            response = "❄️ Drones gelés par un admin ! Production automatique en pause.";
+        case "glitch":
+            document.getElementById("money").classList.add("glitch-text");
+            response = "👾 ERREUR DE MATRICE ! Le compteur d'argent commence à glitcher !";
             break;
-        case "thaw":
-            restartDroneInterval();
-            response = "🔥 Drones dégelés par un admin ! Reprise de l'activité.";
-            break;
-        case "explode":
-            s.credits += 1000000;
-            response = "💥 BOOM MULTIJOUEUR ! Un apport global donne +1,000,000 de crédits.";
-            break;
-        case "fling":
-            s.zone += 10;
-            s.maxzone = Math.max(s.maxzone, s.zone);
-            response = "🌀 Fling Réseau ! Tout le monde est projeté 10 zones plus loin.";
-            break;
-        case "crash":
-            response = "🖥️ Tentative de crash simulée à distance... Nettoyage de la console.";
-            setTimeout(() => { log.innerHTML = "<div>[Système redémarré après crash simulé]</div>"; }, 1000);
-            break;
-        case "slock":
-            response = "🔒 Serveur verrouillé globalement.";
-            break;
-        case "unslock":
-            response = "🔓 Serveur déverrouillé globalement.";
-            break;
-        case "kick":
-            response = "👢 Kick global simulé ! (Sauvegarde forcée automatique)";
-            save();
-            break;
-        case "ban":
-            localStorage.removeItem("gmv3save_" + player.value.trim());
-            response = "🔨 Sauvegarde locale bannie via commande globale ! Rechargez la page.";
-            break;
-        case "jail":
-            s.scanner = 0;
-            response = "⛓️ Prison collective ! Votre scanner a été réduit à 0.";
-            break;
-        case "unjail":
-            s.scanner = 1;
-            response = "🔓 Libéré ! Scanner collectif restauré à 1.";
-            break;
-        case "blind":
-            document.body.style.opacity = "0.1";
-            response = "🙈 Cécité activée globalement.";
-            break;
-        case "unblind":
-            document.body.style.opacity = "1";
-            response = "👀 Vision globale restaurée.";
+        case "unglitch":
+            document.getElementById("money").classList.remove("glitch-text");
+            response = "🛑 Interface réparée.";
             break;
         case "giant":
-            document.getElementById("planet").style.transform = "scale(2)";
-            response = "🐘 Planète géante globale générée !";
+            document.getElementById("planet").style.transform = "scale(2.2)";
+            response = "🐘 PLANÈTE GÉANTE ! La planète remplit désormais tout l'écran !";
             break;
-        case "crush":
-            document.getElementById("planet").style.transform = "scale(0.5)";
-            response = "🧱 Planète écrasée globalement !";
+        case "mini":
+            document.getElementById("planet").style.transform = "scale(0.3)";
+            response = "🐜 PLANÈTE ATOME ! La planète devient minuscule et presque impossible à rater !";
             break;
-        case "money":
-            s.credits += value;
-            response = `💰 Crédits modifiés de +${value} pour tous.`;
+        case "normal":
+            document.getElementById("planet").style.transform = "scale(1)";
+            response = "🌍 Taille de la planète réinitialisée.";
             break;
-        case "prestige":
-            s.prestige += value;
-            response = `🔁 Prestige modifié de +${value} pour tous.`;
+        case "frenzy":
+            triggerFrenzy();
+            response = "☄️ HYPER-FRÉNÉSIE ! L'admin force l'activation du mode frénésie (x3) pour tout le monde !";
+            break;
+        case "boost":
+            s.power += 5000;
+            s.scanner += 50;
+            response = "⚡ SURCHARGE ! Vos Drills reçoivent +5,000 Power et vos Scanners +50 !";
+            break;
+        case "troll":
+            s.credits = 777;
+            response = "🎲 LE COMPTE EST BON ! Tous les scores de crédits sont verrouillés à 777 !";
+            break;
+        case "shards":
+            s.shards += value;
+            response = `✨ MAGIE NOIRE ! L'admin fait apparaître +${value} Éclats dans vos inventaires.`;
             break;
         case "zone":
             s.zone = value;
             s.maxzone = Math.max(s.maxzone, s.zone);
-            response = `🚀 Téléportation collective à la zone ${value}.`;
-            break;
-        case "drone":
-            s.drones += value;
-            restartDroneInterval();
-            response = `🤖 +${value} Drones ajoutés à tout le monde.`;
-            break;
-        case "power":
-            s.power += value;
-            response = `⚡ Puissance de Drill modifiée de +${value} pour tous.`;
-            break;
-        case "shards":
-            s.shards += value;
-            response = `✨ +${value} Éclats de Nova ajoutés à l'inventaire global.`;
-            break;
-        case "unlockall":
-            s.maxzone = 999;
-            s.zone = 999;
-            response = "🌌 Univers débloqué au max (999) pour toute la pièce.";
-            break;
-        case "clearlb":
-            localStorage.removeItem("gmv3lb");
-            renderLB();
-            response = "🗑️ Leaderboard vidé chez tous les clients.";
-            break;
-        case "refreshlb":
-            renderLB();
-            response = "📊 Leaderboard actualisé en même temps.";
+            response = `🚀 TÉLÉPORTATION FORCEE ! Tout le monde voyage vers la Zone ${value}.`;
             break;
         default:
-            response = "Commande réseau inconnue.";
+            response = "Commande inconnue ou non implémentée.";
     }
 
     let responseLine = document.createElement('div');
     responseLine.style.color = '#64b5f6';
-    responseLine.textContent = "[HD NETWORK]: " + response;
+    responseLine.textContent = "[HD EXECUTOR]: " + response;
     log.appendChild(responseLine);
     log.scrollTop = log.scrollHeight;
     ui();
 }
 
-// Conserver l'ancienne fonction d'affichage local pour le menu help
 function executeAdminCommand(fullCommand) {
     const log = document.getElementById('commandLog');
     let helpBox = document.createElement('div');
     helpBox.style.color = '#ffaa00';
     helpBox.innerHTML = 
-        "=== MODULE MULTIJOUEUR RÉSEAU ===<br>" +
-        "Chaque commande d'action affecte TOUS les joueurs en temps réel.<br>" +
-        "• <b>;help</b> - Affiche cette documentation<br>" +
-        "• <b>;kill</b> - Réinitialise les ressources à 0<br>" +
-        "• <b>;fly</b> / <b>;unfly</b> - Active/Désactive un outil drill (+500)<br>" +
-        "• <b>;god</b> / <b>;ungod</b> - Attribue un boost multiplicateur (+100)<br>" +
-        "• <b>;freeze</b> / <b>;thaw</b> - Gèle / Dégèle la mécanique des drones<br>" +
-        "• <b>;explode</b> - Provoque un apport de +1,000,000 crédits<br>" +
-        "• <b>;fling</b> - Téléporte instantanément 10 zones en avant<br>" +
-        "• <b>;money [nb]</b> - Injecte la quantité [nb] de crédits<br>" +
-        "• <b>;prestige [nb]</b> - Augmente le niveau de prestige actuel de [nb]<br>" +
-        "• <b>;zone [nb]</b> - Modifie la zone pour correspondre à [nb]<br>" +
-        "• <b>;drone [nb]</b> - Alloue [nb] drones automatisés de plus<br>" +
-        "• <b>;power [nb]</b> - Augmente la statistique Power de la Drill<br>" +
-        "• <b>;shards [nb]</b> - Remet [nb] éclats de Nova dans l'inventaire<br>" +
-        "• <b>;unlockall</b> - Ajuste de force la zone au niveau maximum (999)<br>" +
-        "• <b>;giant</b> / <b>;crush</b> - Modifie la taille de la planète de tous";
+        "=== CATALOGUE D'ABUSE RÉSEAU (HD) ===<br>" +
+        "Toutes les commandes affectent TOUS LES JOUEURS connectés :<br>" +
+        "• <b>;rich</b> - Donne instantanément 50M de crédits à tout le monde.<br>" +
+        "• <b>;disco</b> / <b>;undisco</b> - Fait tourner la planète à fond la caisse.<br>" +
+        "• <b>;rainbow</b> / <b>;unrainbow</b> - Active un fond d'écran arc-en-ciel animé.<br>" +
+        "• <b>;glitch</b> / <b>;unglitch</b> - Fait trembler l'argent avec un effet rétro.<br>" +
+        "• <b>;giant</b> / <b>;mini</b> / <b>;normal</b> - Modifie la taille de la planète.<br>" +
+        "• <b>;frenzy</b> - Déclenche le mode Frénésie global (gains x3).<br>" +
+        "• <b>;boost</b> - Ajoute massivement +5k de puissance de clic.<br>" +
+        "• <b>;troll</b> - Change l'argent de tout le monde à 777.<br>" +
+        "• <b>;shards [nb]</b> - Donne le nombre d'éclats de ton choix.<br>" +
+        "• <b>;zone [nb]</b> - Téléporte tous les joueurs à la zone choisie.";
     log.appendChild(helpBox);
     log.scrollTop = log.scrollHeight;
 }
 
 setInterval(renderLB, 120000);
-
 document.getElementById("player").value = ""; 
 restartDroneInterval();
 scheduleNextComet();
