@@ -151,7 +151,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
         <button onclick="buyMaxScanner()" class="btn-max">[MAX]</button>
     </div>
     <button onclick="doPrestige()">🔁 Prestige</button>
-    <button onclick="saveScore()">🏆 Envoi LB</button>
 </div>
 
 <div class="left card" id="ui-left">
@@ -166,7 +165,7 @@ Zone Max: <span id="maxzone">1</span>
 </div>
 
 <div class="right card" id="ui-right">
-<h3>Leaderboard Mondial 🌍</h3>
+<h3>Leaderboard Mondial (TOP 10) 🌍</h3>
 <div id="leaderboard">Chargement...</div>
 </div>
 
@@ -229,7 +228,7 @@ let eventMultiplier = 1; let eventTimer = null; let isSlowed = false; let isFroz
 // --- CONNEXION SOCKET.IO ---
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
-socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
+socket.on("majJoueursEn Ligne", (total) => { document.getElementById("onlineCount").textContent = total; });
 
 // Réception du leaderboard synchronisé globalement
 socket.on("miseAJourLeaderboard", (data) => {
@@ -350,21 +349,15 @@ function restartDroneInterval(){
 setInterval(()=>{ save(); }, 15000);
 function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; msg(`🔁 Prestige +1 ! (+${gainedShards} Éclats)`); restartDroneInterval(); ui(); }else{ msg("⚠️ Atteins au moins la Zone 5 pour le Prestige !"); }}
 
-// Rendu graphique du Leaderboard reçu depuis le serveur
+// Rendu graphique du Leaderboard - STRICTEMENT LIMITÉ AU TOP 10
 function renderLB(){ 
     if(listeLeaderboard.length === 0) {
         document.getElementById("leaderboard").innerHTML = "Aucun score pour le moment.";
         return;
     }
-    document.getElementById("leaderboard").innerHTML = listeLeaderboard.map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");
-}
-
-// Fonction pour forcer l'envoi manuel du score au serveur si besoin
-function saveScore(){ 
-    let name=player.value.trim(); 
-    if(!name){ msg("⚠️ Écris ton nom avant d'envoyer !"); return; } 
-    socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone });
-    msg("🏆 Score envoyé au classement !");
+    // On ne prend que les 10 premiers éléments reçus
+    let top10 = listeLeaderboard.slice(0, 10);
+    document.getElementById("leaderboard").innerHTML = top10.map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");
 }
 
 // --- ACTUALISATION DU LEADERBOARD TOUTES LES 2 SECONDES ---
@@ -453,57 +446,47 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "clearlb": socket.emit("demandeEffacerClassement"); response = "🏆 Signal d'effacement LB envoyé au serveur."; break;
         case "giftdrone": let dronesOfferts = value || 5; s.drones += dronesOfferts; response = `🤖 Cadeau global de +${dronesOfferts} Drones !`; restartDroneInterval(); break;
         case "giftpower": let powerOffert = value || 100; s.power += powerOffert; response = `⚡ Cadeau global de +${powerOffert} Power !`; break;
-        case "giftscanner": let scanOffert = value || 10; s.scanner += scanOffert; response = `🔭 Cadeau global de +${scanOffert} Scanner !`; break;
-        case "boostgod": s.power += 100000; s.scanner += 1000; s.drones += 500; response = `🌌 OVERCLOCK GOD MODE APPLIQUE !`; restartDroneInterval(); break;
-        case "earthquake": document.body.style.animation = "click-shake 0.15s ease-in-out infinite alternate"; response = "🌋 SEISME GENERALISE !"; break;
-        case "unearthquake": document.body.style.animation = "none"; response = "🛑 Fin du tremblement."; break;
-        case "cctv": document.body.style.filter = "contrast(1.8) brightness(0.9) sepia(0.3)"; response = "📹 Filtre Caméra CCTV actif."; break;
-        case "uncctv": document.body.style.filter = "none"; response = "🛑 Filtre CCTV retiré."; break;
-        case "flash": document.body.classList.add("flash-mode"); response = "⚡ STROBOSCOPE FLASH DÉCLENCHÉ !"; break;
-        case "unflash": document.body.classList.remove("flash-mode"); response = "🛑 Flash désactivé."; break;
-        case "speedhack": speedHackActive = true; restartDroneInterval(); response = "⚙️ SPEEDHACK DRONES ACTIF (Vitesse x5) !"; break;
-        case "unsid":
-        case "unspeedhack": speedHackActive = false; restartDroneInterval(); response = "🛑 Drones revenus à vitesse normale."; break;
-        case "nuclear": document.body.classList.add("nuclear-mode"); const alertB = document.getElementById("global-chat-alert"); alertB.textContent = "🚨 ALERTE NUCLÉAIRE DIRECTE 🚨"; alertB.style.top = "20px"; response = "☢️ PROTOCOLE NUCLÉAIRE DEPLOYÉ !"; break;
-        case "richdeluxe": s.credits += 1000000000; response = "💰 PACK CRÉDITS SUPRÊME : +1 MILLIARD !"; break;
-
-        case "unabuse":
-            eventMultiplier = 1; speedHackActive = false; document.getElementById("global-event-banner").style.display = "none";
-            isSlowed = false; isFrozen = false; document.getElementById("planet").className = "";
-            document.body.className = ""; document.getElementById("money").className = ""; document.getElementById("planet").style.transform = "scale(1)";
-            document.body.style.animation = "none"; document.body.style.filter = "none";
-            const els = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"]; els.forEach(id => { document.getElementById(id).style.animation = "none"; });
-            response = "🛡️ RESET DE TOUS LES ABUS FINI."; restartDroneInterval(); break;
-        default: response = "Commande inconnue.";
     }
-    let line = document.createElement('div'); line.style.color = '#64b5f6'; line.textContent = "[EXEC]: " + response;
-    logO.appendChild(line.cloneNode(true)); logA.appendChild(line); logO.scrollTop = logO.scrollHeight; logA.scrollTop = logA.scrollHeight; ui();
+    if (response) {
+        let lineO = document.createElement('div'); lineO.textContent = response; logO.appendChild(lineO); logO.scrollTop = logO.scrollHeight;
+        let lineA = document.createElement('div'); lineA.textContent = response; logA.appendChild(lineA); logA.scrollTop = logA.scrollHeight;
+    }
 }
 
 function showHelp(role) {
     const log = document.getElementById(`log-${role}`);
-    let help = `<div style="color:#ffcc00;">=== CATALOGUE DES COMMANDES ===<br>` +
-        "🎁 <b>GIFTS & EXP :</b><br>" +
-        "• <b>;giftdrone / ;giftpower / ;giftscanner [nb]</b><br>" +
-        "• <b>;boostgod</b> (Stats max) | <b>;richdeluxe</b> (+1 Milliard 💰)<br>" +
-        "• <b>;rich</b> (+50M) | <b>;frenzy</b> (Mode x3)<br><br>" +
-        "🌀 <b>VISUELS & TROLLS INSANE :</b><br>" +
-        "• <b>;earthquake</b> (Tremblement) | <b>;cctv</b> (Caméra rétro)<br>" +
-        "• <b>;flash</b> (Stroboscope ⚡) | <b>;nuclear</b> (Alerte rouge ☢️)<br>" +
-        "• <b>;gravity</b> | <b>;invert</b> | <b>;disco</b> | <b>;rainbow</b> | <b>;matrix</b> | <b>;glitch</b> | <b>;alien</b><br><br>" +
-        "⚙️ <b>SYSTÈME :</b><br>" +
-        "• <b>;speedhack</b> (Drones x5 ⚙️) | <b>;freeze</b> (Bloquer clics)<br>" +
-        "• <b>;fakecrash</b> (Écran bleu) | <b>;players</b> (Connectés)<br>" +
-        "• <b>;unabuse</b> (Nettoie TOUT).";
+    log.innerHTML += "<div style='color:#55aaff;'>--- COMMANDES DISPONIBLES ---</div>";
+    log.innerHTML += "<div>;players - Voir le nombre de connectés</div>";
+    log.innerHTML += "<div>;chat [texte] - Alerte message global</div>";
+    log.innerHTML += "<div>;alien - Déclencher invasion d'OVNIs</div>";
+    log.innerHTML += "<div>;gravity / ;ungravity - Effet sans gravité</div>";
+    log.innerHTML += "<div>;invert / ;uninvert - Inversion visuelle</div>";
+    log.innerHTML += "<div>;fakecrash - Écran bleu d'erreur simulé</div>";
+    log.innerHTML += "<div>;freeze / ;unfreeze - Geler la planète</div>";
+    log.innerHTML += "<div>;slow / ;unslow - Ralentir la vitesse</div>";
+    log.innerHTML += "<div>;rich - Injecter +50M crédits</div>";
+    log.innerHTML += "<div>;disco / ;undisco - Mode discothèque</div>";
+    log.innerHTML += "<div>;rainbow / ;unrainbow - Arrière-plan arc-en-ciel</div>";
+    log.innerHTML += "<div>;matrix / ;unmatrix - Ambiance hacker vert</div>";
+    log.innerHTML += "<div>;glitch / ;unglitch - Tremblement de texte</div>";
+    log.innerHTML += "<div>;giant / ;mini / ;normal - Modifier échelle planète</div>";
+    log.innerHTML += "<div>;frenzy - Activer de force gains x3</div>";
+    log.innerHTML += "<div>;shards [nombre] - Donner des Éclats</div>";
+    log.innerHTML += "<div>;zone [nombre] - Téléportation de zone</div>";
+    log.innerHTML += "<div>;giftdrone [nombre] - Offrir des drones</div>";
+    log.innerHTML += "<div>;giftpower [nombre] - Offrir de la puissance</div>";
     if (role === "owner") {
-        help += "<br><br><span style='color:#ff4444;'>👑 <b>OWNER SUPRÊME :</b><br>" +
-                "• <b>;event [multi] [secondes]</b> | <b>;clear</b> (Wipe)<br>" +
-                "• <b>;clearlb</b> (Supprime LB) | <b>;troll</b> (777)</span>";
+        log.innerHTML += "<div style='color:#ff5555;'>[OWNER ONLY] :</div>";
+        log.innerHTML += "<div>;event [multi] [secondes] - Lancer un bonus mondial</div>";
+        log.innerHTML += "<div>;troll - Forcer les crédits à 777</div>";
+        log.innerHTML += "<div>;clear - Remise à zéro totale du joueur</div>";
+        log.innerHTML += "<div>;clearlb - Purger le classement du serveur</div>";
     }
-    log.innerHTML = help + "</div>"; log.scrollTop = log.scrollHeight;
+    log.scrollTop = log.scrollHeight;
 }
 
-document.getElementById("player").value = ""; restartDroneInterval(); scheduleNextComet(); uiWithoutSaving();
+// Initialisation globale au chargement
+window.onload = () => { scheduleNextComet(); };
 </script>
 </body>
 </html>
