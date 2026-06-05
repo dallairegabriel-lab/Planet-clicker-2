@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Galaxy Miner Deluxe V3</title>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<style>
+body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow:hidden}
+#stars,#stars2{position:fixed;inset:0;pointer-events:none}
+#stars{background-image:radial-gradient(white 1px,transparent 1px);background-size:45px 45px;opacity:.2}
+#stars2{background-image:radial-gradient(cyan 1px,transparent 1px);background-size:90px 90px;opacity:.08;animation:drift 60s linear infinite}
+@keyframes drift{from{transform:translateY(0)}to{transform:translateY(90px)}}
+.top{display:flex;justify-content:center;gap:15px;padding:10px;flex-wrap:wrap}
+.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1)}
+#money{text-align:center;font-size:54px;color:#52ffe0;text-shadow:0 0 15px #52ffe0;margin-top:10px}
+#planet-container{text-align:center;position:relative;margin:10px auto;width:220px}
+#planet{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
+#planet:active{transform:scale(.85)}
+.shake{animation: click-shake 0.1s ease-in-out infinite alternate;}
+@keyframes click-shake {
+  from { transform: translate(3px, 1px) rotate(0deg); }
+  to { transform: translate(-3px, -1px) rotate(1deg); }
+}
+#planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
+.left,.right{position:fixed;top:100px;width:260px}
+.left{left:10px}.right{right:10px}
+button{border:none;border-radius:10px;padding:10px 14px;margin:4px;cursor:pointer;font-weight:bold;background:#fff;color:#000;transition:0.2s}
+button:hover{background:#52ffe0;transform:translateY(-2px)}
+.shop{text-align:center;margin-top:15px}
+.notice{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10}
+.pop{position:fixed;font-weight:bold;pointer-events:none;animation:up .8s forwards;z-index:5}
+@keyframes up{to{opacity:0;transform:translateY(-80px)}}
+#leaderboard{max-height:180px;overflow:auto}
+.progress-bar-container{width:180px;background:rgba(255,255,255,0.1);height:8px;border-radius:4px;margin:5px auto;overflow:hidden}
+#progress-bar{width:0%;height:100%;background:linear-gradient(90deg, #52ffe0, #0077ff);transition:width 0.2s}
+#combo-display{text-align:center;font-size:18px;color:#ffaa00;font-weight:bold;height:24px;text-shadow:0 0 8px #ffaa00}
+#comet{position:fixed;font-size:40px;cursor:pointer;z-index:99;display:none;user-select:none}
+.frenzy-active{animation: neon-glow 1s ease-in-out infinite alternate !important;}
+@keyframes neon-glow {
+  from { text-shadow: 0 0 10px #ff0055, 0 0 20px #ff0055; color: #ff99bb; }
+  to { text-shadow: 0 0 20px #ffcc00, 0 0 30px #ffcc00; color: #fff3cc; }
+}
+
+/* Design HD Admin Roblox */
+#roblox-admin-panel {
+    display: none; 
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    background-color: rgba(35, 35, 35, 0.75);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #ffffff;
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.7);
+    overflow: hidden;
+    z-index: 10000;
+}
+.admin-header {
+    background-color: rgba(25, 25, 25, 0.85);
+    padding: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.close-admin-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0 5px;
+    margin: 0;
+}
+.close-admin-btn:hover {
+    color: #ff4444;
+    transform: none;
+}
+.admin-body {
+    padding: 12px;
+}
+.command-log {
+    height: 220px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 12px;
+    font-family: 'Courier New', Courier, monospace;
+    overflow-y: auto;
+    color: #26ff63;
+    margin-bottom: 12px;
+}
+.command-log div {
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+.input-area {
+    display: flex;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 6px 10px;
+}
+.prefix {
+    color: #999;
+    font-family: monospace;
+    margin-right: 8px;
+    font-weight: bold;
+    font-size: 14px;
+}
+#adminInput {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+}
+#sendBtn {
+    background-color: rgba(60, 60, 60, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+#sendBtn:hover {
+    background-color: rgba(90, 90, 90, 1);
+}
+</style>
+</head>
+<body>
+<div id="stars"></div><div id="stars2"></div>
+
+<div class="top">
+<div class="card">💰 <span id="moneyTop">0</span></div>
+<div class="card">🌍 Zone <span id="zone">1</span></div>
+<div class="card">🔁 Prestige <span id="prestige">0</span></div>
+<div class="card">✨ Éclats: <span id="shards">0</span></div>
+<div class="card">👤 <input id="player" placeholder="Nom" oninput="changePlayer()"></div>
+</div>
+
+<div id="notice" class="notice">Bienvenue mineur. Écris ton nom pour commencer !</div>
+
+<div id="money">0</div>
+<div id="planetName">Terra</div>
+<div id="planet-container">
+    <div id="planet">🌍</div>
+</div>
+<div class="progress-bar-container"><div id="progress-bar"></div></div>
+<div id="combo-display"></div>
+
+<div class="shop">
+<button onclick="buyPower()"><span id="pIcon">⚡</span> Drill <span id="pc">20</span></button>
+<button onclick="buyDrone()"><span id="dIcon">🤖</span> Drone <span id="dc">70</span></button>
+<button onclick="buyScanner()"><span id="sIcon">🔭</span> Scanner <span id="sc">120</span></button>
+<button onclick="doPrestige()">🔁 Prestige</button>
+<button onclick="saveScore()">🏆 Save</button>
+</div>
+
+<div class="left card">
+<h3>Stats & Boutique ✨</h3>
+Power: <span id="power">1</span><br>
+Drones: <span id="drones">0</span><br>
+Scanner: <span id="scanner">1</span><br>
+Zone Max: <span id="maxzone">1</span>
+<hr style="border:1px solid rgba(255,255,255,0.1)">
+<button onclick="buyPrestigeUpgrade(1)" style="font-size:11px;padding:5px;">🚀 Moteurs Drones (Coût: 2 ✨)<br>Drones x2 plus rapides (Niv: <span id="up1Lvl">0</span>)</button>
+<button onclick="buyPrestigeUpgrade(2)" style="font-size:11px;padding:5px;">🎯 Clic Critique (Coût: 3 ✨)<br>+2% Chance Critique (Niv: <span id="up2Lvl">0</span>)</button>
+</div>
+
+<div class="right card">
+<h3>Leaderboard (Top 10)</h3>
+<div id="leaderboard"></div>
+</div>
+
+<div id="comet">☄️</div>
+
+<div id="roblox-admin-panel">
+    <div class="admin-header">
+        <span id="adminHeader">HD Admin v2.4 (Sécurisé)</span>
+        <button class="close-admin-btn" onclick="toggleAdminPanel()">✕</button>
+    </div>
+    <div class="admin-body">
+        <div class="command-log" id="commandLog">
+            <div style="color: #ffaa00;">[🔒 VERROUILLÉ] Spécifiez la clé maîtresse dans l'invite pour invoquer les privilèges d'Abuse.</div>
+        </div>
+        <div class="input-area">
+            <span class="prefix" id="adminPrefix">🔑</span>
+            <input type="password" id="adminInput" placeholder="Saisir la clé d'identification..." autocomplete="off">
+            <button id="sendBtn">Connexion</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const planets=[
+{name:"Terra",emoji:"🌍"},
+{name:"Mars",emoji:"🔴"},
+{name:"Neptune",emoji:"🔵"},
+{name:"Nova Prime",emoji:"🟣"},
+{name:"Titan",emoji:"🪐"},
+{name:"Sol",emoji:"☀️"}
+];
+
+let defaultState={
+    credits:0,power:1,drones:0,scanner:1,zone:1,maxzone:1,prestige:0,pCost:20,dCost:70,sCost:120,
+    shards:0,up1:0,up2:0,lastSaveTime:Date.now()
+};
+let s=JSON.parse(JSON.stringify(defaultState));
+
+let combo=0;
+let comboTimer=null;
+let frenzyActive=false;
+let frenzyTimer=null;
+let droneInterval = null;
+
+// --- INITIALISATION MULTIJOUEUR EN TEMPS RÉEL ---
+// Remplace cette URL par celle de ton serveur Render (ex: https://mon-serveur.onrender.com)
+const socket = io("http://localhost:3000"); 
+
+// Réception et application des commandes envoyées en temps réel par le serveur
+socket.on("recevoirAdminAbuse", (data) => {
+    const log = document.getElementById('commandLog');
+    
+    // Affiche la notification dans le chat d'admin global
+    let systemLine = document.createElement('div');
+    systemLine.style.color = '#ffaa00';
+    systemLine.textContent = `[🌍 LOG GLOBAL] Admin '${data.auteur}' a exécuté: ${data.commande}`;
+    log.appendChild(systemLine);
+    log.scrollTop = log.scrollHeight;
+
+    // Exécution locale de l'effet de la commande reçue
+    appliquerCommandeLocale(data.baseCmd, data.value);
+});
+
+function loadPlayerSave() {
+    let name=player.value.trim();
+    if(!name){
+        s=JSON.parse(JSON.stringify(defaultState));
+        uiWithoutSaving();
+        restartDroneInterval();
+        return;
+    }
+    s=JSON.parse(JSON.stringify(defaultState));
+    try{
+        let loaded=JSON.parse(localStorage.getItem("gmv3save_"+name)||"{}");
+        Object.assign(s,loaded);
+        
+        if(loaded.lastSaveTime && s.drones > 0){
+            let elapsedSec = Math.floor((Date.now() - loaded.lastSaveTime) / 1000);
+            if(elapsedSec > 10){
+                let maxOfflineSec = 4 * 60 * 60;
+                if(elapsedSec > maxOfflineSec) elapsedSec = maxOfflineSec;
+                
+                let droneSpeed = 1000 / (1 + s.up1);
+                let intervals = Math.floor((elapsedSec * 1000) / droneSpeed);
+                let offlineGain = intervals * s.drones * s.scanner * (1 + s.prestige);
+                
+                s.credits += offlineGain;
+                setTimeout(() => msg(`💤 Absent ! Tes drones ont miné +${Math.floor(offlineGain)} 💰`), 1000);
+            }
+        }
+    }catch(e){}
+    restartDroneInterval();
+    ui();
+}
+
+function changePlayer() { loadPlayerSave(); }
+function save(){
+    let name=player.value.trim();
+    if(!name) return;
+    s.lastSaveTime = Date.now();
+    localStorage.setItem("gmv3save_"+name,JSON.stringify(s));
+}
+function msg(t){document.getElementById("notice").textContent=t;}
+
+function ui(){ updateUIElements(); save(); }
+function uiWithoutSaving(){ updateUIElements(); }
+
+function updateUIElements(){
+    document.getElementById("money").textContent=Math.floor(s.credits);
+    document.getElementById("moneyTop").textContent=Math.floor(s.credits);
+    document.getElementById("zone").textContent=s.zone;
+    document.getElementById("prestige").textContent=s.prestige;
+    document.getElementById("shards").textContent=s.shards;
+    document.getElementById("power").textContent=s.power;
+    document.getElementById("drones").textContent=s.drones;
+    document.getElementById("scanner").textContent=s.scanner;
+    document.getElementById("maxzone").textContent=s.maxzone;
+    document.getElementById("pc").textContent=Math.floor(s.pCost);
+    document.getElementById("dc").textContent=Math.floor(s.dCost);
+    document.getElementById("sc").textContent=Math.floor(s.sCost);
+    document.getElementById("up1Lvl").textContent=s.up1;
+    document.getElementById("up2Lvl").textContent=s.up2;
+
+    document.getElementById("pIcon").textContent = s.power < 10 ? "⚡" : (s.power < 30 ? "⚙️" : "💎");
+    document.getElementById("dIcon").textContent = s.drones < 10 ? "🤖" : (s.drones < 30 ? "🛸" : "🛸⚙️");
+    document.getElementById("sIcon").textContent = s.scanner < 10 ? "🔭" : (s.scanner < 25 ? "📡" : "👁️");
+
+    const p=planets[(s.zone-1)%planets.length];
+    document.getElementById("planet").textContent=p.emoji;
+    document.getElementById("planetName").textContent=p.name;
+
+    let req = 1500 * Math.pow(s.zone,3);
+    let pct = Math.min(100, (s.credits / req) * 100);
+    document.getElementById("progress-bar").style.width = pct + "%";
+}
+
+document.getElementById("planet").onclick=(e)=>{
+    let baseGain=(s.power*s.scanner)*(1+s.prestige);
+    let comboMultiplier = 1 + Math.min(2, combo * 0.04);
+    let gain = baseGain * comboMultiplier;
+
+    if(frenzyActive) gain *= 3;
+
+    let isCrit = Math.random() < (s.up2 * 0.02);
+    if(isCrit) { gain *= 4; }
+
+    let roll=Math.random();
+    let color="#52ffe0";
+    if(roll<0.01){gain*=25;color="gold";msg("🌟 Légendaire !");}
+    else if(roll<0.05){gain*=5;color="violet";}
+    if(isCrit && roll>=0.05) { color="#ff3300"; msg("🎯 CRITIQUE !"); }
+
+    s.credits+=gain;
+
+    combo++;
+    document.getElementById("combo-display").textContent = `Combo x${comboMultiplier.toFixed(2)} (${combo})`;
+    clearTimeout(comboTimer);
+    comboTimer = setTimeout(() => { combo = 0; document.getElementById("combo-display").textContent = ""; }, 1500);
+
+    let pl = document.getElementById("planet");
+    pl.classList.remove("shake");
+    void pl.offsetWidth;
+    pl.classList.add("shake");
+    setTimeout(() => pl.classList.remove("shake"), 100);
+
+    let d=document.createElement("div");
+    d.className="pop";
+    d.style.left=e.clientX+"px";
+    d.style.top=e.clientY+"px";
+    d.style.color=color;
+    d.style.fontSize = isCrit ? "28px" : "20px";
+    d.textContent="+"+Math.floor(gain);
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(),800);
+
+    if(s.credits > 1500 * Math.pow(s.zone,3)){
+        s.zone++;
+        s.maxzone=Math.max(s.maxzone,s.zone);
+        msg("🚀 Nouvelle zone "+s.zone);
+    }
+    ui();
+};
+
+function buyPower(){if(s.credits>=s.pCost){s.credits-=s.pCost;s.power++;s.pCost=Math.floor(s.pCost*1.15);ui();}}
+function buyDrone(){if(s.credits>=s.dCost){s.credits-=s.dCost;s.drones++;s.dCost=Math.floor(s.dCost*1.18);ui();restartDroneInterval();}}
+function buyScanner(){if(s.credits>=s.sCost){s.credits-=s.sCost;s.scanner++;s.sCost=Math.floor(s.sCost*1.2);ui();}}
+
+function buyPrestigeUpgrade(type){
+    if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); msg("🤖 Drones accélérés !"); }
+    if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); msg("🎯 Chances critiques augmentées !"); }
+}
+
+function restartDroneInterval(){
+    clearInterval(droneInterval);
+    let speed = 1000 / (1 + s.up1);
+    droneInterval = setInterval(()=>{
+        if(s.drones > 0){
+            let droneGain = s.drones*s.scanner*(1+s.prestige);
+            if(frenzyActive) droneGain *= 3;
+            s.credits+=droneGain;
+            document.getElementById("money").textContent=Math.floor(s.credits);
+            document.getElementById("moneyTop").textContent=Math.floor(s.credits);
+            
+            let req = 1500 * Math.pow(s.zone,3);
+            let pct = Math.min(100, (s.credits / req) * 100);
+            document.getElementById("progress-bar").style.width = pct + "%";
+        }
+    }, speed);
+}
+
+setInterval(()=>{ save(); }, 15000);
+
+function doPrestige(){
+    if(s.zone>=5){
+        let gainedShards = s.zone;
+        s.shards += gainedShards;
+        s.prestige++;
+        s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;
+        s.pCost=20;s.dCost=70;s.sCost=120;
+        msg(`🔁 Prestige +1 ! (+${gainedShards} ✨ Éclats)`);
+        restartDroneInterval();
+        ui();
+    }else{
+        msg("⚠️ Atteins au moins la Zone 5 pour le Prestige !");
+    }
+}
+
+function getLB(){return JSON.parse(localStorage.getItem("gmv3lb")||"[]")}
+
+function renderLB(){
+    document.getElementById("leaderboard").innerHTML=getLB().map((p,i)=>
+    `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>`
+    ).join("");
+}
+
+function saveScore(){
+    let name=player.value.trim();
+    if(!name){ msg("⚠️ Écris ton nom avant de sauvegarder !"); return; }
+    let lb=getLB();
+    let i=lb.findIndex(x=>x.name===name);
+
+    if(i>=0){
+        lb[i].score=Math.max(lb[i].score,s.credits);
+        lb[i].prestige=Math.max(lb[i].prestige,s.prestige);
+        lb[i].zone=Math.max(lb[i].zone,s.maxzone);
+    }else{
+        lb.push({name,score:s.credits,prestige:s.prestige,zone:s.maxzone});
+    }
+
+    lb.sort((a,b)=>(b.prestige*1000000+b.score)-(a.prestige*1000000+a.score));
+    lb = lb.slice(0, 10);
+    
+    localStorage.setItem("gmv3lb",JSON.stringify(lb));
+    renderLB();
+}
+
+function spawnComet(){
+    let c = document.getElementById("comet");
+    let x = -50;
+    let y = Math.random() * (window.innerHeight - 100) + 50;
+    c.style.left = x + "px";
+    c.style.top = y + "px";
+    c.style.display = "block";
+
+    let anim = setInterval(()=>{
+        x += 6;
+        y += 2;
+        c.style.left = x + "px";
+        c.style.top = y + "px";
+        if(x > window.innerWidth + 50){
+            clearInterval(anim);
+            c.style.display = "none";
+            scheduleNextComet();
+        }
+    }, 20);
+
+    c.onclick = () => {
+        clearInterval(anim);
+        c.style.display = "none";
+        triggerFrenzy();
+        scheduleNextComet();
+    };
+}
+
+function scheduleNextComet(){
+    setTimeout(spawnComet, Math.random() * 30000 + 30000);
+}
+
+function triggerFrenzy(){
+    frenzyActive = true;
+    msg("☄️ MODE FRÉNÉSIE ACTIVÉ (GAINS x3) ! ☄️");
+    document.body.classList.add("frenzy-active");
+    clearTimeout(frenzyTimer);
+    frenzyTimer = setTimeout(() => {
+        frenzyActive = false;
+        document.body.classList.remove("frenzy-active");
+        msg("La frénésie est terminée.");
+    }, 10000);
+}
+
+// Logique du Panneau Admin Caché (Touche 1) et Exécution HD Admin
+let isAdminAuthenticated = false;
+
+window.addEventListener('keydown', function(e) {
+    if (e.key === '1' || e.code === 'Digit1' || e.code === 'Numpad1') {
+        if (document.activeElement.tagName === 'INPUT') return;
+        toggleAdminPanel();
+    }
+});
+
+function toggleAdminPanel() {
+    const panel = document.getElementById('roblox-admin-panel');
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+document.getElementById('adminInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        handleAdminAction();
+    }
+});
+
+document.getElementById('sendBtn').addEventListener('click', handleAdminAction);
+
+function handleAdminAction() {
+    const inputField = document.getElementById('adminInput');
+    const log = document.getElementById('commandLog');
+    let inputValue = inputField.value.trim();
+
+    if (inputValue === "") return;
+
+    if (!isAdminAuthenticated) {
+        if (inputValue === "admin123") {
+            isAdminAuthenticated = true;
+            document.getElementById('adminHeader').textContent = "HD Admin Executor v2.4";
+            document.getElementById('adminPrefix').textContent = ";";
+            inputField.value = "";
+            inputField.type = "text";
+            inputField.placeholder = "Entrez une commande d'abuse... (;help)";
+            document.getElementById('sendBtn').textContent = "Run";
+            
+            log.innerHTML = "<div style='color: #26ff63;'>[HD SYSTEM]: Rank 'Owner' assignateur avec succès. Saisissez ;help pour lister l'Abuse.</div>";
+        } else {
+            let errorLine = document.createElement('div');
+            errorLine.style.color = '#ff4444';
+            errorLine.textContent = "[SECURITY ERROR]: Mot de passe incorrect.";
+            log.appendChild(errorLine);
+            inputField.value = "";
+        }
+        log.scrollTop = log.scrollHeight;
+    } else {
+        // Au lieu d'exécuter localement, on l'envoie au serveur pour la distribuer à tout le monde
+        let commandClean = inputValue.startsWith(';') || inputValue.startsWith(':') ? inputValue.substring(1) : inputValue;
+        let parts = commandClean.toLowerCase().split(" ");
+        let baseCmd = parts[0];
+        let value = Number(parts[1] || 1);
+        let pseudoAdmin = document.getElementById("player").value.trim() || "Anonyme Admin";
+
+        // Si c'est juste la commande d'aide (;help), on la laisse purement locale
+        if (baseCmd === "help") {
+            executeAdminCommand(inputValue);
+            return;
+        }
+
+        // Envoi au serveur réseau
+        socket.emit("commandeAdmin", {
+            commande: inputValue,
+            baseCmd: baseCmd,
+            value: value,
+            auteur: pseudoAdmin
+        });
+
+        // Ajouter la ligne locale de saisie dans notre propre console
+        let userLine = document.createElement('div');
+        userLine.style.color = '#ffffff';
+        userLine.textContent = "Owner_Admin: " + inputValue;
+        log.appendChild(userLine);
+        inputField.value = "";
+        log.scrollTop = log.scrollHeight;
+    }
+}
+
+// Fonction purement locale qui exécute la commande finale reçue du réseau
+function appliquerCommandeLocale(baseCmd, value) {
+    const log = document.getElementById('commandLog');
+    let response = "";
+
+    switch(baseCmd) {
+        case "kill":
+            s.credits = 0;
+            response = "☠️ Admin Abuse Réseau : Vos crédits ont été réduits à néant.";
+            break;
+        case "fly":
+            s.power += 500;
+            response = "💸 Mode Vol Global activé : Puissance de Drill augmentée de +500.";
+            break;
+        case "unfly":
+            s.power = Math.max(1, s.power - 500);
+            response = "🛑 Mode Vol Global désactivé.";
+            break;
+        case "god":
+            s.prestige += 100;
+            response = "🛡️ Mode Dieu Global : Multiplicateur de prestige augmenté de +100.";
+            break;
+        case "ungod":
+            s.prestige = Math.max(0, s.prestige - 100);
+            response = "💔 Mode Dieu Global désactivé.";
+            break;
+        case "freeze":
+            clearInterval(droneInterval);
+            response = "❄️ Drones gelés par un admin ! Production automatique en pause.";
+            break;
+        case "thaw":
+            restartDroneInterval();
+            response = "🔥 Drones dégelés par un admin ! Reprise de l'activité.";
+            break;
+        case "explode":
+            s.credits += 1000000;
+            response = "💥 BOOM MULTIJOUEUR ! Un apport global donne +1,000,000 de crédits.";
+            break;
+        case "fling":
+            s.zone += 10;
+            s.maxzone = Math.max(s.maxzone, s.zone);
+            response = "🌀 Fling Réseau ! Tout le monde est projeté 10 zones plus loin.";
+            break;
+        case "crash":
+            response = "🖥️ Tentative de crash simulée à distance... Nettoyage de la console.";
+            setTimeout(() => { log.innerHTML = "<div>[Système redémarré après crash simulé]</div>"; }, 1000);
+            break;
+        case "slock":
+            response = "🔒 Serveur verrouillé globalement.";
+            break;
+        case "unslock":
+            response = "🔓 Serveur déverrouillé globalement.";
+            break;
+        case "kick":
+            response = "👢 Kick global simulé ! (Sauvegarde forcée automatique)";
+            save();
+            break;
+        case "ban":
+            localStorage.removeItem("gmv3save_" + player.value.trim());
+            response = "🔨 Sauvegarde locale bannie via commande globale ! Rechargez la page.";
+            break;
+        case "jail":
+            s.scanner = 0;
+            response = "⛓️ Prison collective ! Votre scanner a été réduit à 0.";
+            break;
+        case "unjail":
+            s.scanner = 1;
+            response = "🔓 Libéré ! Scanner collectif restauré à 1.";
+            break;
+        case "blind":
+            document.body.style.opacity = "0.1";
+            response = "🙈 Cécité activée globalement.";
+            break;
+        case "unblind":
+            document.body.style.opacity = "1";
+            response = "👀 Vision globale restaurée.";
+            break;
+        case "giant":
+            document.getElementById("planet").style.transform = "scale(2)";
+            response = "🐘 Planète géante globale générée !";
+            break;
+        case "crush":
+            document.getElementById("planet").style.transform = "scale(0.5)";
+            response = "🧱 Planète écrasée globalement !";
+            break;
+        case "money":
+            s.credits += value;
+            response = `💰 Crédits modifiés de +${value} pour tous.`;
+            break;
+        case "prestige":
+            s.prestige += value;
+            response = `🔁 Prestige modifié de +${value} pour tous.`;
+            break;
+        case "zone":
+            s.zone = value;
+            s.maxzone = Math.max(s.maxzone, s.zone);
+            response = `🚀 Téléportation collective à la zone ${value}.`;
+            break;
+        case "drone":
+            s.drones += value;
+            restartDroneInterval();
+            response = `🤖 +${value} Drones ajoutés à tout le monde.`;
+            break;
+        case "power":
+            s.power += value;
+            response = `⚡ Puissance de Drill modifiée de +${value} pour tous.`;
+            break;
+        case "shards":
+            s.shards += value;
+            response = `✨ +${value} Éclats de Nova ajoutés à l'inventaire global.`;
+            break;
+        case "unlockall":
+            s.maxzone = 999;
+            s.zone = 999;
+            response = "🌌 Univers débloqué au max (999) pour toute la pièce.";
+            break;
+        case "clearlb":
+            localStorage.removeItem("gmv3lb");
+            renderLB();
+            response = "🗑️ Leaderboard vidé chez tous les clients.";
+            break;
+        case "refreshlb":
+            renderLB();
+            response = "📊 Leaderboard actualisé en même temps.";
+            break;
+        default:
+            response = "Commande réseau inconnue.";
+    }
+
+    let responseLine = document.createElement('div');
+    responseLine.style.color = '#64b5f6';
+    responseLine.textContent = "[HD NETWORK]: " + response;
+    log.appendChild(responseLine);
+    log.scrollTop = log.scrollHeight;
+    ui();
+}
+
+// Conserver l'ancienne fonction d'affichage local pour le menu help
+function executeAdminCommand(fullCommand) {
+    const log = document.getElementById('commandLog');
+    let helpBox = document.createElement('div');
+    helpBox.style.color = '#ffaa00';
+    helpBox.innerHTML = 
+        "=== MODULE MULTIJOUEUR RÉSEAU ===<br>" +
+        "Chaque commande d'action affecte TOUS les joueurs en temps réel.<br>" +
+        "• <b>;help</b> - Affiche cette documentation<br>" +
+        "• <b>;kill</b> - Réinitialise les ressources à 0<br>" +
+        "• <b>;fly</b> / <b>;unfly</b> - Active/Désactive un outil drill (+500)<br>" +
+        "• <b>;god</b> / <b>;ungod</b> - Attribue un boost multiplicateur (+100)<br>" +
+        "• <b>;freeze</b> / <b>;thaw</b> - Gèle / Dégèle la mécanique des drones<br>" +
+        "• <b>;explode</b> - Provoque un apport de +1,000,000 crédits<br>" +
+        "• <b>;fling</b> - Téléporte instantanément 10 zones en avant<br>" +
+        "• <b>;money [nb]</b> - Injecte la quantité [nb] de crédits<br>" +
+        "• <b>;prestige [nb]</b> - Augmente le niveau de prestige actuel de [nb]<br>" +
+        "• <b>;zone [nb]</b> - Modifie la zone pour correspondre à [nb]<br>" +
+        "• <b>;drone [nb]</b> - Alloue [nb] drones automatisés de plus<br>" +
+        "• <b>;power [nb]</b> - Augmente la statistique Power de la Drill<br>" +
+        "• <b>;shards [nb]</b> - Remet [nb] éclats de Nova dans l'inventaire<br>" +
+        "• <b>;unlockall</b> - Ajuste de force la zone au niveau maximum (999)<br>" +
+        "• <b>;giant</b> / <b>;crush</b> - Modifie la taille de la planète de tous";
+    log.appendChild(helpBox);
+    log.scrollTop = log.scrollHeight;
+}
+
+setInterval(renderLB, 120000);
+
+document.getElementById("player").value = ""; 
+restartDroneInterval();
+scheduleNextComet();
+uiWithoutSaving();
+renderLB();
+</script>
+</body>
+</html>
