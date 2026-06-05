@@ -64,7 +64,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .nuclear-mode { animation: alertAnim 0.8s ease-in-out infinite alternate !important; filter: saturate(2) contrast(1.5) !important; }
 @keyframes alertAnim { from { background-color: #101a3a; } to { background-color: #660000; } }
 
-/* --- NOUVEAUX EFFETS VISUELS --- */
+/* --- EFFETS VISUELS SUPPLÉMENTAIRES --- */
 @keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
 .seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
 .sideways-active { transform: rotate(90deg) !important; }
@@ -470,12 +470,23 @@ function runCmd(role) {
     let commandClean = val.startsWith(';') || val.startsWith(':') ? val.substring(1) : val;
     let parts = commandClean.split(" "); let baseCmd = parts[0].toLowerCase(); 
     
-    let value = 1; let cible = ""; let texteBrut = commandClean.substring(parts[0].length).trim();
+    let value = 1; 
+    let cible = ""; 
+    let texteBrut = commandClean.substring(parts[0].length).trim();
+    
+    // CAS SPÉCIAL POUR LE CHAT : On envoie directement tout le texte brut au serveur
+    if (baseCmd === "chat") {
+        let pseudo = document.getElementById("player").value.trim() || "Anonyme";
+        socket.emit("commandeAdmin", { commande: val, baseCmd: baseCmd, value: 1, cible: "", texteBrut: texteBrut, auteur: pseudo, role: role }); 
+        inputField.value = "";
+        return;
+    }
     
     if (parts[1]) {
         if (!isNaN(parts[1])) {
             value = Number(parts[1]);
             cible = parts.slice(2).join(" ");
+            texteBrut = parts.slice(2).join(" ");
         } else {
             cible = parts.slice(1).join(" ");
         }
@@ -487,18 +498,22 @@ function runCmd(role) {
     const ownerOnly = ["clear", "clearlb", "event", "ban", "kick", "unban"];
     if (role === "admin" && ownerOnly.includes(baseCmd)) { let err = document.createElement('div'); err.style.color="red"; err.textContent="[PERM ERROR]: Réservé à l'Owner !"; document.getElementById('log-admin').appendChild(err); inputField.value=""; return; }
     
-    socket.emit("commandeAdmin", { commande: val, baseCmd, value, cible: cible.trim(), texteBrut, auteur: pseudo, role: role }); 
+    socket.emit("commandeAdmin", { commande: val, baseCmd: baseCmd, value: value, cible: cible.trim(), texteBrut: texteBrut, auteur: pseudo, role: role }); 
     inputField.value = "";
 }
 
-function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes, roleEmis) {
-    const logO = document.getElementById('log-owner'); const logA = document.getElementById('log-admin');
-    
+function aplicarCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes, roleEmis) {
     switch(baseCmd) {
         case "players": msg(`📊 RESEAU : ${totalConnectes || 1} joueurs.`); break;
         case "chat":
-            const alertBox = document.getElementById("global-chat-alert"); alertBox.textContent = `📢 [${roleEmis.toUpperCase()}] : ` + (texteBrut || "Attention !");
-            alertBox.style.top = "20px"; setTimeout(() => { alertBox.style.top = "-100px"; }, 6000); break;
+            const alertBox = document.getElementById("global-chat-alert"); 
+            if (alertBox) {
+                alertBox.textContent = `📢 [${roleEmis.toUpperCase()}] : ${texteBrut || "Attention !"}`;
+                alertBox.style.top = "20px"; 
+                if (window.chatAlertTimer) clearTimeout(window.chatAlertTimer);
+                window.chatAlertTimer = setTimeout(() => { alertBox.style.top = "-100px"; }, 6000); 
+            }
+            break;
         case "alien":
             for(let i=0; i<5; i++){ let ufo = document.createElement('div'); ufo.className = 'ufo'; ufo.textContent = '🛸'; ufo.style.top = Math.random() * window.innerHeight + 'px'; ufo.style.left = '-60px'; document.body.appendChild(ufo); setTimeout(() => { ufo.style.transform = `translateX(${window.innerWidth + 100}px) translateY(${Math.random()*100 - 50}px)`; }, 100); setTimeout(() => ufo.remove(), 4200); } break;
         case "gravity": const el = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"]; el.forEach(id => { document.getElementById(id).style.animation = "floatGravity 6s ease-in-out infinite"; }); break;
@@ -519,8 +534,6 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "undisco": document.getElementById("planet").classList.remove("disco-planet"); break;
         case "rainbow": document.body.classList.add("rainbow-bg"); break;
         case "unrainbow": document.body.classList.remove("rainbow-bg"); break;
-        
-        /* --- INTEGRATION DES NOUVELLES COMMANDES SOLICITÉES --- */
         case "ban": document.getElementById("ban-screen").style.display = "block"; isFrozen = true; clearInterval(droneInterval); break;
         case "unban": document.getElementById("ban-screen").style.display = "none"; isFrozen = false; restartDroneInterval(); break;
         case "kick": document.getElementById("kick-screen").style.display = "block"; isFrozen = true; clearInterval(droneInterval); break;
@@ -542,7 +555,6 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes
         case "giftpower": s.power += (value || 5); break;
         case "giftdrone": s.drones += (value || 5); restartDroneInterval(); break;
         case "cometstorm": for(let i=0; i<12; i++) { setTimeout(spawnComet, i * 400); } break;
-        
         case "unabuse":
             document.body.className = "";
             document.body.removeAttribute("style");
@@ -564,8 +576,8 @@ function showHelp(role) {
     log.innerHTML += "<div style='color:#55aaff;font-weight:bold;'>--- EXECUTOR COMMANDS CATALOGUE ---</div>";
     log.innerHTML += "<div><b>Général :</b> ;players / ;chat [texte]</div>";
     log.innerHTML += "<div><b>Sanctions (Owner) :</b> ;ban [pseudo] / ;unban [pseudo] / ;kick [pseudo]</div>";
-    log.innerHTML += "<div><b>Trolls Écran :</b> ;seisme / ;unseisme / ;sideways / ;unsideways / ;upsidedown / ;unupsidedown / ;blur / ;unblur / ;flash / ;unflash / ;nuclear / ;unnuclear</div>";
-    log.innerHTML += "<div><b>Abus Classiques :</b> ;gravity / ;ungravity / ;invert / ;uninvert / ;fakecrash / ;freeze / ;unfreeze / ;slow / ;unslow / ;disco / ;undisco / ;rainbow / ;unrainbow / ;glitch / ;unglitch</div>";
+    log.innerHTML += "<div><b>Trolls Écran :</b> ;seisme / ;sideways / ;upsidedown / ;blur / ;flash / ;nuclear</div>";
+    log.innerHTML += "<div><b>Abus Classiques :</b> ;gravity / ;invert / ;fakecrash / ;freeze / ;slow / ;disco / ;rainbow / ;glitch</div>";
     log.innerHTML += "<div><b>Gifts/Punitions :</b> ;rich [pseudo] / ;poor [pseudo] / ;giftshard [valeur] [pseudo] / ;giftpower [valeur] [pseudo] / ;giftdrone [valeur] [pseudo]</div>";
     log.innerHTML += "<div><b>Fun :</b> ;alien / ;cometstorm / ;event [multi] [durée]</div>";
     log.innerHTML += "<div><b>Nettoyage :</b> ;unabuse [pseudo]</div>";
