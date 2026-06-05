@@ -17,11 +17,6 @@ body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at ce
 #planet-container{text-align:center;position:relative;margin:10px auto;width:220px;transition: transform 0.5s ease;}
 #planet{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
 #planet:active{transform:scale(.85)}
-.shake{animation: click-shake 0.1s ease-in-out infinite alternate;}
-@keyframes click-shake {
-  from { transform: translate(3px, 1px) rotate(0deg); }
-  to { transform: translate(-3px, -1px) rotate(1deg); }
-}
 #planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
 .left,.right{position:fixed;top:120px;width:260px;transition: transform 0.5s ease;}
 .left{left:10px}.right{right:10px}
@@ -31,8 +26,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .btn-max:hover{background:#ffcc66;}
 .shop{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:15px;transition: transform 0.5s ease;}
 .notice{position:fixed;top:85px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10;transition: 0.3s;}
-.pop{position:fixed;font-weight:bold;pointer-events:none;animation:up .8s forwards;z-index:5}
-@keyframes up{to{opacity:0;transform:translateY(-80px)}}
 #leaderboard{max-height:180px;overflow:auto}
 .progress-bar-container{width:180px;background:rgba(255,255,255,0.1);height:8px;border-radius:4px;margin:5px auto;overflow:hidden;transition: transform 0.5s ease;}
 #progress-bar{width:0%;height:100%;background:linear-gradient(90deg, #52ffe0, #0077ff);transition:width 0.2s}
@@ -55,13 +48,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     padding: 15px 30px; border-radius: 50px; font-size: 20px; font-weight: bold;
     box-shadow: 0 5px 25px rgba(255, 0, 85, 0.5); z-index: 20000;
     transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 2px solid #fff;
-}
-#global-event-banner {
-    display: none; position: fixed; top: 0; left: 0; width: 100%;
-    background: linear-gradient(90deg, #ffcc00, #ff0055, #ffcc00); background-size: 200% auto;
-    animation: rainbowAnimation 3s linear infinite; color: black; text-align: center;
-    padding: 6px 0; font-weight: bold; font-size: 16px; letter-spacing: 1px;
-    box-shadow: 0 3px 15px rgba(255, 204, 0, 0.4); z-index: 15000;
 }
 
 .roblox-panel {
@@ -87,7 +73,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <body>
 <div id="stars"></div><div id="stars2"></div>
 
-<div id="global-event-banner">🔥 ÉVÉNEMENT CASH MULTIPLIÉ ACTIF !</div>
 <div id="global-chat-alert">📢 Message de l'Admin !</div>
 
 <div id="fake-crash-screen" onclick="this.style.display='none'">
@@ -108,8 +93,8 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div class="card">🌍 Zone <span id="zone">1</span></div>
 <div class="card">🔁 Prestige <span id="prestige">0</span></div>
 <div class="card">✨ Éclats: <span id="shards">0</span></div>
-<div class="card">👤 <input id="player" placeholder="Nom (Sans Émoji)" oninput="cleanPseudoAndLoad()"></div>
-<div class="card">🔑 <input id="account-pass" type="password" placeholder="Mot de passe" oninput="loadPlayerSave()"></div>
+<div class="card">👤 <input id="player" placeholder="Nom (Sans Émoji)" oninput="cleanPseudoAndRequest()"></div>
+<div class="card">🔑 <input id="account-pass" type="password" placeholder="Mot de passe" oninput="cleanPseudoAndRequest()"></div>
 </div>
 
 <div id="notice" class="notice">Inscris ton nom et un mot de passe pour commencer !</div>
@@ -212,14 +197,28 @@ let defaultState={
 let s=JSON.parse(JSON.stringify(defaultState));
 let listeLeaderboard = [];
 const MAX_DRONES = 150;
+let compteValide = false; // Bloque les actions si faux
 
 let combo=0; let comboTimer=null; let frenzyActive=false; let frenzyTimer=null; let droneInterval = null;
-let eventMultiplier = 1; let eventTimer = null; let isSlowed = false; let isFrozen = false;
+let isSlowed = false; let isFrozen = false;
 
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
 socket.on("miseAJourLeaderboard", (data) => { listeLeaderboard = data || []; renderLB(); });
+
+// --- RÉSULTAT DE LA VÉRIFICATION DU COMPTE PAR LE SERVEUR ---
+socket.on("resultatConnexion", (res) => {
+    msg(res.message);
+    if(res.succes) {
+        compteValide = true;
+        loadPlayerSaveLocal(); // Charge la sauvegarde locale uniquement si autorisé !
+    } else {
+        compteValide = false;
+        s = JSON.parse(JSON.stringify(defaultState));
+        uiWithoutSaving();
+    }
+});
 
 socket.on("recevoirMessageGlobal", (data) => {
     const chatBox = document.getElementById("chat-box");
@@ -230,6 +229,7 @@ socket.on("recevoirMessageGlobal", (data) => {
 });
 
 function envoyerMessage() {
+    if(!compteValide) return;
     const input = document.getElementById("chat-input");
     const texte = input.value.trim();
     const pseudo = document.getElementById("player").value.trim() || "Anonyme";
@@ -240,34 +240,41 @@ function envoyerMessage() {
 }
 document.getElementById("chat-input").addEventListener("keydown", function(e) { if (e.key === "Enter") envoyerMessage(); });
 
-function cleanPseudoAndLoad() {
+function cleanPseudoAndRequest() {
     let input = document.getElementById("player");
-    // Filtre pour ne garder que lettres, chiffres, tirets et espaces (Retire les émojis)
-    input.value = input.value.replace(/[^\w\sа-яА-Яàâäéèêëîïôöùûüç-]/gi, '');
-    loadPlayerSave();
+    input.value = input.value.replace(/[^\w\sа-яА-Яàâäéèêëîïôöùûüç-]/gi, ''); // Supprime les emojis
+    
+    let name = input.value.trim();
+    let pass = document.getElementById("account-pass").value;
+    
+    if(!name) {
+        compteValide = false;
+        s = JSON.parse(JSON.stringify(defaultState));
+        uiWithoutSaving();
+        msg("Inscris ton nom et un mot de passe pour commencer !");
+        return;
+    }
+    
+    // Demande au serveur de valider le mot de passe pour ce pseudo
+    socket.emit("connexionCompte", { name: name, password: pass });
 }
 
-function loadPlayerSave() {
+function loadPlayerSaveLocal() {
     let name = document.getElementById("player").value.trim();
-    let typedPass = document.getElementById("account-pass").value;
-    if(!name){ s=JSON.parse(JSON.stringify(defaultState)); uiWithoutSaving(); restartDroneInterval(); return; }
-    
+    let pass = document.getElementById("account-pass").value;
     let localData = localStorage.getItem("gmv3save_"+name);
+    
     if(localData) {
-        let parsed = JSON.parse(localData);
-        if(parsed.password && parsed.password !== typedPass) {
-            msg("❌ Identifiants erronés pour ce compte !");
-            return;
-        }
-        s = Object.assign(JSON.parse(JSON.stringify(defaultState)), parsed);
+        s = Object.assign(JSON.parse(JSON.stringify(defaultState)), JSON.parse(localData));
     } else {
         s = JSON.parse(JSON.stringify(defaultState));
-        if(typedPass) { s.password = typedPass; }
+        s.password = pass;
     }
     restartDroneInterval(); ui();
 }
 
 function save(){ 
+    if(!compteValide) return;
     let name=player.value.trim(); 
     if(!name) return; 
     s.lastSaveTime = Date.now(); 
@@ -292,11 +299,11 @@ function updateUIElements(){
 }
 
 document.getElementById("planet").onclick=(e)=>{
-    if(isFrozen) { msg("🧊 Tu es gelé par l'administration !"); return; }
+    if(!compteValide || isFrozen) return;
     let baseGain=(s.power*s.scanner)*(1+s.prestige);
     let comboMultiplier = 1 + Math.min(2, combo * 0.04);
     let gain = baseGain * comboMultiplier;
-    if(frenzyActive) gain *= 3; gain *= eventMultiplier; if(isSlowed) gain /= 4;
+    if(frenzyActive) gain *= 3; if(isSlowed) gain /= 4;
     s.credits+=gain; combo++;
     document.getElementById("combo-display").textContent = `Combo x${comboMultiplier.toFixed(2)} (${combo})`;
     clearTimeout(comboTimer); comboTimer = setTimeout(() => { combo = 0; document.getElementById("combo-display").textContent = ""; }, 1500);
@@ -304,44 +311,44 @@ document.getElementById("planet").onclick=(e)=>{
     ui();
 };
 
-function buyPower(){ if(isFrozen) return; if(s.credits>=s.pCost){s.credits-=s.pCost;s.power++;s.pCost=Math.floor(s.pCost*1.15);ui();}}
+function buyPower(){ if(!compteValide || isFrozen) return; if(s.credits>=s.pCost){s.credits-=s.pCost;s.power++;s.pCost=Math.floor(s.pCost*1.15);ui();}}
 function buyMaxPower(){
-    if(isFrozen) return;
+    if(!compteValide || isFrozen) return;
     while(s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost = Math.floor(s.pCost * 1.15); }
     ui();
 }
 function buyDrone(){ 
-    if(isFrozen) return; 
+    if(!compteValide || isFrozen) return; 
     if(s.drones >= MAX_DRONES) { msg("🤖 Limite de 150 Drones atteinte !"); return; }
     if(s.credits>=s.dCost){s.credits-=s.dCost;s.drones++;s.dCost=Math.floor(s.dCost*1.18);ui();restartDroneInterval();}
 }
 function buyMaxDrone(){
-    if(isFrozen) return;
+    if(!compteValide || isFrozen) return;
     while(s.credits >= s.dCost && s.drones < MAX_DRONES) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); }
     restartDroneInterval(); ui();
 }
-function buyScanner(){ if(isFrozen) return; if(s.credits>=s.sCost){s.credits-=s.sCost;s.scanner++;s.sCost=Math.floor(s.sCost*1.2);ui();}}
+function buyScanner(){ if(!compteValide || isFrozen) return; if(s.credits>=s.sCost){s.credits-=s.sCost;s.scanner++;s.sCost=Math.floor(s.sCost*1.2);ui();}}
 function buyMaxScanner(){
-    if(isFrozen) return;
+    if(!compteValide || isFrozen) return;
     while(s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost = Math.floor(s.sCost * 1.2); }
     ui();
 }
 
-function buyPrestigeUpgrade(type){ if(isFrozen) return; if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); } if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); }}
+function buyPrestigeUpgrade(type){ if(!compteValide || isFrozen) return; if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); } if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); }}
 
 function restartDroneInterval(){
     clearInterval(droneInterval);
     let baseSpeed = 1000 / (1 + s.up1);
     droneInterval = setInterval(()=>{
-        if(s.drones > 0 && !isFrozen){
+        if(s.drones > 0 && !isFrozen && compteValide){
             let droneGain = s.drones*s.scanner*(1+s.prestige);
-            if(frenzyActive) droneGain *= 3; droneGain *= eventMultiplier; if(isSlowed) droneGain /= 4;
+            if(frenzyActive) droneGain *= 3; if(isSlowed) droneGain /= 4;
             s.credits+=droneGain; updateUIElements();
         }
     }, baseSpeed);
 }
 
-function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; restartDroneInterval(); ui(); }}
+function doPrestige(){ if(!compteValide || s.zone<5) return; let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; restartDroneInterval(); ui(); }
 
 function renderLB(){ 
     if(listeLeaderboard.length === 0) { document.getElementById("leaderboard").innerHTML = "Aucun score."; return; }
@@ -351,7 +358,10 @@ function renderLB(){
 
 setInterval(() => {
     let name = player.value.trim();
-    if(name && !isFrozen) { socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone }); }
+    let pass = document.getElementById("account-pass").value;
+    if(name && compteValide && !isFrozen) { 
+        socket.emit("soumettreScore", { name: name, password: pass, score: s.credits, prestige: s.prestige, zone: s.maxzone }); 
+    }
 }, 2000);
 
 function spawnComet(){
@@ -360,9 +370,9 @@ function spawnComet(){
     c.onclick = () => { clearInterval(anim); c.style.display = "none"; triggerFrenzy(); scheduleNextComet(); };
 }
 function scheduleNextComet() { setTimeout(spawnComet, 40000); }
-function triggerFrenzy(){ frenzyActive = true; document.body.classList.add("frenzy-active"); clearTimeout(frenzyTimer); frenzyTimer = setTimeout(() => { frenzyActive = false; document.body.classList.remove("frenzy-active"); }, 10000); }
+function triggerFrenzy(){ if(!compteValide) return; frenzyActive = true; document.body.classList.add("frenzy-active"); clearTimeout(frenzyTimer); frenzyTimer = setTimeout(() => { frenzyActive = false; document.body.classList.remove("frenzy-active"); }, 10000); }
 
-// --- AUTHENTIFICATION DES PANNEAUX ---
+// --- AUTHENTIFICATION DES PANNEAUX ADMIN ---
 let auth = { owner: false, admin: false };
 window.addEventListener('keydown', function(e) { if (document.activeElement.tagName === 'INPUT') return; if (e.key === '1') { togglePanel('owner'); } if (e.key === '2') { togglePanel('admin'); } });
 function togglePanel(role) { const p = document.getElementById(`panel-${role}`); p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'block' : 'none'; }
@@ -399,14 +409,12 @@ socket.on("recevoirAdminAbuse", (data) => {
     const monPseudo = document.getElementById("player").value.trim();
     if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase()) return; 
 
-    // Commande BAN IMMÉDIATE (Bloque l'écran et arrête les drones)
     if (data.baseCmd === "ban") {
         document.getElementById("ban-screen").style.display = "block";
         isFrozen = true;
         clearInterval(droneInterval);
         return;
     }
-
     appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, data.role);
 });
 
@@ -415,20 +423,15 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, roleEmis) {
         case "chat":
             const alertBox = document.getElementById("global-chat-alert"); alertBox.textContent = `📢 [${roleEmis.toUpperCase()}] : ` + texteBrut;
             alertBox.style.top = "20px"; setTimeout(() => { alertBox.style.top = "-100px"; }, 6000); break;
-        case "gravity": document.querySelectorAll(".card, #money, #planet-container").forEach(el => el.style.animation = "floatGravity 6s infinite"); break;
-        case "ungravity": document.querySelectorAll(".card, #money, #planet-container").forEach(el => el.style.animation = "none"); break;
-        case "freeze": isFrozen = true; document.getElementById("planet").classList.add("frozen"); break;
-        case "unfreeze": isFrozen = false; document.getElementById("planet").classList.remove("frozen"); break;
+        case "freeze": isFrozen = true; break;
+        case "unfreeze": isFrozen = false; break;
         case "slow": isSlowed = true; break;
         case "unslow": isSlowed = false; break;
         case "rich": s.credits += 50000000; break;
         case "giftdrone": s.drones = Math.min(MAX_DRONES, s.drones + (value || 5)); restartDroneInterval(); break;
         case "unrobot": s.drones = Math.max(0, s.drones - (value || 5)); restartDroneInterval(); break; 
-        case "giftpower": s.power += value; break;
         case "fakecrash": document.getElementById("fake-crash-screen").style.display = "block"; break;
-        case "unabuse":
-            document.querySelectorAll(".card, #money, #planet-container").forEach(el => el.style.animation = "none");
-            isFrozen = false; isSlowed = false; document.getElementById("planet").className = ""; break;
+        case "unabuse": isFrozen = false; isSlowed = false; break;
     }
     uiWithoutSaving();
 }
@@ -441,7 +444,6 @@ function showHelp(role) {
     log.innerHTML += "<div>;giftdrone [nombre] [pseudo] - Ajouter des drones</div>";
     log.innerHTML += "<div>;freeze / ;unfreeze [pseudo] - Geler le joueur</div>";
     log.innerHTML += "<div>;rich [pseudo] - Donner 50M</div>";
-    log.innerHTML += "<div>;unabuse [pseudo] - Stopper tous les abus visuels</div>";
     log.scrollTop = log.scrollHeight;
 }
 window.onload = () => { scheduleNextComet(); };
