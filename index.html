@@ -206,6 +206,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div id="global-chat-alert">📢 Message de l'Admin !</div>
 
 <div class="top">
+<div class="card" style="color: #26ff63; font-weight: bold;">🟢 En ligne: <span id="onlineCount">1</span></div>
 <div class="card">💰 <span id="moneyTop">0</span></div>
 <div class="card">🌍 Zone <span id="zone">1</span></div>
 <div class="card">🔁 Prestige <span id="prestige">0</span></div>
@@ -288,14 +289,17 @@ let frenzyActive=false;
 let frenzyTimer=null;
 let droneInterval = null;
 
-// Variables pour les nouveaux buffs d'Abuse
 let eventMultiplier = 1;
 let eventTimer = null;
 let isSlowed = false;
 
 // --- CONFIGURATION DE LA CONNEXION RESEAU ---
-// Remplace cette adresse par le lien de ton serveur Render si nécessaire !
 const socket = io("https://galaxy-miner-server.onrender.com"); 
+
+// Réception automatique du compteur réseau
+socket.on("majJoueursEnLigne", (total) => {
+    document.getElementById("onlineCount").textContent = total;
+});
 
 socket.on("recevoirAdminAbuse", (data) => {
     const log = document.getElementById('commandLog');
@@ -306,12 +310,11 @@ socket.on("recevoirAdminAbuse", (data) => {
     log.appendChild(systemLine);
     log.scrollTop = log.scrollHeight;
 
-    // Extraction des arguments complexes pour la commande ;event
     let clean = data.commande.startsWith(';') || data.commande.startsWith(':') ? data.commande.substring(1) : data.commande;
     let parts = clean.split(" ");
-    let arg2 = Number(parts[2] || 0); // Récupère le 3ème mot (les secondes pour ;event)
+    let arg2 = Number(parts[2] || 0);
 
-    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, arg2);
+    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, arg2, data.totalConnectes);
 });
 
 function loadPlayerSave() {
@@ -393,11 +396,7 @@ document.getElementById("planet").onclick=(e)=>{
     let gain = baseGain * comboMultiplier;
 
     if(frenzyActive) gain *= 3;
-    
-    // Application de l'évenement Admin (x2, x5, x20...)
     gain *= eventMultiplier;
-    
-    // Application du malus Admin slow (divisé par 4)
     if(isSlowed) gain /= 4;
 
     let isCrit = Math.random() < (s.up2 * 0.02);
@@ -456,8 +455,6 @@ function restartDroneInterval(){
         if(s.drones > 0){
             let droneGain = s.drones*s.scanner*(1+s.prestige);
             if(frenzyActive) droneGain *= 3;
-            
-            // Multiplicateurs et malus Admin
             droneGain *= eventMultiplier;
             if(isSlowed) droneGain /= 4;
             
@@ -562,7 +559,6 @@ function triggerFrenzy(){
     }, 10000);
 }
 
-// Logique du Panneau Admin Caché (Touche 1)
 let isAdminAuthenticated = false;
 
 window.addEventListener('keydown', function(e) {
@@ -623,7 +619,6 @@ function handleAdminAction() {
             return;
         }
 
-        // Transmission réseau instantanée via ton serveur Render !
         socket.emit("commandeAdmin", {
             commande: inputValue,
             baseCmd: baseCmd,
@@ -641,15 +636,17 @@ function handleAdminAction() {
     }
 }
 
-// Les meilleures commandes d'Abuse exécutées en temps réel sur tous les écrans !
-function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2) {
+function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes) {
     const log = document.getElementById('commandLog');
     let response = "";
 
     switch(baseCmd) {
+        case "players":
+            response = `📊 ANALYSE RESEAU : Il y a actuellement ${totalConnectes || 1} joueur(s) connecté(s) en temps réel !`;
+            break;
         case "event":
             let multi = value || 2;
-            let duree = arg2 || 30; // 30 secondes par défaut si non précisé
+            let duree = arg2 || 30;
             eventMultiplier = multi;
             
             const banner = document.getElementById("global-event-banner");
@@ -674,7 +671,6 @@ function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2) {
             response = "🛑 Vitesse normale rétablie.";
             break;
         case "unabuse":
-            // Désactive TOUS les effets d'un coup
             eventMultiplier = 1;
             document.getElementById("global-event-banner").style.display = "none";
             isSlowed = false;
@@ -785,23 +781,23 @@ function executeAdminCommand(fullCommand) {
     helpBox.style.color = '#ffaa00';
     helpBox.innerHTML = 
         "=== CATALOGUE DE TOUTES LES COMMANDES (HD) ===<br>" +
-        "Toutes les commandes affectent TOUS LES JOUEURS connectés :<br>" +
+        "• <b>;players</b> - Demande au serveur de renvoyer le nombre exact de connectés.<br>" +
         "• <b>;event [multi] [secondes]</b> - Ex: <i>;event 20 60</i> (Gains x20 pendant 60s).<br>" +
-        "• <b>;unabuse</b> - Arrête instantanément toutes les folies visuelles/boosts/malus.<br>" +
-        "• <b>;slow</b> / <b>;unslow</b> - Divise ou rétablit la vitesse de gains par 4.<br>" +
+        "• <b>;unabuse</b> - Arrête instantanément toutes les folies.<br>" +
+        "• <b>;slow</b> / <b>;unslow</b> - Modifie la vitesse globale par 4.<br>" +
         "• <b>;chat [ton message]</b> - Envoie une alerte géante au milieu de l'écran.<br>" +
         "• <b>;rich</b> - Donne instantanément 50M de crédits à tout le monde.<br>" +
-        "• <b>;frenzy</b> - Déclenche le mode Frénésie global (gains x3).<br>" +
+        "• <b>;frenzy</b> - Déclenche le mode Frénésie global.<br>" +
         "• <b>;boost</b> - Ajoute massivement +5k de puissance de clic.<br>" +
         "• <b>;shards [nb]</b> - Donne le nombre d'éclats de ton choix.<br>" +
         "• <b>;zone [nb]</b> - Téléporte tous les joueurs à la zone choisie.<br>" +
-        "• <b>;clear</b> - Réinitialise les scores de tout le monde à zéro.<br>" +
-        "• <b>;troll</b> - Égalise l'argent de tout le monde à 777.<br>" +
-        "• <b>;disco</b> / <b>;undisco</b> - Fait tourner la planète à fond la caisse.<br>" +
-        "• <b>;rainbow</b> / <b>;unrainbow</b> - Active un fond d'écran arc-en-ciel animé.<br>" +
+        "• <b>;clear</b> - Réinitialise les scores.<br>" +
+        "• <b>;troll</b> - Égalise l'argent à 777.<br>" +
+        "• <b>;disco</b> / <b>;undisco</b> - Fait tourner la planète.<br>" +
+        "• <b>;rainbow</b> / <b>;unrainbow</b> - Active un fond d'écran arc-en-ciel.<br>" +
         "• <b>;matrix</b> / <b>;unmatrix</b> - Mode hacker vert.<br>" +
         "• <b>;glitch</b> / <b>;unglitch</b> - Effet de texte qui tremble.<br>" +
-        "• <b>;giant</b> / <b>;mini</b> / <b>;normal</b> - Modifie la taille de la planète.";
+        "• <b>;giant</b> / <b>;mini</b> / <b>;normal</b> - Modifie la taille.";
     log.appendChild(helpBox);
     log.scrollTop = log.scrollHeight;
 }
