@@ -23,14 +23,14 @@ body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at ce
   to { transform: translate(-3px, -1px) rotate(1deg); }
 }
 #planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
-.left,.right{position:fixed;top:100px;width:260px;transition: transform 0.5s ease;}
+.left,.right{position:fixed;top:120px;width:260px;transition: transform 0.5s ease;}
 .left{left:10px}.right{right:10px}
 button{border:none;border-radius:10px;padding:10px 14px;margin:4px;cursor:pointer;font-weight:bold;background:#fff;color:#000;transition:0.2s}
 button:hover{background:#52ffe0;transform:translateY(-2px)}
 .btn-max{background:#ffaa00;color:#000;padding:10px 8px;font-size:11px;}
 .btn-max:hover{background:#ffcc66;}
 .shop{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:15px;transition: transform 0.5s ease;}
-.notice{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10;transition: 0.3s;}
+.notice{position:fixed;top:85px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10;transition: 0.3s;}
 .pop{position:fixed;font-weight:bold;pointer-events:none;animation:up .8s forwards;z-index:5}
 @keyframes up{to{opacity:0;transform:translateY(-80px)}}
 #leaderboard{max-height:180px;overflow:auto}
@@ -44,31 +44,11 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
   to { text-shadow: 0 0 20px #ffcc00, 0 0 30px #ffcc00; color: #fff3cc; }
 }
 
-/* --- EFFETS VISUELS POUR LES ABUS --- */
-.rainbow-bg { animation: rainbowAnimation 2s linear infinite !important; }
-@keyframes rainbowAnimation { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-.glitch-text { animation: glitch 0.3s linear infinite alternate; color: #ff0055 !important; }
-@keyframes glitch { 0% { transform: skewX(-5deg); text-shadow: 2px 0 red, -2px 0 cyan; } 100% { transform: skewX(5deg); text-shadow: -2px 0 red, 2px 0 cyan; } }
-.disco-planet { animation: discoSpin 0.5s linear infinite !important; }
-@keyframes discoSpin { from { transform: rotate(0deg) scale(1.3); filter: hue-rotate(0deg); } to { transform: rotate(360deg) scale(1.3); filter: hue-rotate(360deg); } }
-.matrix-bg { background: #000 !important; animation: matrixColor 5s infinite; }
-@keyframes matrixColor { 0%, 100% { color: #0f0; } 50% { color: #00ff66; } }
-.invert-colors { filter: invert(1) hue-rotate(180deg) !important; }
-.frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
-@keyframes floatGravity {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-15px) rotate(3deg); }
-}
-.ufo { position: fixed; font-size: 50px; z-index: 18000; pointer-events: none; transition: transform 4s linear; }
-.flash-mode { animation: flashAnim 0.1s steps(2) infinite !important; }
-@keyframes flashAnim { from { background: #000; } to { background: #fff; } }
-.nuclear-mode { animation: alertAnim 0.8s ease-in-out infinite alternate !important; filter: saturate(2) contrast(1.5) !important; }
-@keyframes alertAnim { from { background-color: #101a3a; } to { background-color: #660000; } }
-
-#fake-crash-screen {
+#fake-crash-screen, #ban-screen {
     display: none; position: fixed; inset: 0; background: #0078d7; color: white;
-    font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; cursor: pointer; user-select: none;
+    font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; user-select: none;
 }
+#ban-screen { background: #550000 !important; }
 #global-chat-alert {
     position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
     background: linear-gradient(135deg, #ff0055, #9900ff); color: white;
@@ -84,7 +64,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     box-shadow: 0 3px 15px rgba(255, 204, 0, 0.4); z-index: 15000;
 }
 
-/* Style des Panneaux Executor */
 .roblox-panel {
     display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif;
@@ -114,8 +93,13 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div id="fake-crash-screen" onclick="this.style.display='none'">
     <span style="font-size: 100px;">:(</span>
     <h2>Votre PC a rencontré un problème et doit redémarrer.</h2>
-    <p>Nous collectons simplement des informations relatives aux erreurs du jeu Galaxy Miner, puis nous allons redémarrer pour vous.</p>
-    <p style="font-size: 14px; margin-top: 50px; color: rgba(255,255,255,0.7);">Code d'arrêt : GALAXY_MINER_ADMIN_ABUSE<br>Cliquez n'importe où pour forcer le redémarrage du jeu.</p>
+    <p>Code d'arrêt : GALAXY_MINER_ADMIN_ABUSE</p>
+</div>
+
+<div id="ban-screen">
+    <span style="font-size: 100px;">🚫</span>
+    <h2>COMPTE BANNI</h2>
+    <p>Tu as été exclu de Galaxy Miner par un administrateur du serveur.</p>
 </div>
 
 <div class="top" id="ui-top">
@@ -124,10 +108,11 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div class="card">🌍 Zone <span id="zone">1</span></div>
 <div class="card">🔁 Prestige <span id="prestige">0</span></div>
 <div class="card">✨ Éclats: <span id="shards">0</span></div>
-<div class="card">👤 <input id="player" placeholder="Nom" oninput="changePlayer()"></div>
+<div class="card">👤 <input id="player" placeholder="Nom (Sans Émoji)" oninput="cleanPseudoAndLoad()"></div>
+<div class="card">🔑 <input id="account-pass" type="password" placeholder="Mot de passe" oninput="loadPlayerSave()"></div>
 </div>
 
-<div id="notice" class="notice">Bienvenue mineur. Écris ton nom pour commencer !</div>
+<div id="notice" class="notice">Inscris ton nom et un mot de passe pour commencer !</div>
 
 <div id="money">0</div>
 <div id="planetName">Terra</div>
@@ -156,7 +141,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div class="left card" id="ui-left">
 <h3>Stats & Boutique ✨</h3>
 Power: <span id="power">1</span><br>
-Drones: <span id="drones">0</span><br>
+Drones: <span id="drones">0</span> / 150 <span style="font-size:10px;color:#aaa;">(MAX)</span><br>
 Scanner: <span id="scanner">1</span><br>
 Zone Max: <span id="maxzone">1</span>
 <hr style="border:1px solid rgba(255,255,255,0.1)">
@@ -216,35 +201,26 @@ Zone Max: <span id="maxzone">1</span>
 
 <script>
 const planets=[
-{name:"Terra",emoji:"🌍"},
-{name:"Mars",emoji:"🔴"},
-{name:"Neptune",emoji:"🔵"},
-{name:"Nova Prime",emoji:"🟣"},
-{name:"Titan",emoji:"🪐"},
-{name:"Sol",emoji:"☀️"}
+{name:"Terra",emoji:"🌍"}, {name:"Mars",emoji:"🔴"}, {name:"Neptune",emoji:"🔵"},
+{name:"Nova Prime",emoji:"🟣"}, {name:"Titan",emoji:"🪐"}, {name:"Sol",emoji:"☀️"}
 ];
 
 let defaultState={
     credits:0,power:1,drones:0,scanner:1,zone:1,maxzone:1,prestige:0,pCost:20,dCost:70,sCost:120,
-    shards:0,up1:0,up2:0,lastSaveTime:Date.now()
+    shards:0,up1:0,up2:0,password:"",lastSaveTime:Date.now()
 };
 let s=JSON.parse(JSON.stringify(defaultState));
 let listeLeaderboard = [];
+const MAX_DRONES = 150;
 
 let combo=0; let comboTimer=null; let frenzyActive=false; let frenzyTimer=null; let droneInterval = null;
-let eventMultiplier = 1; let eventTimer = null; let isSlowed = false; let isFrozen = false; let speedHackActive = false;
+let eventMultiplier = 1; let eventTimer = null; let isSlowed = false; let isFrozen = false;
 
-// --- CONNEXION SOCKET.IO ---
 const socket = io("https://galaxy-miner-server.onrender.com"); 
 
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
+socket.on("miseAJourLeaderboard", (data) => { listeLeaderboard = data || []; renderLB(); });
 
-socket.on("miseAJourLeaderboard", (data) => {
-    listeLeaderboard = data || [];
-    renderLB();
-});
-
-// --- RECEPTION DU CHAT ---
 socket.on("recevoirMessageGlobal", (data) => {
     const chatBox = document.getElementById("chat-box");
     const nvMessage = document.createElement("div");
@@ -262,58 +238,41 @@ function envoyerMessage() {
         input.value = "";
     }
 }
+document.getElementById("chat-input").addEventListener("keydown", function(e) { if (e.key === "Enter") envoyerMessage(); });
 
-document.getElementById("chat-input").addEventListener("keydown", function(e) {
-    if (e.key === "Enter") envoyerMessage();
-});
-
-// --- RECEPTION DES COMMANDES D'ADMINISTRATION CIBLÉES ---
-socket.on("recevoirAdminAbuse", (data) => {
-    const monPseudo = document.getElementById("player").value.trim();
-    
-    // Si la commande cible quelqu'un en particulier, et que ce n'est pas moi, on l'ignore
-    if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase()) {
-        return; 
-    }
-
-    const logOwner = document.getElementById('log-owner'); 
-    const logAdmin = document.getElementById('log-admin');
-    let cibleTxt = data.cible ? `@${data.cible}` : "Tous";
-    let msgText = `[🌍 ABUSE] (${data.role.toUpperCase()}) ${data.auteur} -> ${cibleTxt}: ${data.commande}`;
-    
-    if(logOwner) { let lineO = document.createElement('div'); lineO.style.color = '#ffaa00'; lineO.textContent = msgText; logOwner.appendChild(lineO); logOwner.scrollTop = logOwner.scrollHeight; }
-    if(logAdmin) { let lineA = document.createElement('div'); lineA.style.color = '#ffaa00'; lineA.textContent = msgText; logAdmin.appendChild(lineA); logAdmin.scrollTop = logAdmin.scrollHeight; }
-    
-    let clean = data.commande.startsWith(';') || data.commande.startsWith(':') ? data.commande.substring(1) : data.commande;
-    let parts = clean.split(" "); 
-    let arg2 = Number(parts[2] || 0);
-    
-    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, arg2, data.totalConnectes, data.role);
-});
+function cleanPseudoAndLoad() {
+    let input = document.getElementById("player");
+    // Filtre pour ne garder que lettres, chiffres, tirets et espaces (Retire les émojis)
+    input.value = input.value.replace(/[^\w\sа-яА-Яàâäéèêëîïôöùûüç-]/gi, '');
+    loadPlayerSave();
+}
 
 function loadPlayerSave() {
-    let name=player.value.trim();
+    let name = document.getElementById("player").value.trim();
+    let typedPass = document.getElementById("account-pass").value;
     if(!name){ s=JSON.parse(JSON.stringify(defaultState)); uiWithoutSaving(); restartDroneInterval(); return; }
-    s=JSON.parse(JSON.stringify(defaultState));
-    try{
-        let loaded=JSON.parse(localStorage.getItem("gmv3save_"+name)||"{}");
-        Object.assign(s,loaded);
-        if(loaded.lastSaveTime && s.drones > 0){
-            let elapsedSec = Math.floor((Date.now() - loaded.lastSaveTime) / 1000);
-            if(elapsedSec > 10){
-                let maxOfflineSec = 4 * 60 * 60; if(elapsedSec > maxOfflineSec) elapsedSec = maxOfflineSec;
-                let droneSpeed = 1000 / (1 + s.up1);
-                let intervals = Math.floor((elapsedSec * 1000) / droneSpeed);
-                let offlineGain = intervals * s.drones * s.scanner * (1 + s.prestige);
-                s.credits += offlineGain;
-                setTimeout(() => msg(`💤 Absent ! Tes drones ont miné +${Math.floor(offlineGain)} 💰`), 1000);
-            }
+    
+    let localData = localStorage.getItem("gmv3save_"+name);
+    if(localData) {
+        let parsed = JSON.parse(localData);
+        if(parsed.password && parsed.password !== typedPass) {
+            msg("❌ Identifiants erronés pour ce compte !");
+            return;
         }
-    }catch(e){}
+        s = Object.assign(JSON.parse(JSON.stringify(defaultState)), parsed);
+    } else {
+        s = JSON.parse(JSON.stringify(defaultState));
+        if(typedPass) { s.password = typedPass; }
+    }
     restartDroneInterval(); ui();
 }
-function changePlayer() { loadPlayerSave(); }
-function save(){ let name=player.value.trim(); if(!name) return; s.lastSaveTime = Date.now(); localStorage.setItem("gmv3save_"+name,JSON.stringify(s)); }
+
+function save(){ 
+    let name=player.value.trim(); 
+    if(!name) return; 
+    s.lastSaveTime = Date.now(); 
+    localStorage.setItem("gmv3save_"+name,JSON.stringify(s)); 
+}
 function msg(t){document.getElementById("notice").textContent=t;}
 function ui(){ updateUIElements(); save(); }
 function uiWithoutSaving(){ updateUIElements(); }
@@ -325,11 +284,9 @@ function updateUIElements(){
     document.getElementById("shards").textContent=s.shards; document.getElementById("power").textContent=s.power;
     document.getElementById("drones").textContent=s.drones; document.getElementById("scanner").textContent=s.scanner;
     document.getElementById("maxzone").textContent=s.maxzone; document.getElementById("pc").textContent=Math.floor(s.pCost);
-    document.getElementById("dc").textContent=Math.floor(s.dCost); document.getElementById("sc").textContent=Math.floor(s.sCost);
+    document.getElementById("dc").textContent=s.drones >= MAX_DRONES ? "MAX" : Math.floor(s.dCost); 
+    document.getElementById("sc").textContent=Math.floor(s.sCost);
     document.getElementById("up1Lvl").textContent=s.up1; document.getElementById("up2Lvl").textContent=s.up2;
-    document.getElementById("pIcon").textContent = s.power < 10 ? "⚡" : (s.power < 30 ? "⚙️" : "💎");
-    document.getElementById("dIcon").textContent = s.drones < 10 ? "🤖" : (s.drones < 30 ? "🛸" : "🛸⚙️");
-    document.getElementById("sIcon").textContent = s.scanner < 10 ? "🔭" : (s.scanner < 25 ? "📡" : "👁️");
     const p=planets[(s.zone-1)%planets.length]; document.getElementById("planet").textContent=p.emoji; document.getElementById("planetName").textContent=p.name;
     let req = 1500 * Math.pow(s.zone,3); let pct = Math.min(100, (s.credits / req) * 100); document.getElementById("progress-bar").style.width = pct + "%";
 }
@@ -340,15 +297,9 @@ document.getElementById("planet").onclick=(e)=>{
     let comboMultiplier = 1 + Math.min(2, combo * 0.04);
     let gain = baseGain * comboMultiplier;
     if(frenzyActive) gain *= 3; gain *= eventMultiplier; if(isSlowed) gain /= 4;
-    let isCrit = Math.random() < (s.up2 * 0.02); if(isCrit) { gain *= 4; }
-    let roll=Math.random(); let color="#52ffe0";
-    if(roll<0.01){gain*=25;color="gold";msg("🌟 Légendaire !");} else if(roll<0.05){gain*=5;color="violet";}
-    if(isCrit && roll>=0.05) { color="#ff3300"; msg("🎯 CRITIQUE !"); }
     s.credits+=gain; combo++;
     document.getElementById("combo-display").textContent = `Combo x${comboMultiplier.toFixed(2)} (${combo})`;
     clearTimeout(comboTimer); comboTimer = setTimeout(() => { combo = 0; document.getElementById("combo-display").textContent = ""; }, 1500);
-    let pl = document.getElementById("planet"); pl.classList.remove("shake"); void pl.offsetWidth; pl.classList.add("shake"); setTimeout(() => pl.classList.remove("shake"), 100);
-    let d=document.createElement("div"); d.className="pop"; d.style.left=e.clientX+"px"; d.style.top=e.clientY+"px"; d.style.color=color; d.style.fontSize = isCrit ? "28px" : "20px"; d.textContent="+"+Math.floor(gain); document.body.appendChild(d); setTimeout(()=>d.remove(),800);
     if(s.credits > 1500 * Math.pow(s.zone,3)){ s.zone++; s.maxzone=Math.max(s.maxzone,s.zone); msg("🚀 Nouvelle zone "+s.zone); }
     ui();
 };
@@ -356,58 +307,51 @@ document.getElementById("planet").onclick=(e)=>{
 function buyPower(){ if(isFrozen) return; if(s.credits>=s.pCost){s.credits-=s.pCost;s.power++;s.pCost=Math.floor(s.pCost*1.15);ui();}}
 function buyMaxPower(){
     if(isFrozen) return;
-    let achetés = 0;
-    while(s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost = Math.floor(s.pCost * 1.15); achetés++; }
-    if(achetés > 0) { msg(`⚡ Drill MAX : +${achetés} Niveaux achetés !`); ui(); }
+    while(s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost = Math.floor(s.pCost * 1.15); }
+    ui();
 }
-function buyDrone(){ if(isFrozen) return; if(s.credits>=s.dCost){s.credits-=s.dCost;s.drones++;s.dCost=Math.floor(s.dCost*1.18);ui();restartDroneInterval();}}
+function buyDrone(){ 
+    if(isFrozen) return; 
+    if(s.drones >= MAX_DRONES) { msg("🤖 Limite de 150 Drones atteinte !"); return; }
+    if(s.credits>=s.dCost){s.credits-=s.dCost;s.drones++;s.dCost=Math.floor(s.dCost*1.18);ui();restartDroneInterval();}
+}
 function buyMaxDrone(){
     if(isFrozen) return;
-    let achetés = 0;
-    while(s.credits >= s.dCost) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); achetés++; }
-    if(achetés > 0) { msg(`🤖 Drones MAX : +${achetés} Drones déployés !`); restartDroneInterval(); ui(); }
+    while(s.credits >= s.dCost && s.drones < MAX_DRONES) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); }
+    restartDroneInterval(); ui();
 }
 function buyScanner(){ if(isFrozen) return; if(s.credits>=s.sCost){s.credits-=s.sCost;s.scanner++;s.sCost=Math.floor(s.sCost*1.2);ui();}}
 function buyMaxScanner(){
     if(isFrozen) return;
-    let achetés = 0;
-    while(s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost = Math.floor(s.sCost * 1.2); achetés++; }
-    if(achetés > 0) { msg(`🔭 Scanner MAX : +${achetés} Optiques ajoutées !`); ui(); }
+    while(s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost = Math.floor(s.sCost * 1.2); }
+    ui();
 }
 
-function buyPrestigeUpgrade(type){ if(isFrozen) return; if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); msg("🤖 Drones accélérés !"); } if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); msg("🎯 Chances critiques augmentées !"); }}
+function buyPrestigeUpgrade(type){ if(isFrozen) return; if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); } if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); }}
 
 function restartDroneInterval(){
     clearInterval(droneInterval);
     let baseSpeed = 1000 / (1 + s.up1);
-    let speed = speedHackActive ? (baseSpeed / 5) : baseSpeed;
     droneInterval = setInterval(()=>{
         if(s.drones > 0 && !isFrozen){
             let droneGain = s.drones*s.scanner*(1+s.prestige);
             if(frenzyActive) droneGain *= 3; droneGain *= eventMultiplier; if(isSlowed) droneGain /= 4;
-            s.credits+=droneGain; document.getElementById("money").textContent=Math.floor(s.credits); document.getElementById("moneyTop").textContent=Math.floor(s.credits);
-            let req = 1500 * Math.pow(s.zone,3); let pct = Math.min(100, (s.credits / req) * 100); document.getElementById("progress-bar").style.width = pct + "%";
+            s.credits+=droneGain; updateUIElements();
         }
-    }, speed);
+    }, baseSpeed);
 }
 
-setInterval(()=>{ save(); }, 15000);
-function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; msg(`🔁 Prestige +1 ! (+${gainedShards} Éclats)`); restartDroneInterval(); ui(); }else{ msg("⚠️ Atteins au moins la Zone 5 pour le Prestige !"); }}
+function doPrestige(){ if(s.zone>=5){ let gainedShards = s.zone; s.shards += gainedShards; s.prestige++; s.credits=0;s.power=1+s.prestige;s.drones=0;s.scanner=1;s.zone=1;s.pCost=20;s.dCost=70;s.sCost=120; restartDroneInterval(); ui(); }}
 
 function renderLB(){ 
-    if(listeLeaderboard.length === 0) {
-        document.getElementById("leaderboard").innerHTML = "Aucun score pour le moment.";
-        return;
-    }
+    if(listeLeaderboard.length === 0) { document.getElementById("leaderboard").innerHTML = "Aucun score."; return; }
     let top10 = listeLeaderboard.slice(0, 10);
-    document.getElementById("leaderboard").innerHTML = top10.map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige} 🌍${p.zone}<hr>` ).join("");
+    document.getElementById("leaderboard").innerHTML = top10.map((p,i)=> `${i+1}. ${p.name}<br>💰${Math.floor(p.score)} 🔁${p.prestige}<hr>` ).join("");
 }
 
 setInterval(() => {
     let name = player.value.trim();
-    if(name && !isFrozen) {
-        socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone });
-    }
+    if(name && !isFrozen) { socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone }); }
 }, 2000);
 
 function spawnComet(){
@@ -415,147 +359,91 @@ function spawnComet(){
     let anim = setInterval(()=>{ x += 6; y += 2; c.style.left = x + "px"; c.style.top = y + "px"; if(x > window.innerWidth + 50){ clearInterval(anim); c.style.display = "none"; scheduleNextComet(); } }, 20);
     c.onclick = () => { clearInterval(anim); c.style.display = "none"; triggerFrenzy(); scheduleNextComet(); };
 }
-function scheduleNextComet(){ setTimeout(spawnComet, Math.random() * 30000 + 30000); }
-function triggerFrenzy(){ frenzyActive = true; msg("☄️ MODE FRÉNÉSIE ACTIVÉ (GAINS x3) ! ☄️"); document.body.classList.add("frenzy-active"); clearTimeout(frenzyTimer); frenzyTimer = setTimeout(() => { frenzyActive = false; document.body.classList.remove("frenzy-active"); msg("La frénésie est terminée."); }, 10000); }
+function scheduleNextComet() { setTimeout(spawnComet, 40000); }
+function triggerFrenzy(){ frenzyActive = true; document.body.classList.add("frenzy-active"); clearTimeout(frenzyTimer); frenzyTimer = setTimeout(() => { frenzyActive = false; document.body.classList.remove("frenzy-active"); }, 10000); }
 
-// --- AUTHENTIFICATION ---
+// --- AUTHENTIFICATION DES PANNEAUX ---
 let auth = { owner: false, admin: false };
 window.addEventListener('keydown', function(e) { if (document.activeElement.tagName === 'INPUT') return; if (e.key === '1') { togglePanel('owner'); } if (e.key === '2') { togglePanel('admin'); } });
 function togglePanel(role) { const p = document.getElementById(`panel-${role}`); p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'block' : 'none'; }
 
 function loginPanel(role) {
     const inputField = document.getElementById(`input-${role}`); const log = document.getElementById(`log-${role}`); let val = inputField.value.trim();
-    let mdpCorrect = (role === 'owner' && val === "admin123") || (role === 'admin' && val === "admin321");
+    let mdpCorrect = (role === 'owner' && val === "admin123") || (role === 'admin' && val === "1234");
     if (mdpCorrect) {
-        auth[role] = true; document.getElementById(`${role}Header`).textContent = role === 'owner' ? "👑 OWNER SUPRÊME EXECUTOR" : "🛡️ MODÉRATION ADM EXEC";
-        document.getElementById(`${role}Prefix`).textContent = ";"; inputField.value = ""; inputField.type = "text"; inputField.placeholder = "Exécuter un abus... (;help)";
-        log.innerHTML = `<div style='color: #26ff63;'>[SYSTEM]: Mode ${role.toUpperCase()} validé. Tapez ;help.</div>`;
+        auth[role] = true; document.getElementById(`${role}Header`).textContent = role === 'owner' ? "👑 OWNER PANEL" : "🛡️ ADMIN PANEL";
+        document.getElementById(`${role}Prefix`).textContent = ";"; inputField.value = ""; inputField.type = "text"; inputField.placeholder = "Commande... (;help)";
+        log.innerHTML = `<div style='color: #26ff63;'>[SYSTEM]: Validé.</div>`;
         inputField.removeAttribute("onkeydown"); inputField.addEventListener('keydown', function(e) { if (e.key === 'Enter') runCmd(role); });
-    } else { log.innerHTML += "<div style='color:red;'>[ERROR]: Code secret erroné.</div>"; inputField.value = ""; }
+    } else { log.innerHTML += "<div style='color:red;'>[ERROR]: Échec.</div>"; inputField.value = ""; }
 }
 
-// --- LOGIQUE RUNCMD AVEC SÉPARATION DU PSEUDO CIBLE ---
 function runCmd(role) {
     const inputField = document.getElementById(`input-${role}`); let val = inputField.value.trim(); if(!val) return;
     let commandClean = val.startsWith(';') || val.startsWith(':') ? val.substring(1) : val;
     let parts = commandClean.split(" "); let baseCmd = parts[0].toLowerCase(); 
-    
     let value = 1; let cible = ""; let texteBrut = commandClean.substring(parts[0].length).trim();
     
     if (parts[1]) {
-        if (!isNaN(parts[1])) {
-            value = Number(parts[1]);
-            cible = parts.slice(2).join(" ");
-        } else {
-            cible = parts.slice(1).join(" ");
-        }
+        if (!isNaN(parts[1])) { value = Number(parts[1]); cible = parts.slice(2).join(" "); } 
+        else { cible = parts.slice(1).join(" "); }
     }
-    
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
     if(baseCmd === "help") { showHelp(role); inputField.value = ""; return; }
-    
-    const ownerOnly = ["clear", "clearlb", "event", "troll"];
-    if (role === "admin" && ownerOnly.includes(baseCmd)) { let err = document.createElement('div'); err.style.color="red"; err.textContent="[PERM ERROR]: Réservé à l'Owner !"; document.getElementById('log-admin').appendChild(err); inputField.value=""; return; }
     
     socket.emit("commandeAdmin", { commande: val, baseCmd, value, cible: cible.trim(), texteBrut, auteur: pseudo, role: role }); 
     inputField.value = "";
 }
 
-function appliquerCommandeLocale(baseCmd, value, texteBrut, arg2, totalConnectes, roleEmis) {
-    const logO = document.getElementById('log-owner'); const logA = document.getElementById('log-admin'); let response = "";
+socket.on("recevoirAdminAbuse", (data) => {
+    const monPseudo = document.getElementById("player").value.trim();
+    if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase()) return; 
+
+    // Commande BAN IMMÉDIATE (Bloque l'écran et arrête les drones)
+    if (data.baseCmd === "ban") {
+        document.getElementById("ban-screen").style.display = "block";
+        isFrozen = true;
+        clearInterval(droneInterval);
+        return;
+    }
+
+    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, data.role);
+});
+
+function appliquerCommandeLocale(baseCmd, value, texteBrut, roleEmis) {
     switch(baseCmd) {
-        case "players": response = `📊 RESEAU : ${totalConnectes || 1} joueurs connectés.`; break;
         case "chat":
-            const alertBox = document.getElementById("global-chat-alert"); alertBox.textContent = `📢 [${roleEmis.toUpperCase()}] : ` + (texteBrut || "Attention !");
-            alertBox.style.top = "20px"; setTimeout(() => { alertBox.style.top = "-100px"; }, 6000); response = `Message affiché.`; break;
-        case "alien":
-            for(let i=0; i<5; i++){ let ufo = document.createElement('div'); ufo.className = 'ufo'; ufo.textContent = '🛸'; ufo.style.top = Math.random() * window.innerHeight + 'px'; ufo.style.left = '-60px'; document.body.appendChild(ufo); setTimeout(() => { ufo.style.transform = `translateX(${window.innerWidth + 100}px) translateY(${Math.random()*100 - 50}px)`; }, 100); setTimeout(() => ufo.remove(), 4200); }
-            response = "👽 INVASION D'OVNI GENEREE !"; break;
-        case "gravity": const el = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"]; el.forEach(id => { document.getElementById(id).style.animation = "floatGravity 6s ease-in-out infinite"; }); response = "🌌 GRAVITÉ ZERO ACTIVÉE !"; break;
-        case "ungravity": const el2 = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"]; el2.forEach(id => { document.getElementById(id).style.animation = "none"; }); response = "🛑 Gravité rétablie."; break;
-        case "invert": document.body.classList.add("invert-colors"); response = "🎭 COULEURS INVERSEES !"; break;
-        case "uninvert": document.body.classList.remove("invert-colors"); response = "🛑 Couleurs normales."; break;
-        case "fakecrash": document.getElementById("fake-crash-screen").style.display = "block"; response = "☣️ FAKE CRASH DEPLOYE !"; break;
-        case "freeze": isFrozen = true; document.getElementById("planet").classList.add("frozen"); response = "🧊 INTERFACES GELEES !"; break;
-        case "unfreeze": isFrozen = false; document.getElementById("planet").classList.remove("frozen"); response = "🔥 Glace brisée."; break;
-        case "event":
-            let multi = value || 2; let duree = arg2 || 30; eventMultiplier = multi; const b = document.getElementById("global-event-banner"); b.textContent = `🔥 ÉVÉNEMENT GLOBAL : CASH x${multi} PENDANT ${duree}s ! 🔥`; b.style.display = "block";
-            clearTimeout(eventTimer); eventTimer = setTimeout(() => { eventMultiplier = 1; b.style.display = "none"; }, duree * 1000); response = `Multiplicateur x${multi} activé.`; break;
-        case "slow": isSlowed = true; response = "🐢 Vitesse globale divisée par 4 !"; break;
-        case "unslow": isSlowed = false; response = "🛑 Vitesse normale."; break;
-        case "rich": s.credits += 50000000; response = "💰 +50M de crédits distribués !"; break;
-        case "disco": document.getElementById("planet").classList.add("disco-planet"); response = "🕺 Disco active !"; break;
-        case "undisco": document.getElementById("planet").classList.remove("disco-planet"); response = "🛑 Fin disco."; break;
-        case "rainbow": document.body.classList.add("rainbow-bg"); response = "🌈 Arc-en-ciel actif !"; break;
-        case "unrainbow": document.body.classList.remove("rainbow-bg"); response = "🛑 Fin arc-en-ciel."; break;
-        case "matrix": document.body.classList.add("matrix-bg"); response = "📟 Code Matrix actif !"; break;
-        case "unmatrix": document.body.classList.remove("matrix-bg"); response = "🛑 Fin matrix."; break;
-        case "glitch": document.getElementById("money").classList.add("glitch-text"); response = "👾 Glitch de texte !"; break;
-        case "unglitch": document.getElementById("money").classList.remove("glitch-text"); response = "🛑 Fin glitch."; break;
-        case "giant": document.getElementById("planet").style.transform = "scale(2.2)"; response = "🐘 Planète géante !"; break;
-        case "mini": document.getElementById("planet").style.transform = "scale(0.3)"; response = "🐜 Planète miniature !"; break;
-        case "normal": document.getElementById("planet").style.transform = "scale(1)"; response = "🌍 Taille normale."; break;
-        case "frenzy": triggerFrenzy(); response = "☄️ Mode frénésie injecté !"; break;
-        case "shards": s.shards += value; response = `✨ +${value} Éclats donnés !`; break;
-        case "zone": s.zone = value; s.maxzone = Math.max(s.maxzone, s.zone); response = `🚀 Téléportation Zone ${value}.`; break;
-        case "troll": s.credits = 777; response = "🎲 Score troll forcé à 777."; break;
-        case "clear": s.credits = 0; s.power = 1; s.drones = 0; response = "💥 RESET TOTAL EFFECTUÉ !"; break;
-        case "clearlb": socket.emit("demandeEffacerClassement"); response = "🏆 Signal d'effacement LB envoyé au serveur."; break;
-        case "giftdrone": let dronesOfferts = value || 5; s.drones += dronesOfferts; response = `🤖 Cadeau de +${dronesOfferts} Drones !`; restartDroneInterval(); break;
-        case "giftpower": let powerOffert = value || 100; s.power += powerOffert; response = `⚡ Cadeau de +${powerOffert} Power !`; break;
+            const alertBox = document.getElementById("global-chat-alert"); alertBox.textContent = `📢 [${roleEmis.toUpperCase()}] : ` + texteBrut;
+            alertBox.style.top = "20px"; setTimeout(() => { alertBox.style.top = "-100px"; }, 6000); break;
+        case "gravity": document.querySelectorAll(".card, #money, #planet-container").forEach(el => el.style.animation = "floatGravity 6s infinite"); break;
+        case "ungravity": document.querySelectorAll(".card, #money, #planet-container").forEach(el => el.style.animation = "none"); break;
+        case "freeze": isFrozen = true; document.getElementById("planet").classList.add("frozen"); break;
+        case "unfreeze": isFrozen = false; document.getElementById("planet").classList.remove("frozen"); break;
+        case "slow": isSlowed = true; break;
+        case "unslow": isSlowed = false; break;
+        case "rich": s.credits += 50000000; break;
+        case "giftdrone": s.drones = Math.min(MAX_DRONES, s.drones + (value || 5)); restartDroneInterval(); break;
+        case "unrobot": s.drones = Math.max(0, s.drones - (value || 5)); restartDroneInterval(); break; 
+        case "giftpower": s.power += value; break;
+        case "fakecrash": document.getElementById("fake-crash-screen").style.display = "block"; break;
         case "unabuse":
-            const compoGravite = ["ui-top", "ui-left", "ui-right", "ui-shop", "money", "planet-container", "ui-progress"];
-            compoGravite.forEach(id => { document.getElementById(id).style.animation = "none"; });
-            document.getElementById("planet").style.transform = "scale(1)";
-            isFrozen = false; document.getElementById("planet").classList.remove("frozen");
-            isSlowed = false;
-            document.body.classList.remove("invert-colors");
-            document.getElementById("planet").classList.remove("disco-planet");
-            document.body.classList.remove("rainbow-bg");
-            document.body.classList.remove("matrix-bg");
-            document.getElementById("money").classList.remove("glitch-text");
-            response = "⚙️ NETTOYAGE : Tous les abus visuels ont été nettoyés !";
-            break;
+            document.querySelectorAll(".card, #money, #planet-container").forEach(el => el.style.animation = "none");
+            isFrozen = false; isSlowed = false; document.getElementById("planet").className = ""; break;
     }
-    if (response) {
-        if (logO) { let lineO = document.createElement('div'); lineO.textContent = response; logO.appendChild(lineO); logO.scrollTop = logO.scrollHeight; }
-        if (logA) { let lineA = document.createElement('div'); lineA.textContent = response; logA.appendChild(lineA); logA.scrollTop = logA.scrollHeight; }
-    }
+    uiWithoutSaving();
 }
 
 function showHelp(role) {
     const log = document.getElementById(`log-${role}`);
-    log.innerHTML += "<div style='color:#55aaff;'>--- COMMANDES DISPONIBLES (Ajouter le pseudo à la fin pour cibler) ---</div>";
-    log.innerHTML += "<div>;unabuse - Stopper et nettoyer tous les abus en cours</div>";
-    log.innerHTML += "<div>;players - Voir le nombre de connectés</div>";
-    log.innerHTML += "<div>;chat [texte] - Alerte message global</div>";
-    log.innerHTML += "<div>;alien - Déclencher invasion d'OVNIs</div>";
-    log.innerHTML += "<div>;gravity / ;ungravity - Effet sans gravité</div>";
-    log.innerHTML += "<div>;invert / ;uninvert - Inversion visuelle</div>";
-    log.innerHTML += "<div>;fakecrash - Écran bleu d'erreur simulé</div>";
-    log.innerHTML += "<div>;freeze / ;unfreeze - Geler la planète</div>";
-    log.innerHTML += "<div>;slow / ;unslow - Ralentir la vitesse</div>";
-    log.innerHTML += "<div>;rich - Injecter +50M crédits</div>";
-    log.innerHTML += "<div>;disco / ;undisco - Mode discothèque</div>";
-    log.innerHTML += "<div>;rainbow / ;unrainbow - Arrière-plan arc-en-ciel</div>";
-    log.innerHTML += "<div>;matrix / ;unmatrix - Ambiance hacker vert</div>";
-    log.innerHTML += "<div>;glitch / ;unglitch - Tremblement de texte</div>";
-    log.innerHTML += "<div>;giant / ;mini / ;normal - Modifier échelle planète</div>";
-    log.innerHTML += "<div>;frenzy - Activer de force gains x3</div>";
-    log.innerHTML += "<div>;shards [nombre] - Donner des Éclats</div>";
-    log.innerHTML += "<div>;zone [nombre] - Téléportation de zone</div>";
-    log.innerHTML += "<div>;giftdrone [nombre] - Offrir des drones</div>";
-    log.innerHTML += "<div>;giftpower [nombre] - Offrir de la puissance</div>";
-    if (role === "owner") {
-        log.innerHTML += "<div style='color:#ff5555;'>[OWNER ONLY] :</div>";
-        log.innerHTML += "<div>;event [multi] [secondes] - Lancer un bonus mondial</div>";
-        log.innerHTML += "<div>;troll - Forcer les crédits à 777</div>";
-        log.innerHTML += "<div>;clear - Remise à zéro totale du joueur</div>";
-        log.innerHTML += "<div>;clearlb - Purger le classement du serveur</div>";
-    }
+    log.innerHTML += "<div style='color:#55aaff;'>--- COMMANDES (Ajouter le pseudo à la fin) ---</div>";
+    log.innerHTML += "<div>;ban [pseudo] - Exclure définitivement un joueur</div>";
+    log.innerHTML += "<div>;unrobot [nombre] [pseudo] - Retirer des drones</div>";
+    log.innerHTML += "<div>;giftdrone [nombre] [pseudo] - Ajouter des drones</div>";
+    log.innerHTML += "<div>;freeze / ;unfreeze [pseudo] - Geler le joueur</div>";
+    log.innerHTML += "<div>;rich [pseudo] - Donner 50M</div>";
+    log.innerHTML += "<div>;unabuse [pseudo] - Stopper tous les abus visuels</div>";
     log.scrollTop = log.scrollHeight;
 }
-
 window.onload = () => { scheduleNextComet(); };
 </script>
 </body>
