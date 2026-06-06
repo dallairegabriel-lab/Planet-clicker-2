@@ -399,15 +399,23 @@ function envoyerMessage() {
 document.getElementById("chat-input").addEventListener("keydown", function(e) { if (e.key === "Enter") envoyerMessage(); });
 
 socket.on("recevoirAdminAbuse", (data) => {
-    let monPseudo = document.getElementById("player").value.trim();
-    const cmdGlobales = [
-        "boost", "unabuse", "chat", "seisme", "rainbow", "flash", "nuclear", "blur", "blackout", "matrix", "invert", "frenzyall", 
-        "kickall", "muteall", "unmuteall", "freezeall", "unfreezeall", "warnall", "tpall", "slowall", "unslowall", "discomode", 
-        "lag", "glitch", "pixel", "upsidedown", "zoom", "unzoom", "sepia", "oldtv"
-    ];
+    let monPseudo = document.getElementById("player").value.trim().toLowerCase();
+    let cibleReçue = data.cible ? data.cible.trim().toLowerCase() : "";
     
-    // Si la commande cible quelqu'un de précis, on vérifie que c'est bien nous
-    if (data.cible && data.cible.toLowerCase() !== "all" && data.cible.toLowerCase() !== monPseudo.toLowerCase() && !cmdGlobales.includes(data.baseCmd)) return; 
+    // CORRECTION CRITIQUE : Si la commande est kick ou ban, on bloque DIRECTEMENT si on n'est pas ciblé
+    if (data.baseCmd === "kick" || data.baseCmd === "ban") {
+        if (cibleReçue !== "all" && cibleReçue !== monPseudo) {
+            return; // On ignore totalement la commande, elle est pour quelqu'un d'autre !
+        }
+    } else {
+        // Pour les autres commandes globales ou ciblées
+        const cmdGlobales = [
+            "boost", "unabuse", "chat", "seisme", "rainbow", "flash", "nuclear", "blur", "blackout", "matrix", "invert", "frenzyall", 
+            "kickall", "muteall", "unmuteall", "freezeall", "unfreezeall", "warnall", "tpall", "slowall", "unslowall", "discomode", 
+            "lag", "glitch", "pixel", "upsidedown", "zoom", "unzoom", "sepia", "oldtv"
+        ];
+        if (data.cible && cibleReçue !== "all" && cibleReçue !== monPseudo && !cmdGlobales.includes(data.baseCmd)) return;
+    }
     
     let clean = data.commande.startsWith(';') || data.commande.startsWith(':') ? data.commande.substring(1) : data.commande;
     let parts = clean.split(" "); let arg2 = Number(parts[2] || 0);
@@ -455,7 +463,7 @@ document.getElementById("planet").onclick=(e)=>{
 function buyPower(){ if(s.credits>=s.pCost){s.credits-=s.pCost;s.power++;s.pCost=Math.floor(s.pCost*1.15);ui();}}
 function buyMaxPower(){ while(s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost = Math.floor(s.pCost * 1.15); } ui(); }
 function buyDrone(){ if(s.credits>=s.dCost){s.credits-=s.dCost;s.drones++;s.dCost=Math.floor(s.dCost*1.18);ui();restartDroneInterval();}}
-function buyMaxDrone(){ while(s.credits >= dCost) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); } restartDroneInterval(); ui(); }
+function buyMaxDrone(){ while(s.credits >= s.dCost) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); } restartDroneInterval(); ui(); }
 function buyScanner(){ if(s.credits>=s.sCost){s.credits-=s.sCost;s.scanner++;s.sCost=Math.floor(s.sCost*1.2);ui();}}
 function buyMaxScanner(){ while(s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost = Math.floor(s.sCost * 1.2); } ui(); }
 function buyPrestigeUpgrade(type){ if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); } if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); }}
@@ -524,7 +532,6 @@ function runCmd(role) {
     let value = Number(parts[2] || "0");
     let texteBrut = (baseCmd === "chat") ? fullCmd.substring(fullCmd.toLowerCase().indexOf("chat") + 4).trim() : parts.slice(2).join(" ");
     
-    // VERIFICATION OBLIGATOIRE DU TARGET POUR KICK ET BAN EN MANUEL LOCAL
     if ((baseCmd === "kick" || baseCmd === "ban") && !target) {
         logBox.innerHTML += `<div style="color:#ffcc00; font-weight:bold;">[ERREUR]: Syntaxe requise : ;${baseCmd} [Pseudo]</div>`;
         return;
@@ -542,7 +549,7 @@ function appliquerCommandeLocale(baseCmd, valNum, texteBrut, arg2, totalConnecte
     let monPseudo = document.getElementById("player").value.trim().toLowerCase();
     let cibleNettoyee = target ? target.toLowerCase() : "";
 
-    // ACTIONS REQUÉRANT UNE CIBLE PRÉCISE
+    // GESTION DU BAN & KICK SÉCURISÉ CÔTÉ JOUEUR LOCAL
     if (baseCmd === "kick" || baseCmd === "ban") {
         if (cibleNettoyee === monPseudo || cibleNettoyee === "all") {
             if (baseCmd === "kick") {
@@ -552,7 +559,7 @@ function appliquerCommandeLocale(baseCmd, valNum, texteBrut, arg2, totalConnecte
             }
             deconnexionComplete();
         } else {
-            if(logBox) logBox.innerHTML += `<div style="color:#26ff63;">[SYSTEM]: Ordre de ${baseCmd} envoyé pour: ${target}</div>`;
+            if(logBox) logBox.innerHTML += `<div style="color:#26ff63;">[SYSTEM]: Ordre de ${baseCmd} transmis pour: ${target}</div>`;
         }
         return;
     }
