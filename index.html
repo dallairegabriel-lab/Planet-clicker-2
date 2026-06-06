@@ -197,7 +197,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 
 <div id="fake-crash-screen" onclick="this.style.display='none'">
     <span style="font-size: 80px;">:(</span>
-    <h2>Votre PC/Appareil a rencontré un problem et doit redémarrer.</h2>
+    <h2>Votre PC/Appareil a rencontré un problème et doit redémarrer.</h2>
     <p>Code d'arrêt : GALAXY_MINER_CREATOR_ABUSE</p>
 </div>
 
@@ -405,10 +405,13 @@ socket.on("recevoirAdminAbuse", (data) => {
         "kickall", "muteall", "unmuteall", "freezeall", "unfreezeall", "warnall", "tpall", "slowall", "unslowall", "discomode", 
         "lag", "glitch", "pixel", "upsidedown", "zoom", "unzoom", "sepia", "oldtv"
     ];
-    if (data.cible && data.cible.toLowerCase() !== monPseudo.toLowerCase() && !cmdGlobales.includes(data.baseCmd)) return; 
+    
+    // Si la commande cible quelqu'un de précis, on vérifie que c'est bien nous
+    if (data.cible && data.cible.toLowerCase() !== "all" && data.cible.toLowerCase() !== monPseudo.toLowerCase() && !cmdGlobales.includes(data.baseCmd)) return; 
+    
     let clean = data.commande.startsWith(';') || data.commande.startsWith(':') ? data.commande.substring(1) : data.commande;
     let parts = clean.split(" "); let arg2 = Number(parts[2] || 0);
-    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, arg2, data.totalConnectes, data.role);
+    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, arg2, data.totalConnectes, data.role, data.cible);
 });
 
 function loadPlayerSave() {
@@ -452,7 +455,7 @@ document.getElementById("planet").onclick=(e)=>{
 function buyPower(){ if(s.credits>=s.pCost){s.credits-=s.pCost;s.power++;s.pCost=Math.floor(s.pCost*1.15);ui();}}
 function buyMaxPower(){ while(s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost = Math.floor(s.pCost * 1.15); } ui(); }
 function buyDrone(){ if(s.credits>=s.dCost){s.credits-=s.dCost;s.drones++;s.dCost=Math.floor(s.dCost*1.18);ui();restartDroneInterval();}}
-function buyMaxDrone(){ while(s.credits >= s.dCost) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); } restartDroneInterval(); ui(); }
+function buyMaxDrone(){ while(s.credits >= dCost) { s.credits -= s.dCost; s.drones++; s.dCost = Math.floor(s.dCost * 1.18); } restartDroneInterval(); ui(); }
 function buyScanner(){ if(s.credits>=s.sCost){s.credits-=s.sCost;s.scanner++;s.sCost=Math.floor(s.sCost*1.2);ui();}}
 function buyMaxScanner(){ while(s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost = Math.floor(s.sCost * 1.2); } ui(); }
 function buyPrestigeUpgrade(type){ if(type===1 && s.shards>=2){ s.shards-=2; s.up1++; ui(); restartDroneInterval(); } if(type===2 && s.shards>=3){ s.shards-=3; s.up2++; ui(); }}
@@ -471,14 +474,12 @@ function doPrestige(){ if(s.zone>=5){ s.shards += s.zone; s.prestige++; s.credit
 function renderLB(){ document.getElementById("leaderboard").innerHTML = listeLeaderboard.slice(0, 10).map((p,i)=> `${i+1}. ${p.name} - 💰${Math.floor(p.score)}<hr>` ).join("");}
 setInterval(() => { let name = document.getElementById("player").value.trim(); if(name && !isFrozen) socket.emit("soumettreScore", { name: name, score: s.credits, prestige: s.prestige, zone: s.maxzone }); }, 2500);
 
-// --- BASE DE DONNÉES ET DROITS PERMISSIONS ---
+// --- BASE DE DONNÉES ET PERMISSIONS ---
 let auth = { owner: false, admin: false };
 window.addEventListener('keydown', function(e) { if (document.activeElement.tagName === 'INPUT') return; if (e.key === '1') togglePanel('owner'); if (e.key === '2') togglePanel('admin'); });
 function togglePanel(role) { const p = document.getElementById(`panel-${role}`); p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'block' : 'none'; }
 
-// BASE DE DONNÉES DES 45 COMMANDES ET LEUR ATTRIBUTION UNIQUE DE RÔLE (L'Owner hérite de TOUT)
 const commandsDatabase = {
-    // 🛡️ COMMANDES ADMIN (Modération & Base)
     "help": "admin", "kick": "admin", "ban": "admin", "mute": "admin", "unmute": "admin",
     "freeze": "admin", "unfreeze": "admin", "slow": "admin", "unslow": "admin", "warn": "admin",
     "chat": "admin", "clear": "admin", "tp": "admin", "slock": "admin", "unslock": "admin",
@@ -486,14 +487,12 @@ const commandsDatabase = {
     "freezeall": "admin", "unfreezeall": "admin", "warnall": "admin", "tpall": "admin",
     "slowall": "admin", "unslowall": "admin",
 
-    // 👑 COMMANDES EXCLUSIVES OWNER (Triche Suprême & Abus visuels)
     "credits": "owner", "shards": "owner", "power": "owner", "drones": "owner", "scanner": "owner",
     "prestige": "owner", "zone": "owner", "boost": "owner", "frenzyall": "owner", "crash": "owner",
     "seisme": "owner", "rainbow": "owner", "invert": "owner", "matrix": "owner", "blur": "owner",
     "blackout": "owner", "flash": "owner", "nuclear": "owner", "unabuse": "owner", "speedhack": "owner",
     "godmode": "owner", "ghost": "owner", "superjump": "owner", "size": "owner", "gravity": "owner",
     "rich": "owner", "broke": "owner", "glitch": "owner", "discomode": "owner", "lag": "owner",
-    // 20+ Nouvelles Commandes Abusives ajoutées ici :
     "pixel": "owner", "upsidedown": "owner", "zoom": "owner", "unzoom": "owner", "sepia": "owner",
     "oldtv": "owner", "clonemoney": "owner", "loseprestige": "owner", "maxstats": "owner", "resetstats": "owner",
     "stealeclat": "owner", "infinityshards": "owner", "halfmoney": "owner", "nightmode": "owner", "neonplanet": "owner",
@@ -516,30 +515,52 @@ function runCmd(role) {
     const inputField = document.getElementById(`input-${role}`); const logBox = document.getElementById(`log-${role}`); let fullCmd = inputField.value.trim(); if (!fullCmd) return;
     inputField.value = ""; let cleanCmd = fullCmd.startsWith(";") ? fullCmd.substring(1) : fullCmd; let parts = cleanCmd.split(" "); let baseCmd = parts[0].toLowerCase();
     
-    // VERIFICATION DES DROITS : L'Admin est bloqué si la commande appartient à l'Owner
     if (!commandsDatabase[baseCmd] || (role === "admin" && commandsDatabase[baseCmd] === "owner")) {
         logBox.innerHTML += `<div style="color:#ff4444; font-weight:bold;">[ERREUR]: Commande inconnue ou réservée à l'OWNER.</div>`;
         return;
     }
-    let target = parts[1] || ""; let value = Number(parts[2] || "0");
+    
+    let target = parts[1] || ""; 
+    let value = Number(parts[2] || "0");
     let texteBrut = (baseCmd === "chat") ? fullCmd.substring(fullCmd.toLowerCase().indexOf("chat") + 4).trim() : parts.slice(2).join(" ");
     
+    // VERIFICATION OBLIGATOIRE DU TARGET POUR KICK ET BAN EN MANUEL LOCAL
+    if ((baseCmd === "kick" || baseCmd === "ban") && !target) {
+        logBox.innerHTML += `<div style="color:#ffcc00; font-weight:bold;">[ERREUR]: Syntaxe requise : ;${baseCmd} [Pseudo]</div>`;
+        return;
+    }
+    
     logBox.innerHTML += `<div style="color:#aaa;">&gt; ${fullCmd}</div>`;
-    appliquerCommandeLocale(baseCmd, value, texteBrut, 0, 1, role);
+    appliquerCommandeLocale(baseCmd, value, texteBrut, 0, 1, role, target);
     
     socket.emit("envoyerAdminAbuse", { auteur: document.getElementById("player").value.trim() || "Admin", role: role, commande: fullCmd, baseCmd: baseCmd, cible: target, value: value, texteBrut: texteBrut });
     logBox.scrollTop = logBox.scrollHeight;
 }
 
-function appliquerCommandeLocale(baseCmd, valNum, texteBrut, arg2, totalConnectes, role) {
+function appliquerCommandeLocale(baseCmd, valNum, texteBrut, arg2, totalConnectes, role, target) {
     const logBox = document.getElementById(`log-${role === 'owner' ? 'owner' : 'admin'}`) || document.getElementById('log-owner');
-    
+    let monPseudo = document.getElementById("player").value.trim().toLowerCase();
+    let cibleNettoyee = target ? target.toLowerCase() : "";
+
+    // ACTIONS REQUÉRANT UNE CIBLE PRÉCISE
+    if (baseCmd === "kick" || baseCmd === "ban") {
+        if (cibleNettoyee === monPseudo || cibleNettoyee === "all") {
+            if (baseCmd === "kick") {
+                document.getElementById("kick-screen").style.display = "block";
+            } else {
+                document.getElementById("ban-screen").style.display = "block";
+            }
+            deconnexionComplete();
+        } else {
+            if(logBox) logBox.innerHTML += `<div style="color:#26ff63;">[SYSTEM]: Ordre de ${baseCmd} envoyé pour: ${target}</div>`;
+        }
+        return;
+    }
+
     switch (baseCmd) {
         case "help":
-            // STYLE EN LISTE VERTICALE ET NETTE (PLUS DE LIGNE ILLISIBLE)
             logBox.innerHTML += `<div style="color:#ffaa00; font-weight:bold; margin-top:8px; border-bottom:1px dashed #ffaa00;">📜 LISTE DES COMMANDES DISPONIBLES :</div>`;
             for (let c in commandsDatabase) {
-                // Filtre les commandes selon le grade connecté (l'owner voit TOUT)
                 if (role === "owner" || commandsDatabase[c] === "admin") {
                     let badgeCouleur = (commandsDatabase[c] === "owner") ? "#ff4444" : "#44aaff";
                     let badgeTexte = (commandsDatabase[c] === "owner") ? "[OWNER]" : "[ADMIN]";
@@ -549,8 +570,7 @@ function appliquerCommandeLocale(baseCmd, valNum, texteBrut, arg2, totalConnecte
             logBox.innerHTML += `<div style="border-top:1px dashed #ffaa00; margin-bottom:8px;"></div>`;
             break;
             
-        case "kick": case "kickall": document.getElementById("kick-screen").style.display = "block"; deconnexionComplete(); break;
-        case "ban": document.getElementById("ban-screen").style.display = "block"; deconnexionComplete(); break;
+        case "kickall": document.getElementById("kick-screen").style.display = "block"; deconnexionComplete(); break;
         case "mute": case "muteall": document.getElementById("chat-input").disabled = true; break;
         case "unmute": case "unmuteall": document.getElementById("chat-input").disabled = false; break;
         case "freeze": case "freezeall": isFrozen = true; document.body.classList.add("frozen"); break;
@@ -595,8 +615,6 @@ function appliquerCommandeLocale(baseCmd, valNum, texteBrut, arg2, totalConnecte
         case "glitch": document.body.classList.toggle("glitch-mode"); break;
         case "discomode": document.body.classList.toggle("disco-mode"); break;
         case "lag": document.body.classList.toggle("lag-mode"); break;
-
-        // --- EXÉCUTION DES 20 NOUVELLES COMMANDES OWNER ---
         case "pixel": document.body.classList.toggle("pixel-mode"); break;
         case "upsidedown": document.body.classList.toggle("upside-down"); break;
         case "zoom": document.body.classList.add("zoom-extreme"); document.body.classList.remove("unzoom-extreme"); break;
@@ -614,7 +632,7 @@ function appliquerCommandeLocale(baseCmd, valNum, texteBrut, arg2, totalConnecte
         case "neonplanet": document.getElementById("planet").style.textShadow = "0 0 40px #ff00ff, 0 0 80px #00ffff"; break;
         case "hideplanet": document.getElementById("planet").style.display = "none"; break;
         case "showplanet": document.getElementById("planet").style.display = "inline-block"; break;
-        case "spamsound": console.log("Abus sonore activé côté serveur local"); break;
+        case "spamsound": console.log("Abus sonore activé"); break;
         case "killdrones": s.drones = 0; restartDroneInterval(); ui(); break;
         case "giveprestige": s.prestige += 5; ui(); break;
         case "freezeshop": document.getElementById("ui-shop").style.pointerEvents = "none"; document.getElementById("ui-shop").style.opacity = "0.3"; break;
