@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-select=none">
-<title>Galaxy Miner Deluxe V3 - Multi-Device & Full Admin Edition</title>
+<title>Galaxy Miner Deluxe V3 - Full Premium Edition</title>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <style>
 /* --- STYLES DE BASE (COMMUNS) --- */
@@ -19,7 +19,6 @@ body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at ce
 .card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);transition: transform 0.5s ease;}
 #money{text-align:center;font-size:54px;color:#52ffe0;text-shadow:0 0 15px #52ffe0;margin-top:10px;transition: transform 0.5s ease;}
 #planet-container{text-align:center;position:relative;margin:10px auto;width:220px;transition: transform 0.5s ease;}
-#planet animate{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
 #planet{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
 #planet:active{transform:scale(.85)}
 .shake{animation: click-shake 0.1s ease-in-out infinite alternate;}
@@ -27,7 +26,7 @@ body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at ce
 #planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
 
 /* Positionnement PC */
-.mode-pc .left { position: fixed; top: 110px; left: 10px; width: 260px; }
+.mode-pc .left { position: fixed; top: 110px; left: 10px; width: 280px; }
 .mode-pc .right { position: fixed; top: 110px; right: 10px; width: 280px; }
 .mode-pc #ui-chat { position: fixed; bottom: 10px; left: 10px; width: 280px; background: rgba(0,0,0,0.85); z-index: 9999; }
 
@@ -43,13 +42,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 #comet{position:fixed;font-size:40px;cursor:pointer;z-index:99;display:none;user-select:none}
 
 /* 📱 CONFIGURATION ADAPTATIVE VERSION MOBILE */
-.mode-mobile {
-    display: flex !important;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px 10px 180px 10px !important;
-    overflow-y: auto;
-}
+.mode-mobile { display: flex !important; flex-direction: column; align-items: center; padding: 10px 10px 180px 10px !important; overflow-y: auto; }
 .mode-mobile .pc-only { display: none !important; }
 .mode-mobile .card { width: 100%; max-width: 420px; box-sizing: border-box; margin-bottom: 15px; position: static !important; }
 .mode-mobile #main-game-area { order: -1; width: 100%; text-align: center; }
@@ -83,7 +76,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .admin-input-text { flex: 1; background: none; border: none; color: #ffffff; font-size: 13px; outline: none; }
 .panel-btn { background-color: rgba(60, 60, 60, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 4px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; }
 
-/* --- EFFETS VISUELS --- */
+/* --- EFFETS VISUELS COMMANDES --- */
 .rainbow-bg { animation: rainbowAnimation 2s linear infinite !important; }
 @keyframes rainbowAnimation { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 .matrix-bg { background: #000 !important; color: #00ff66 !important; font-family: monospace !important; }
@@ -114,14 +107,13 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 @keyframes ghostAnim { from { opacity: 1; } to { opacity: 0.1; } }
 .hyper-shake { animation: screenShakeHard 0.05s infinite linear !important; }
 
-/* --- SYSTEME COMPTE --- */
+/* --- SYSTEME SESSIONS --- */
 #auth-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #15224a, #02040a 80%); z-index: 9999999; display: flex; justify-content: center; align-items: center; }
 .auth-card { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15); width: 340px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center; }
 .auth-card h2 { margin-top: 0; color: #52ffe0; text-shadow: 0 0 15px rgba(82, 255, 224, 0.4); font-size: 26px; }
 .auth-input-group { margin-bottom: 14px; text-align: left; }
 .auth-input-group label { display: block; font-size: 11px; color: #9de; margin-bottom: 6px; text-transform: uppercase; }
 .auth-input { width: 100%; padding: 12px; box-sizing: border-box; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: #fff; font-size: 14px; outline: none; }
-.auth-input:focus { border-color: #52ffe0; }
 
 .device-selector { display: flex; gap: 8px; margin-bottom: 15px; }
 .device-btn { flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 12px; }
@@ -132,20 +124,30 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .auth-btn-register { background: #ffaa00; color: #02040a; }
 .auth-toggle { margin-top: 15px; font-size: 12px; color: #9de; cursor: pointer; text-decoration: underline; }
 .auth-msg { margin-top: 12px; font-size: 13px; min-height: 20px; font-weight: bold; }
-.auth-success { color: #26ff63; } .auth-error { color: #ff4444; }
 
-#fake-crash-screen, #ban-screen, #kick-screen { display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; user-select: none; }
-#fake-crash-screen { background: #0078d7; } #ban-screen { background: #4a0000; text-align: center; } #kick-screen { background: #222; text-align: center; }
-#global-chat-alert { position: fixed; top: -120px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #0077ff, #00ffaa); color: black; padding: 18px 35px; border-radius: 50px; font-size: 22px; font-weight: bold; z-index: 20000; transition: top 0.5s; text-align: center; border: 3px solid #fff; box-shadow: 0 0 25px rgba(0,255,170,0.5); }
-#global-event-banner { display: none; position: fixed; top: 0; left: 0; width: 100%; background: linear-gradient(90deg, #ffcc00, #ff0055, #ffcc00); background-size: 200% auto; animation: rainbowAnimation 3s linear infinite; color: black; text-align: center; padding: 6px 0; font-weight: bold; z-index: 15000; }
+#ban-screen, #kick-screen { display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; text-align: center; }
+#ban-screen { background: #4a0000; } #kick-screen { background: #222; }
+
+/* 📢 GRAPHICS ANNONCES GLOBALES */
+#global-chat-alert { position: fixed; top: -150px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff0055, #ffaa00); color: white; padding: 20px 40px; border-radius: 12px; font-size: 24px; font-weight: bold; z-index: 200000; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 3px solid #fff; box-shadow: 0 0 35px rgba(255,0,85,0.6); font-family: 'Segoe UI', Arial, sans-serif; }
 #owner-rainbow-bar { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet, red); background-size: 200% auto; animation: rainbowShift 2s linear infinite; z-index: 999999; }
 @keyframes rainbowShift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
 
-/* EXTENSION HONEY GALAXY */
+/* HONEY DIMENSION & MARCHAND */
 .honey-theme { background: radial-gradient(circle at center, #78350f, #451a03 80%) !important; }
-.honey-theme #stars { background-image: radial-gradient(#fbbf24 1px,transparent 1px) !important; opacity: 0.3 !important; }
-.honey-theme #money { color: #fbbf24 !important; text-shadow: 0 0 15px #fbbf24 !important; }
-.honey-theme button:hover { background: #fbbf24 !important; }
+#secret-merchant-btn { display: none; position: fixed; bottom: 20px; right: 20px; font-size: 45px; cursor: pointer; z-index: 9999; animation: merchantBounce 1s infinite alternate; user-select: none; }
+@keyframes merchantBounce { from { transform: scale(1); } to { transform: scale(1.15); } }
+.merchant-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; background: rgba(35, 15, 5, 0.95); border: 3px solid #fbbf24; border-radius: 12px; padding: 20px; z-index: 100000; box-shadow: 0 0 25px rgba(251,191,36,0.4); text-align: center; color: #fff; }
+.merchant-item { background: rgba(255,255,255,0.06); margin: 8px 0; padding: 8px; border-radius: 8px; border: 1px solid rgba(251,191,36,0.2); display: flex; justify-content: space-between; align-items: center; }
+
+/* SYSTEME DE TITRES COORDONNES */
+.titles-container-v3 { max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 4px; margin-top: 5px; }
+.title-row-v3 { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; font-size: 11px; }
+.title-row-v3.active-v3 { border: 1px solid #52ffe0; background: rgba(82,255,224,0.15); }
+.btn-equip-v3 { background: #52ffe0; color: #000; font-size: 9px; padding: 2px 6px; margin: 0; border-radius: 4px; font-weight: bold; }
+.btn-equip-v3.equipped-v3 { background: #26ff63; cursor: default; }
+.title-locked-v3 { color: #555; font-style: italic; }
+.quest-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; margin: 6px 0; text-align: left; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
 </style>
 </head>
 <body>
@@ -153,13 +155,10 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div id="auth-overlay">
     <div id="auth-login-view" class="auth-card">
         <h2>🚀 GALAXY MINER</h2>
-        <p style="font-size: 11px; color: #aaa; margin-bottom: 15px;">SUPPORT DE JEU :</p>
-        
         <div class="device-selector">
             <button id="dev-pc" class="device-btn active" onclick="choisirSupport('pc')">🖥️ MODE PC</button>
             <button id="dev-mobile" class="device-btn" onclick="choisirSupport('mobile')">📱 MODE MOBILE</button>
         </div>
-
         <div class="auth-input-group">
             <label>Nom de mineur</label>
             <input type="text" id="auth-log-user" class="auth-input" placeholder="Ex: MineurCosmique">
@@ -172,7 +171,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
         <div class="auth-toggle" onclick="basculerAuth('register')">Créer un compte</div>
         <div id="auth-log-msg" class="auth-msg"></div>
     </div>
-
     <div id="auth-register-view" class="auth-card" style="display: none;">
         <h2>✨ INSCRIPTION</h2>
         <div class="auth-input-group">
@@ -191,22 +189,15 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 
 <div id="owner-rainbow-bar"></div>
 <div id="stars"></div><div id="stars2"></div>
-<div id="global-event-banner">🔥 ÉVÉNEMENT REÇU DU SECTEUR CENTRAL ACTIF !</div>
-<div id="global-chat-alert">📢 ANNONCE SYSTÈME GALAXY</div>
-
-<div id="fake-crash-screen" onclick="this.style.display='none'">
-    <span style="font-size: 80px;">:(</span>
-    <h2>Votre PC/Appareil a rencontré un problème et doit redémarrer.</h2>
-    <p>Code d'arrêt : GALAXY_MINER_CREATOR_ABUSE</p>
-</div>
+<div id="global-chat-alert">📢 ANNONCE GLOBALE</div>
 
 <div id="ban-screen">
     <span style="font-size: 80px;">🚫</span>
     <h2>COMPTE VERROUILLÉ / BANNI</h2>
-    <p>Tu as été banni de l'infrastructure de minage par un administrateur principal.</p>
+    <p>Tu as été banni de l'infrastructure de minage par l'Owner principal.</p>
 </div>
 
-<div id="kick-screen" onclick="this.style.display='none'; location.reload();">
+<div id="kick-screen" onclick="location.reload();">
     <span style="font-size: 80px;">👢</span>
     <h2>EXPULSÉ DE LA SESSION</h2>
     <p>Cliquez sur l'écran pour tenter une reconnexon.</p>
@@ -219,6 +210,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
         <div class="card">🌍 Zone <span id="zone">1</span></div>
         <div class="card">🔁 Prestige <span id="prestige">0</span></div>
         <div class="card">✨ Éclats: <span id="shards">0</span></div>
+        <div class="card" id="rj-card" style="display:none; color:#fbbf24; font-weight:bold;">👑 RJ Coins: <span id="rjCoins">0</span></div>
         <div class="card">👤 <input id="player" readonly style="background:transparent; border:none; color:#52ffe0; font-weight:bold; width:110px; outline:none; text-align:center;"></div>
     </div>
 
@@ -227,9 +219,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     <div id="main-game-area">
         <div id="money">0</div>
         <div id="planetName">Terra</div>
-        <div id="planet-container">
-            <div id="planet">🌍</div>
-        </div>
+        <div id="planet-container"><div id="planet">🌍</div></div>
         <div class="progress-bar-container" id="ui-progress"><div id="progress-bar"></div></div>
         <div id="combo-display"></div>
     </div>
@@ -255,11 +245,17 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     <div class="left card" id="ui-left">
         <h3>Stats & Reliques ✨</h3>
         Power: <span id="power">1</span> | Drones: <span id="drones">0</span> | Scanner: <span id="scanner">1</span><br>
-        Zone Maximale: <span id="maxzone">1</span>
+        Zone Max: <span id="maxzone">1</span> | Clics: <span id="stat-clicks">0</span>
         <hr style="border:1px solid rgba(255,255,255,0.1)">
-        <button onclick="buyPrestigeUpgrade(1)" style="font-size:11px;padding:8px;">🚀 Moteurs Drones (2 ✨) | Niv: <span id="up1Lvl">0</span></button>
-        <button onclick="buyPrestigeUpgrade(2)" style="font-size:11px;padding:8px;">🎯 Clic Critique (3 ✨) | Niv: <span id="up2Lvl">0</span></button>
-        <button onclick="deconnexionComplete()" style="background:#ff4444; color:white; font-size:11px; margin-top:5px;">🔒 Déconnexion</button>
+        
+        <h4 style="margin:5px 0 2px 0; font-size:12px; color:#52ffe0;">🏆 Vos Titres & Succès</h4>
+        <div class="titles-container-v3" id="titles-wrapper-v3"></div>
+        
+        <hr style="border:1px solid rgba(255,255,255,0.1)">
+        <button onclick="buyPrestigeUpgrade(1)" style="font-size:11px;padding:7px;width:47%;">🚀 Drones | Niv: <span id="up1Lvl">0</span></button>
+        <button onclick="buyPrestigeUpgrade(2)" style="font-size:11px;padding:7px;width:47%;">🎯 Crit | Niv: <span id="up2Lvl">0</span></button>
+        <button onclick="toggleModal('quests-modal', true)" style="background:#ffaa00; color:black; font-size:11px; margin-top:5px; width:100%;">📋 Ouvrir les Quêtes</button>
+        <button onclick="deconnexionComplete()" style="background:#ff4444; color:white; font-size:11px; margin-top:5px; width:100%;">🔒 Déconnexion</button>
     </div>
 
     <div class="card" id="ui-chat">
@@ -274,32 +270,46 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 
 <div id="comet">☄️</div>
 
+<div id="quests-modal" class="merchant-modal" style="background: rgba(15,25,50,0.95); border-color:#52ffe0;">
+    <h3 style="color:#52ffe0; margin:0 0 10px 0;">📋 Centre des Missions</h3>
+    <div id="quests-container"></div>
+    <button onclick="toggleModal('quests-modal', false)" style="background:#ff4444; color:white; margin-top:10px; width:100%; padding:8px;">Fermer</button>
+</div>
+
+<div id="secret-merchant-btn" onclick="openMerchantShop()">🐻</div>
+<div id="merchant-shop-modal" class="merchant-modal">
+    <h3 style="color:#fbbf24; margin:0 0 5px 0;">🍯 Boutique Éphémère</h3>
+    <p style="font-size:11px; color:#aaa; margin:0 0 10px 0;">Fermeture dans : <span id="merchant-timer">5:00</span></p>
+    <div id="merchant-items-container"></div>
+    <button onclick="closeMerchantShop()" style="background:#ff4444; color:white; margin-top:10px; width:100%; padding:8px;">Fermer</button>
+</div>
+
 <div id="panel-owner" class="roblox-panel">
     <div class="admin-header">
-        <span id="ownerHeader">👑 GALAXY MINER - OWNER PANEL</span>
+        <span>👑 GALAXY MINER - OWNER PANEL</span>
         <button class="close-admin-btn" onclick="togglePanel('owner')">✕</button>
     </div>
     <div class="admin-body">
-        <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒 VERROUILLÉ] Rentrer clé ROOT.</div></div>
+        <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒 VERROUILLÉ] Rentrer la clé ROOT.</div></div>
         <div class="input-area">
-            <span class="prefix" id="ownerPrefix" style="color:#ff4444;">🔑</span>
+            <span class="prefix" style="color:#ff4444;">🔑</span>
             <input type="password" id="input-owner" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
-            <button class="panel-btn" onclick="loginPanel('owner')">Connexion</button>
+            <button id="btn-action-owner" class="panel-btn" onclick="loginPanel('owner')">Connexion</button>
         </div>
     </div>
 </div>
 
 <div id="panel-admin" class="roblox-panel">
     <div class="admin-header">
-        <span id="adminHeader">🛡️ GALAXY MINER - ADMIN PANEL</span>
+        <span>🛡️ GALAXY MINER - ADMIN PANEL</span>
         <button class="close-admin-btn" onclick="togglePanel('admin')">✕</button>
     </div>
     <div class="admin-body">
-        <div class="command-log" id="log-admin"><div style="color: #ffaa00;">[🔒 VERROUILLÉ] Rentrer clé MODÉRATION.</div></div>
+        <div class="command-log" id="log-admin"><div style="color: #4488ff;">[🔒 VERROUILLÉ] Rentrer la clé MODÉRATION.</div></div>
         <div class="input-area">
-            <span class="prefix" id="adminPrefix" style="color:#4488ff;">🔑</span>
+            <span class="prefix" style="color:#4488ff;">🔑</span>
             <input type="password" id="input-admin" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
-            <button class="panel-btn" onclick="loginPanel('admin')">Connexion</button>
+            <button id="btn-action-admin" class="panel-btn" onclick="loginPanel('admin')">Connexion</button>
         </div>
     </div>
 </div>
@@ -312,6 +322,19 @@ let pAdminActive = false;
 const PASS_OWNER = "admin123";
 const PASS_ADMIN = "admin321";
 
+const BASE_ACHIEVEMENTS = [
+    { id: "cadet", name: "Cadet", desc: "10 Clics", check: () => s.totalClicks >= 10 },
+    { id: "soldat", name: "Soldat", desc: "100 Clics", check: () => s.totalClicks >= 100 },
+    { id: "mineur", name: "Mineur", desc: "500 Clics", check: () => s.totalClicks >= 500 },
+    { id: "explorateur", name: "Explorateur", desc: "Zone 5", check: () => s.zone >= 5 },
+    { id: "conquerant", name: "Conquérant", desc: "Zone 10", check: () => s.zone >= 10 },
+    { id: "elite", name: "Élite", desc: "1 Prestige", check: () => s.prestige >= 1 },
+    { id: "heros", name: "Héros", desc: "3 Prestiges", check: () => s.prestige >= 3 },
+    { id: "legende", name: "Légende", desc: "5 Prestiges", check: () => s.prestige >= 5 },
+    { id: "capitaliste", name: "Capitaliste", desc: "5 RJ Coins", check: () => s.rjCoins >= 5 },
+    { id: "dieu", name: "Dieu", desc: "20 RJ Coins", check: () => s.rjCoins >= 20 }
+];
+
 function choisirSupport(mode) {
     supportChoisi = mode;
     document.getElementById("dev-pc").classList.remove("active");
@@ -320,8 +343,6 @@ function choisirSupport(mode) {
 }
 
 function basculerAuth(mode) {
-    document.getElementById("auth-log-msg").textContent = "";
-    document.getElementById("auth-reg-msg").textContent = "";
     if(mode === 'register') {
         document.getElementById("auth-login-view").style.display = "none";
         document.getElementById("auth-register-view").style.display = "block";
@@ -332,36 +353,24 @@ function basculerAuth(mode) {
 }
 
 function gererInscription() {
-    let user = document.getElementById("auth-reg-user").value.trim().replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, '');
+    let user = document.getElementById("auth-reg-user").value.trim();
     let pass = document.getElementById("auth-reg-pass").value;
-    let msgEl = document.getElementById("auth-reg-msg");
-    if(!user || !pass) { msgEl.className="auth-msg auth-error"; msgEl.textContent="⚠️ Données manquantes."; return; }
-    if(localStorage.getItem("gm_pass_" + user)) { msgEl.className="auth-msg auth-error"; msgEl.textContent="❌ Nom déjà pris."; return; }
+    if(!user || !pass) return;
     localStorage.setItem("gm_pass_" + user, pass);
-    msgEl.className="auth-msg auth-success"; msgEl.textContent="🚀 Profil généré !";
-    setTimeout(() => { document.getElementById("auth-log-user").value = user; basculerAuth('login'); }, 1000);
+    basculerAuth('login');
 }
 
 function gererConnexion() {
-    let user = document.getElementById("auth-log-user").value.trim().replace(/[^\w\sàâäéèêëîïôöùûüç-]/gi, '');
+    let user = document.getElementById("auth-log-user").value.trim();
     let pass = document.getElementById("auth-log-pass").value;
-    let msgEl = document.getElementById("auth-log-msg");
-    
-    let passEnregistre = localStorage.getItem("gm_pass_" + user);
-    if(passEnregistre && passEnregistre === pass) {
-        msgEl.className="auth-msg auth-success"; msgEl.textContent="✔ Connexion...";
-        setTimeout(() => {
-            document.getElementById("player").value = user;
-            document.getElementById("auth-overlay").style.display = "none";
-            
-            const interfaceJeu = document.getElementById("game-interface");
-            interfaceJeu.style.display = "block";
-            interfaceJeu.className = (supportChoisi === "mobile") ? "mode-mobile" : "mode-pc";
-            
-            loadPlayerSave();
-        }, 1000);
-    } else {
-        msgEl.className="auth-msg auth-error"; msgEl.textContent="❌ Identifiants incorrects.";
+    if(localStorage.getItem("gm_pass_" + user) === pass) {
+        document.getElementById("player").value = user;
+        document.getElementById("auth-overlay").style.display = "none";
+        const interfaceJeu = document.getElementById("game-interface");
+        interfaceJeu.style.display = "block";
+        interfaceJeu.className = (supportChoisi === "mobile") ? "mode-mobile" : "mode-pc";
+        loadPlayerSave();
+        genererQuetes();
     }
 }
 
@@ -372,477 +381,314 @@ function deconnexionComplete() {
     basculerAuth('login');
 }
 
+// Prise en charge globale des inputs (Touche Entrée)
 window.addEventListener("keydown", function(e) {
-    if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return;
-    if (e.key === "1") { togglePanel('owner'); }
-    if (e.key === "2") { togglePanel('admin'); }
+    if (document.activeElement.tagName === "INPUT") {
+        if (e.key === "Enter") {
+            let activeId = document.activeElement.id;
+            if (activeId === "input-owner") {
+                let btn = document.getElementById("btn-action-owner");
+                btn.click();
+            } else if (activeId === "input-admin") {
+                let btn = document.getElementById("btn-action-admin");
+                btn.click();
+            } else if (activeId === "chat-input") {
+                envoyerMessage();
+            } else if (activeId === "auth-log-user" || activeId === "auth-log-pass") {
+                gererConnexion();
+            } else if (activeId === "auth-reg-user" || activeId === "auth-reg-pass") {
+                gererInscription();
+            }
+        }
+        return;
+    }
+    if (e.key === "1") togglePanel('owner');
+    if (e.key === "2") togglePanel('admin');
 });
 
 function togglePanel(type) {
-    if(type === 'owner') {
-        let p = document.getElementById("panel-owner");
-        p.style.display = (p.style.display === "block") ? "none" : "block";
-    } else {
-        let p = document.getElementById("panel-admin");
-        p.style.display = (p.style.display === "block") ? "none" : "block";
+    let p = document.getElementById(type === 'owner' ? "panel-owner" : "panel-admin");
+    p.style.display = (p.style.display === "block") ? "none" : "block";
+    if(p.style.display === "block") {
+        document.getElementById(type === 'owner' ? "input-owner" : "input-admin").focus();
     }
 }
 
 function loginPanel(type) {
-    if(type === 'owner') {
-        let val = document.getElementById("input-owner").value;
-        if(val === PASS_OWNER) {
-            pOwnerActive = true;
-            document.getElementById("log-owner").innerHTML = "<div style='color:#26ff63;'>[🔓 OWNER ACTIF] Utilisez :help pour voir la liste.</div>";
-            document.getElementById("ownerPrefix").textContent = ">";
-            let inp = document.getElementById("input-owner");
-            inp.value = ""; inp.type = "text"; inp.placeholder = "Commande... (:help)";
-            document.querySelector("#panel-owner .panel-btn").setAttribute("onclick", "executerCmdPanel('owner')");
-            document.querySelector("#panel-owner .panel-btn").textContent = "Exécuter";
-            inp.addEventListener("keydown", function(e) { if(e.key === "Enter") executerCmdPanel('owner'); });
-        } else { alert("Clé Owner Incorrecte."); }
-    } else {
-        let val = document.getElementById("input-admin").value;
-        if(val === PASS_ADMIN) {
-            pAdminActive = true;
-            document.getElementById("log-admin").innerHTML = "<div style='color:#26ff63;'>[🔓 ADMIN ACTIF] Utilisez :help pour voir la liste.</div>";
-            document.getElementById("adminPrefix").textContent = ">";
-            let inp = document.getElementById("input-admin");
-            inp.value = ""; inp.type = "text"; inp.placeholder = "Commande... (:help)";
-            document.querySelector("#panel-admin .panel-btn").setAttribute("onclick", "executerCmdPanel('admin')");
-            document.querySelector("#panel-admin .panel-btn").textContent = "Exécuter";
-            inp.addEventListener("keydown", function(e) { if(e.key === "Enter") executerCmdPanel('admin'); });
-        } else { alert("Clé Modérateur Incorrecte."); }
+    let val = document.getElementById(type === 'owner' ? "input-owner" : "input-admin").value;
+    if((type === 'owner' && val === PASS_OWNER) || (type === 'admin' && val === PASS_ADMIN)) {
+        let logBox = document.getElementById(type === 'owner' ? "log-owner" : "log-admin");
+        logBox.innerHTML = "<div style='color:#26ff63;'>[🔓 ACCÈS VALIDE] Tapez :help pour la liste.</div>";
+        let inp = document.getElementById(type === 'owner' ? "input-owner" : "input-admin");
+        inp.value = ""; inp.type = "text"; inp.placeholder = "Entrez une commande... (:help)";
+        
+        let btn = document.getElementById(type === 'owner' ? "btn-action-owner" : "btn-action-admin");
+        btn.textContent = "Exécuter";
+        btn.setAttribute("onclick", `executerCmdPanel('${type}')`);
     }
 }
 
 function executerCmdPanel(type) {
     let inp = document.getElementById(type === 'owner' ? "input-owner" : "input-admin");
-    let cmd = inp.value.trim();
-    if(!cmd) return;
+    let cmd = inp.value.trim(); if(!cmd) return;
     
     let logBox = document.getElementById(type === 'owner' ? "log-owner" : "log-admin");
     logBox.innerHTML += `<div><span style="color:#aaa;">> ${cmd}</span></div>`;
     
-    let clean = cmd.startsWith(':') || cmd.startsWith(';') ? cmd.substring(1) : cmd;
+    let clean = cmd.startsWith(':') ? cmd.substring(1) : cmd;
     let parts = clean.split(" ");
     let baseCmd = parts[0].toLowerCase();
-    
+
     if(baseCmd === "help") {
         if(type === 'owner') {
-            logBox.innerHTML += `<div style="color:#eab308;font-size:11px;">
-            <b>--- COMMANDES SOUPIE / TARGET DISPONIBLE ---</b><br>
-            Syntaxe : :[commande] [pseudo_cible/all] [valeur]<br>
-            Exemple : <i>:credits alex 500000</i><br>
-            :credits | :power | :drones | :shards | :zone | :prestige<br>
-            :honeycredits | :honeypower | :honeydrones | :infinitecash | :resetplayer | :maxupgrades<br>
-            :seisme | :rainbow | :flash | :nuclear | :blur | :blackout | :matrix | :invert | :discomode | :lag | :glitch | :pixel | :upsidedown | :zoom | :unzoom | :sepia | :oldtv | :ghostmode | :hypershake<br>
-            :freeze | :unfreeze | :slow | :unslow | :kick | :ban | :warn | :clear | :unabuse<br>
-            <b>📢 MESSAGE GLOBAL DIRECT :</b> :chat [votre message pour tous]
+            logBox.innerHTML += `<div style="color:#ffaa00;font-size:10px;">
+            <b>--- COMMANDES OWNER ---</b><br>
+            :givebadge [cible] [titre] -> Donne un titre permanent<br>
+            :chat [message] -> Crée une annonce globale flash sur l'écran<br>
+            :credits | :power | :drones | :shards | :zone | :prestige | :spawnshop | :rjcoin<br>
+            :honeycredits | :honeypower | :honeydrones | :infinitecash | :resetplayer<br>
+            :seisme | :rainbow | :flash | :nuclear | :blur | :blackout | :matrix | :invert | :discomode<br>
+            :freeze | :unfreeze | :kick | :ban | :warn | :clear | :unabuse
             </div>`;
         } else {
-            logBox.innerHTML += `<div style="color:#60a5fa;font-size:11px;">
-            <b>--- COMMANDES ADMIN (MODÉRATEUR) ---</b><br>
-            Syntaxe : :[commande] [pseudo_cible/all]<br>
-            :boost | :warn | :freeze | :unfreeze | :slow | :unslow | :kick | :clear | :unabuse<br>
-            :seisme | :matrix | :blur | :blackout | :oldtv<br>
-            <b>📢 MESSAGE GLOBAL DIRECT :</b> :chat [votre message pour tous]
+            logBox.innerHTML += `<div style="color:#55aaff;font-size:10px;">
+            <b>--- COMMANDES ADMIN ---</b><br>
+            :chat [message] -> Annonce globale<br>
+            :freeze | :unfreeze | :kick | :warn | :clear | :unabuse | :seisme | :blur | :blackout
             </div>`;
         }
-        logBox.scrollTop = logBox.scrollHeight;
-        inp.value = "";
-        return;
-    }
-    
-    let target = parts[1] ? parts[1].toLowerCase() : "all";
-    let valNum = Number(parts[2] || 0);
-    let texteCompletDuReste = parts.slice(1).join(" ");
-    
-    if (baseCmd === "chat") {
-        target = "all";
-        texteCompletDuReste = parts.slice(1).join(" ");
-    } else if (parts[1] && parts[2]) {
-        texteCompletDuReste = parts.slice(3).join(" ");
+        inp.value = ""; return;
     }
 
-    socket.emit("envoyerAdminAbuse", {
-        commande: cmd,
-        baseCmd: baseCmd,
-        cible: target,
-        value: valNum,
-        texteBrut: texteCompletDuReste,
-        role: type
-    });
+    let target = parts[1] ? parts[1].toLowerCase() : "all";
+    let valNum = Number(parts[2] || 0);
+    let texteComplet = parts.slice(1).join(" ");
+
+    if(baseCmd === "chat") { target = "all"; texteComplet = parts.slice(1).join(" "); }
+    else if(parts[1] && parts[2]) { texteComplet = parts.slice(2).join(" "); }
+
+    socket.emit("envoyerAdminAbuse", { commande: cmd, baseCmd: baseCmd, cible: target, value: valNum, texteBrut: texteComplet, role: type });
     
     let monPseudo = document.getElementById("player").value.trim().toLowerCase();
     if(target === "all" || target === monPseudo) {
-        appliquerCommandeLocale(baseCmd, valNum, texteCompletDuReste, type, target);
+        appliquerCommandeLocale(baseCmd, valNum, texteComplet, type);
     }
-    
-    logBox.scrollTop = logBox.scrollHeight;
-    inp.value = "";
+    inp.value = ""; logBox.scrollTop = logBox.scrollHeight;
 }
 
-// --- CONFIGURATION LOGIQUE DU JEU ---
+// --- STRUCTURE ET VARIABLES DU SYSTEME ---
 const planets=[{name:"Terra",emoji:"🌍"},{name:"Mars",emoji:"🔴"},{name:"Neptune",emoji:"🔵"},{name:"Nova Prime",emoji:"🟣"},{name:"Titan",emoji:"🪐"},{name:"Sol",emoji:"☀️"}];
-let defaultState={credits:0,honeyCredits:0,power:1,drones:0,scanner:1,zone:1,maxzone:1,prestige:0,pCost:20,dCost:70,sCost:120,shards:0,up1:0,up2:0};
+let defaultState={ credits:0,honeyCredits:0,power:1,drones:0,scanner:1,zone:1,maxzone:1,prestige:0,pCost:20,dCost:70,sCost:120,shards:0,up1:0,up2:0,rjCoins:0,totalClicks:0,ownedTitles:[],equippedTitle:"" };
 let s=JSON.parse(JSON.stringify(defaultState));
-combo=0; let comboTimer=null; let droneInterval = null;
+let combo=0; let comboTimer=null; let droneInterval = null;
 let eventMultiplier = 1; let isSlowed = false; let isFrozen = false;
-let adminBoostMultiplier = 1;
-
+let adminBoostMultiplier = 1; let naturalEventMultiplier = 1; let droneNaturalMultiplier = 1;
 let inHoneyGalaxy = false;
 let honeyUpgrades = { power: 1, drones: 0, scanner: 1, pCost: 40, dCost: 150, sCost: 300 };
 
-const socket = io("https://galaxy-miner-server.onrender.com"); 
+// --- INVENTAIRE DES TITRES COORDONNÉS ---
+function rafraichirInventaireTitres() {
+    let wrapper = document.getElementById("titles-wrapper-v3"); if (!wrapper) return;
+    wrapper.innerHTML = "";
+    BASE_ACHIEVEMENTS.forEach(ach => {
+        let isUnlocked = ach.check() || s.ownedTitles.includes(ach.name.toLowerCase());
+        let isEquipped = s.equippedTitle === ach.name;
+        let row = document.createElement("div"); row.className = "title-row-v3" + (isEquipped ? " active-v3" : "");
+        if(isUnlocked) {
+            row.innerHTML = `<span>[${ach.name}]</span><button class="btn-equip-v3 ${isEquipped ? 'equipped-v3':''}" onclick="equiperLeTitre('${ach.name}')">${isEquipped ? 'Équipé':'Équiper'}</button>`;
+        } else {
+            row.innerHTML = `<span class="title-locked-v3">[${ach.name}]</span><span style="font-size:8px; color:#666;">(${ach.desc})</span>`;
+        }
+        wrapper.appendChild(row);
+    });
+    s.ownedTitles.forEach(tName => {
+        let clean = tName.trim(); if(!clean || BASE_ACHIEVEMENTS.some(a => a.name.toLowerCase() === clean.toLowerCase())) return;
+        let formattedName = clean.charAt(0).toUpperCase() + clean.slice(1);
+        let isEquipped = s.equippedTitle.toLowerCase() === clean.toLowerCase();
+        let row = document.createElement("div"); row.className = "title-row-v3" + (isEquipped ? " active-v3" : "");
+        row.innerHTML = `<span style="color:#ffaa00;">[${formattedName}]</span><button class="btn-equip-v3 ${isEquipped ? 'equipped-v3':''}" onclick="equiperLeTitre('${formattedName}')">${isEquipped ? 'Équipé':'Équiper'}</button>`;
+        wrapper.appendChild(row);
+    });
+}
+function equiperLeTitre(name) { s.equippedTitle = name; rafraichirInventaireTitres(); save(); }
 
+// --- CHAT ET RÉSEAU SOCKET.IO ---
+const socket = io("https://galaxy-miner-server.onrender.com");
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
-
 socket.on("recevoirMessageGlobal", (data) => {
     const chatBox = document.getElementById("chat-box");
     const nvMessage = document.createElement("div");
     nvMessage.innerHTML = `<strong style="color: #52ffe0;">${data.pseudo} :</strong> ${data.texte}`;
     chatBox.appendChild(nvMessage); chatBox.scrollTop = chatBox.scrollHeight;
 });
-
 function envoyerMessage() {
     const input = document.getElementById("chat-input"); const texte = input.value.trim();
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
-    if (texte !== "") { socket.emit("envoyerMessageGlobal", { pseudo: pseudo, texte: texte }); input.value = ""; }
+    let activePrefix = s.equippedTitle ? `[${s.equippedTitle}] ` : "";
+    if (texte !== "") { socket.emit("envoyerMessageGlobal", { pseudo: activePrefix + pseudo, texte: texte }); input.value = ""; }
 }
-document.getElementById("chat-input").addEventListener("keydown", function(e) { if (e.key === "Enter") envoyerMessage(); });
-
 socket.on("recevoirAdminAbuse", (data) => {
     let monPseudo = document.getElementById("player").value.trim().toLowerCase();
-    let cibleRecue = data.cible ? data.cible.trim().toLowerCase() : "all";
-    
-    if (cibleRecue !== "all" && cibleRecue !== monPseudo) {
-        return; 
-    }
-    
-    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, data.role, cibleRecue);
+    if (data.cible !== "all" && data.cible !== monPseudo) return;
+    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, data.role);
 });
 
-function appliquerCommandeLocale(baseCmd, val, texteBrut, role, cible) {
-    if (role === "admin") {
-        const cmdInterditesAdmin = ["credits", "money", "cash", "power", "drill", "drones", "shards", "prestige", "honeycredits", "honeypower", "honeydrones", "infinitecash", "resetplayer", "maxupgrades", "ban", "rainbow", "flash", "nuclear", "invert", "lag", "glitch", "upsidedown", "zoom", "ghostmode"];
-        if (cmdInterditesAdmin.includes(baseCmd)) return;
+function appliquerCommandeLocale(baseCmd, val, texteBrut, role) {
+    if (role === "admin" && ["credits", "power", "drones", "shards", "prestige", "spawnshop", "rjcoin", "givebadge", "infinitecash"].includes(baseCmd)) return;
+
+    if (baseCmd === "chat") {
+        let alertBox = document.getElementById("global-chat-alert");
+        alertBox.innerHTML = `📢 <b>MESSAGE DES DIEUX :</b><br><span style="color:#fff;">${texteBrut}</span>`;
+        alertBox.style.top = "20px";
+        setTimeout(() => { alertBox.style.top = "-150px"; }, 6000);
+        return;
     }
 
-    switch(baseCmd) {
-        case "credits":
-        case "money":
-        case "cash":
-            let montant = (val === 0) ? 1000000 : val;
-            if (inHoneyGalaxy) { s.honeyCredits += montant; } else { s.credits += montant; }
-            ui(); save();
-            break;
-        case "power":
-        case "drill":
-            let pAmt = (val === 0) ? 50 : val;
-            if (inHoneyGalaxy) { honeyUpgrades.power += pAmt; } else { s.power += pAmt; }
-            ui(); save();
-            break;
-        case "drones":
-        case "drone":
-            let dAmt = (val === 0) ? 25 : val;
-            if (inHoneyGalaxy) { honeyUpgrades.drones += dAmt; } else { s.drones += dAmt; }
-            restartDroneInterval(); ui(); save();
-            break;
-        case "shards":
-        case "eclats":
-            s.shards += (val === 0) ? 10 : val;
-            ui(); save();
-            break;
-        case "zone":
-        case "tp":
-            let zVal = (val === 0) ? 1 : val;
-            s.zone = Math.max(1, Math.min(planets.length, zVal));
-            if(s.zone > s.maxzone) s.maxzone = s.zone;
-            ui(); save();
-            break;
-        case "prestige":
-            s.prestige = Math.max(0, val);
-            ui(); save();
-            break;
-        case "honeycredits":
-            s.honeyCredits += (val === 0) ? 500000 : val;
-            ui(); save();
-            break;
-        case "honeypower":
-            honeyUpgrades.power += (val === 0) ? 100 : val;
-            ui(); save();
-            break;
-        case "honeydrones":
-            honeyUpgrades.drones += (val === 0) ? 50 : val;
-            restartDroneInterval(); ui(); save();
-            break;
-        case "infinitecash":
-            if (inHoneyGalaxy) { s.honeyCredits = 999999999999999; } else { s.credits = 999999999999999; }
-            ui(); save();
-            break;
-        case "maxupgrades":
-            s.up1 = 50; s.up2 = 20;
-            ui(); save();
-            break;
-        case "resetplayer":
-            s = JSON.parse(JSON.stringify(defaultState));
-            honeyUpgrades = { power: 1, drones: 0, scanner: 1, pCost: 40, dCost: 150, sCost: 300 };
-            ui(); save();
-            break;
-        case "boost":
-            adminBoostMultiplier = Math.max(1, (val === 0) ? 5 : val);
-            document.getElementById("global-event-banner").style.display = "block";
-            document.getElementById("global-event-banner").textContent = `⚡ MULTIPLICATEUR REÇU EN TEMPS RÉEL : x${adminBoostMultiplier} !`;
-            break;
-
-        /* VISUELS ET EFFETS DE ZONE */
-        case "seisme": document.body.classList.add("seisme-active"); break;
-        case "rainbow":
-            document.body.classList.add("rainbow-bg");
-            if (role === "owner") document.getElementById("owner-rainbow-bar").style.display = "block";
-            break;
-        case "flash": document.body.classList.add("flash-mode"); break;
-        case "nuclear": document.body.classList.add("nuclear-mode"); break;
-        case "blur": document.body.classList.add("blur-active"); break;
-        case "blackout": document.body.classList.add("blackout-active"); break;
-        case "matrix": document.body.classList.add("matrix-bg"); break;
-        case "invert": document.body.classList.add("invert-colors"); break;
-        case "discomode": document.body.classList.add("disco-mode"); break;
-        case "lag": document.body.classList.add("lag-mode"); break;
-        case "glitch": document.body.classList.add("glitch-mode"); break;
-        case "pixel": document.body.classList.add("pixel-mode"); break;
-        case "upsidedown": document.body.classList.add("upside-down"); break;
-        case "zoom": document.body.classList.add("zoom-extreme"); break;
-        case "unzoom": document.body.classList.add("unzoom-extreme"); break;
-        case "sepia": document.body.classList.add("sepia-mode"); break;
-        case "oldtv": document.body.classList.add("old-tv"); break;
-        case "ghostmode": document.body.classList.add("ghost-mode"); break;
-        case "hypershake": document.body.classList.add("hyper-shake"); break;
-
-        /* SÉCURITÉ RESEAU & CIBLAGE */
-        case "freeze": isFrozen = true; document.body.classList.add("frozen"); break;
-        case "unfreeze": isFrozen = false; document.body.classList.remove("frozen"); break;
-        case "slow": isSlowed = true; restartDroneInterval(); break;
-        case "unslow": isSlowed = false; restartDroneInterval(); break;
-        case "kick":
-            document.getElementById("kick-screen").style.display = "block";
-            deconnexionComplete();
-            break;
-        case "ban":
-            document.getElementById("ban-screen").style.display = "block";
-            deconnexionComplete();
-            break;
-            
-        case "chat":
-        case "warn":
-            let alerte = document.getElementById("global-chat-alert");
-            alerte.innerHTML = `📢 <b>MESSAGE D'ALERTE GLOBALE :</b><br><span style="color:#fff; font-size:18px;">"${texteBrut}"</span>`;
-            alerte.style.top = "25px";
-            setTimeout(() => { alerte.style.top = "-150px"; }, 6500);
-            break;
-
-        case "clear":
-        case "unabuse":
-            document.body.className = inHoneyGalaxy ? "honey-theme" : "";
-            document.body.classList.remove("seisme-active","rainbow-bg","flash-mode","nuclear-mode","blur-active","blackout-active","matrix-bg","invert-colors","frozen","disco-mode","lag-mode","glitch-mode","pixel-mode","upside-down","zoom-extreme","unzoom-extreme","sepia-mode","old-tv","ghost-mode","hyper-shake");
-            document.getElementById("owner-rainbow-bar").style.display = "none";
-            document.getElementById("global-event-banner").style.display = "none";
-            adminBoostMultiplier = 1; isFrozen = false; isSlowed = false;
-            restartDroneInterval();
-            break;
+    if (baseCmd === "givebadge") {
+        let titleReceived = texteBrut.trim().toLowerCase();
+        if(titleReceived !== "" && !s.ownedTitles.includes(titleReceived)) { s.ownedTitles.push(titleReceived); }
+        document.getElementById("notice").textContent = `🎁 Nouveau titre débloqué : [${texteBrut}] !`;
+        ui(); save(); return;
     }
-}
 
-function loadPlayerSave() {
-    let name = document.getElementById("player").value.trim();
-    if(!name) return; s=JSON.parse(JSON.stringify(defaultState));
-    try{let loaded=JSON.parse(localStorage.getItem("gmv3save_"+name)||"{}"); Object.assign(s,loaded);}catch(e){}
-    try {
-        let loadedHoney = JSON.parse(localStorage.getItem("gmv3save_honey_" + name) || "{}");
-        Object.assign(honeyUpgrades, loadedHoney);
-    } catch(e){}
-    restartDroneInterval(); ui();
-}
-
-function save(){ 
-    let name=document.getElementById("player").value.trim(); 
-    if(name) {
-        localStorage.setItem("gmv3save_"+name,JSON.stringify(s));
-        localStorage.setItem("gmv3save_honey_"+name, JSON.stringify(honeyUpgrades));
-    } 
-}
-
-function msg(t){document.getElementById("notice").textContent=t;}
-
-function toggleHoneyGalaxy(activate) {
-    inHoneyGalaxy = activate;
-    const bodyEl = document.body;
-    if(inHoneyGalaxy) {
-        bodyEl.classList.add("honey-theme");
-        document.getElementById("btn-goto-honey").style.display = "none";
-        document.getElementById("btn-leave-honey").style.display = "inline-block";
-        document.getElementById("btn-prestige-normal").style.display = "none";
-        document.getElementById("pIcon").textContent = "🔬";
-        document.getElementById("dIcon").textContent = "🐝";
-        document.getElementById("sIcon").textContent = "⬢";
-        msg("Voyage dimensionnel effectué ! 🍯");
-    } else {
-        bodyEl.classList.remove("honey-theme");
-        document.getElementById("btn-goto-honey").style.display = "inline-block";
-        document.getElementById("btn-leave-honey").style.display = "none";
-        document.getElementById("btn-prestige-normal").style.display = "inline-block";
-        document.getElementById("pIcon").textContent = "⚡";
-        document.getElementById("dIcon").textContent = "🤖";
-        document.getElementById("sIcon").textContent = "🔭";
-        msg("Retour dans la galaxie d'origine.");
-    }
-    restartDroneInterval(); ui();
-}
-
-function ui() {
-    let displayCash = inHoneyGalaxy ? s.honeyCredits : s.credits;
-    document.getElementById("money").textContent=Math.floor(displayCash); 
-    document.getElementById("moneyTop").textContent=Math.floor(displayCash);
-    document.getElementById("zone").textContent=s.zone; document.getElementById("prestige").textContent=s.prestige;
-    document.getElementById("shards").textContent=s.shards; document.getElementById("maxzone").textContent=s.maxzone;
-    document.getElementById("up1Lvl").textContent=s.up1; document.getElementById("up2Lvl").textContent=s.up2;
+    if (baseCmd === "spawnshop") { triggerMerchantAppearance(); }
+    if (baseCmd === "rjcoin") { s.rjCoins += (val === 0 ? 10 : val); }
+    if (baseCmd === "credits") { s.credits = val; }
+    if (baseCmd === "honeycredits") { s.honeyCredits = val; }
+    if (baseCmd === "power") { s.power = val; }
+    if (baseCmd === "honeypower") { honeyUpgrades.power = val; }
+    if (baseCmd === "drones") { s.drones = val; }
+    if (baseCmd === "honeydrones") { honeyUpgrades.drones = val; }
+    if (baseCmd === "shards") { s.shards = val; }
+    if (baseCmd === "zone") { s.zone = val; }
+    if (baseCmd === "prestige") { s.prestige = val; }
+    if (baseCmd === "infinitecash") { s.credits = 999999999999; s.honeyCredits = 999999999999; }
+    if (baseCmd === "resetplayer") { s = JSON.parse(JSON.stringify(defaultState)); honeyUpgrades={power:1,drones:0,scanner:1,pCost:40,dCost:150,sCost:300}; }
     
-    if(!inHoneyGalaxy) {
-        document.getElementById("power").textContent=s.power;
-        document.getElementById("drones").textContent=s.drones; document.getElementById("scanner").textContent=s.scanner;
-        document.getElementById("pc").textContent=Math.floor(s.pCost);
-        document.getElementById("dc").textContent=Math.floor(s.dCost); document.getElementById("sc").textContent=Math.floor(s.sCost);
-        const p=planets[(s.zone-1)%planets.length]; document.getElementById("planet").textContent=p.emoji; document.getElementById("planetName").textContent=p.name;
-    } else {
-        document.getElementById("power").textContent=honeyUpgrades.power;
-        document.getElementById("drones").textContent=honeyUpgrades.drones; document.getElementById("scanner").textContent=honeyUpgrades.scanner;
-        document.getElementById("pc").textContent=Math.floor(honeyUpgrades.pCost);
-        document.getElementById("dc").textContent=Math.floor(honeyUpgrades.dCost); document.getElementById("sc").textContent=Math.floor(honeyUpgrades.sCost);
-        document.getElementById("planet").textContent="🍯"; document.getElementById("planetName").textContent="Mellis (Honey Planet)";
-    }
+    if (baseCmd === "freeze") { isFrozen = true; document.body.classList.add("frozen"); }
+    if (baseCmd === "unfreeze") { isFrozen = false; document.body.classList.remove("frozen"); }
+    if (baseCmd === "seisme") { document.body.classList.add("seisme-active"); setTimeout(() => document.body.classList.remove("seisme-active"), 4000); }
+    if (baseCmd === "rainbow") document.body.classList.add("rainbow-bg");
+    if (baseCmd === "flash") document.body.classList.add("flash-mode");
+    if (baseCmd === "nuclear") document.body.classList.add("nuclear-mode");
+    if (baseCmd === "blur") document.body.classList.add("blur-active");
+    if (baseCmd === "blackout") document.body.classList.add("blackout-active");
+    if (baseCmd === "matrix") document.body.classList.add("matrix-bg");
+    if (baseCmd === "invert") document.body.classList.add("invert-colors");
+    if (baseCmd === "discomode") document.body.classList.add("disco-mode");
     
-    let req = 1500 * Math.pow(s.zone, 3);
-    let currentCash = inHoneyGalaxy ? s.honeyCredits : s.credits;
-    let pct = Math.min(100, (currentCash / req) * 100);
-    document.getElementById("progress-bar").style.width = pct + "%";
+    if (baseCmd === "unabuse") {
+        adminBoostMultiplier = 1; isFrozen = false;
+        document.body.className = inHoneyGalaxy ? "honey-theme" : "";
+        ui();
+    }
+    if (baseCmd === "kick") { document.getElementById("kick-screen").style.display = "block"; deconnexionComplete(); }
+    if (baseCmd === "ban") { document.getElementById("ban-screen").style.display = "block"; deconnexionComplete(); }
+    if (baseCmd === "warn") { alert(`⚠️ COMPTE AVERTI ⚠️\n\nRaison: ${texteBrut}`); }
+    if (baseCmd === "clear") { document.getElementById("chat-box").innerHTML = ""; }
+    ui();
 }
 
-function restartDroneInterval() {
-    if(droneInterval) clearInterval(droneInterval);
-    let vitesse = isSlowed ? 4000 : 1000;
-    droneInterval = setInterval(() => {
-        if(isFrozen) return;
-        let dCount = inHoneyGalaxy ? honeyUpgrades.drones : s.drones;
-        if(dCount > 0) {
-            let multDrone = 1 + (s.up1 * 0.5);
-            let gain = dCount * multDrone * eventMultiplier * adminBoostMultiplier;
-            if(inHoneyGalaxy) {
-                honeyUpgrades.power += (dCount * 0.1);
-                s.honeyCredits += gain;
-            } else {
-                s.credits += gain;
-            }
-            ui(); verificationZone();
-        }
-    }, vitesse);
+// --- LOGIQUE CORE DU JEU ---
+document.getElementById("planet").addEventListener("click", () => {
+    if(isFrozen) return; s.totalClicks++;
+    let basePower = inHoneyGalaxy ? honeyUpgrades.power : s.power;
+    let baseScanner = inHoneyGalaxy ? honeyUpgrades.scanner : s.scanner;
+    let totalGain = basePower * baseScanner * adminBoostMultiplier * naturalEventMultiplier;
+    if(!inHoneyGalaxy && s.up2 > 0 && Math.random() < (s.up2 * 0.05)) { totalGain *= 3; }
+    if(inHoneyGalaxy) { s.honeyCredits += totalGain; if(Math.random() < 0.01) s.rjCoins++; }
+    else {
+        s.credits += totalGain; combo++;
+        document.getElementById("progress-bar").style.width = Math.min((combo / (s.zone * 20)) * 100, 100) + "%";
+        if(combo >= (s.zone * 20)) { combo = 0; s.zone++; if(s.zone > s.maxzone) s.maxzone = s.zone; }
+    }
+    ui();
+});
+
+function lancerProductionDrones() {
+    if(isFrozen) return;
+    let count = inHoneyGalaxy ? honeyUpgrades.drones : s.drones;
+    let speedBonus = 1 + (s.up1 * 0.5);
+    let finalGain = count * speedBonus * adminBoostMultiplier * droneNaturalMultiplier;
+    if(inHoneyGalaxy) { s.honeyCredits += finalGain; } else { s.credits += finalGain; }
+    if(finalGain > 0) ui();
 }
 
 function buyPower() {
-    if(isFrozen) return;
-    if(!inHoneyGalaxy) {
-        if(s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost *= 1.35; ui(); save(); }
-    } else {
-        if(s.honeyCredits >= honeyUpgrades.pCost) { s.honeyCredits -= honeyUpgrades.pCost; honeyUpgrades.power++; honeyUpgrades.pCost *= 1.4; ui(); save(); }
-    }
+    if(inHoneyGalaxy && s.honeyCredits >= honeyUpgrades.pCost) { s.honeyCredits -= honeyUpgrades.pCost; honeyUpgrades.power++; honeyUpgrades.pCost *= 1.35; }
+    else if(!inHoneyGalaxy && s.credits >= s.pCost) { s.credits -= s.pCost; s.power++; s.pCost *= 1.35; }
+    ui();
 }
-function buyMaxPower() { if(isFrozen) return; for(let i=0;i<100;i++) { let pre=inHoneyGalaxy?s.honeyCredits:s.credits; buyPower(); if((inHoneyGalaxy?s.honeyCredits:s.credits)===pre) break; } }
-
 function buyDrone() {
-    if(isFrozen) return;
-    if(!inHoneyGalaxy) {
-        if(s.credits >= s.dCost) { s.credits -= s.dCost; s.drones++; s.dCost *= 1.4; ui(); save(); restartDroneInterval(); }
-    } else {
-        if(s.honeyCredits >= honeyUpgrades.dCost) { s.honeyCredits -= honeyUpgrades.dCost; honeyUpgrades.drones++; honeyUpgrades.dCost *= 1.45; ui(); save(); restartDroneInterval(); }
-    }
+    if(inHoneyGalaxy && s.honeyCredits >= honeyUpgrades.dCost) { s.honeyCredits -= honeyUpgrades.dCost; honeyUpgrades.drones++; honeyUpgrades.dCost *= 1.4; }
+    else if(!inHoneyGalaxy && s.credits >= s.dCost) { s.credits -= s.dCost; s.drones++; s.dCost *= 1.4; }
+    ui();
 }
-function buyMaxDrone() { if(isFrozen) return; for(let i=0;i<100;i++) { let pre=inHoneyGalaxy?s.honeyCredits:s.credits; buyDrone(); if((inHoneyGalaxy?s.honeyCredits:s.credits)===pre) break; } }
-
 function buyScanner() {
-    if(isFrozen) return;
-    if(!inHoneyGalaxy) {
-        if(s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost *= 1.5; ui(); save(); }
-    } else {
-        if(s.honeyCredits >= honeyUpgrades.sCost) { s.honeyCredits -= honeyUpgrades.sCost; honeyUpgrades.scanner++; honeyUpgrades.sCost *= 1.6; ui(); save(); }
-    }
+    if(inHoneyGalaxy && s.honeyCredits >= honeyUpgrades.sCost) { s.honeyCredits -= honeyUpgrades.sCost; honeyUpgrades.scanner++; honeyUpgrades.sCost *= 1.45; }
+    else if(!inHoneyGalaxy && s.credits >= s.sCost) { s.credits -= s.sCost; s.scanner++; s.sCost *= 1.45; }
+    ui();
 }
-function buyMaxScanner() { if(isFrozen) return; for(let i=0;i<100;i++) { let pre=inHoneyGalaxy?s.honeyCredits:s.credits; buyScanner(); if((inHoneyGalaxy?s.honeyCredits:s.credits)===pre) break; } }
-
+function buyMaxPower() { for(let i=0;i<20;i++) buyPower(); }
+function buyMaxDrone() { for(let i=0;i<20;i++) buyDrone(); }
+function buyMaxScanner() { for(let i=0;i<20;i++) buyScanner(); }
 function buyPrestigeUpgrade(id) {
-    if(id===1 && s.shards >= 2) { s.shards -= 2; s.up1++; ui(); save(); }
-    if(id===2 && s.shards >= 3) { s.shards -= 3; s.up2++; ui(); save(); }
+    if(id === 1 && s.shards >= 2) { s.shards -= 2; s.up1++; ui(); }
+    if(id === 2 && s.shards >= 3) { s.shards -= 3; s.up2++; ui(); }
 }
-
 function doPrestige() {
-    let req = 500000;
-    if(s.credits >= req) {
-        let gagné = Math.floor(Math.sqrt(s.credits / req));
-        s.shards += gagné; s.prestige++;
-        let pTemp = s.prestige; let shTemp = s.shards; let mzTemp = s.maxzone;
-        Object.assign(s, JSON.parse(JSON.stringify(defaultState)));
-        s.prestige = pTemp; s.shards = shTemp; s.maxzone = mzTemp;
-        ui(); save(); msg(`Prestige validé ! +${gagné} ✨`);
-    } else { alert("Il te faut au moins 500 000 crédits."); }
+    if(s.credits >= 500000) { s.shards += Math.floor(Math.sqrt(s.credits / 500000)); s.credits = 0; s.zone = 1; s.power = 1; s.drones = 0; s.scanner = 1; s.pCost = 20; s.dCost = 70; s.sCost = 120; s.prestige++; ui(); save(); }
 }
 
-function verificationZone() {
-    let currentCash = inHoneyGalaxy ? s.honeyCredits : s.credits;
-    let req = 1500 * Math.pow(s.zone, 3);
-    if(currentCash >= req && !inHoneyGalaxy) {
-        if(s.zone < planets.length) {
-            s.zone++; if(s.zone > s.maxzone) s.maxzone = s.zone;
-            msg(`Nouvelle zone débloquée : ${planets[s.zone-1].name} ! 🚀`);
-        }
+function toggleHoneyGalaxy(activate) {
+    inHoneyGalaxy = activate;
+    document.getElementById("btn-goto-honey").style.display = activate ? "none" : "inline-block";
+    document.getElementById("btn-leave-honey").style.display = activate ? "inline-block" : "none";
+    document.getElementById("rj-card").style.display = activate ? "inline-block" : "none";
+    document.body.className = activate ? "honey-theme" : "";
+    ui();
+}
+
+function ui() {
+    let cash = inHoneyGalaxy ? s.honeyCredits : s.credits;
+    document.getElementById("money").textContent = Math.floor(cash);
+    document.getElementById("moneyTop").textContent = Math.floor(cash);
+    document.getElementById("zone").textContent = s.zone;
+    document.getElementById("prestige").textContent = s.prestige;
+    document.getElementById("shards").textContent = s.shards;
+    document.getElementById("rjCoins").textContent = s.rjCoins;
+    document.getElementById("stat-clicks").textContent = s.totalClicks;
+    rafraichirInventaireTitres();
+    
+    if(!inHoneyGalaxy) {
+        document.getElementById("power").textContent = s.power; document.getElementById("drones").textContent = s.drones; document.getElementById("scanner").textContent = s.scanner;
+        document.getElementById("pc").textContent = Math.floor(s.pCost); document.getElementById("dc").textContent = Math.floor(s.dCost); document.getElementById("sc").textContent = Math.floor(s.sCost);
+        let currentPlanet = planets[(s.zone - 1) % planets.length]; document.getElementById("planetName").textContent = currentPlanet.name; document.getElementById("planet").textContent = currentPlanet.emoji;
+    } else {
+        document.getElementById("power").textContent = honeyUpgrades.power; document.getElementById("drones").textContent = honeyUpgrades.drones; document.getElementById("scanner").textContent = honeyUpgrades.scanner;
+        document.getElementById("pc").textContent = Math.floor(honeyUpgrades.pCost); document.getElementById("dc").textContent = Math.floor(honeyUpgrades.dCost); document.getElementById("sc").textContent = Math.floor(honeyUpgrades.sCost);
+        document.getElementById("planetName").textContent = "Mellis (Honey Dimension)"; document.getElementById("planet").textContent = "🍯";
     }
+    document.getElementById("maxzone").textContent = s.maxzone;
+    document.getElementById("up1Lvl").textContent = s.up1; document.getElementById("up2Lvl").textContent = s.up2;
 }
 
-document.getElementById("planet").addEventListener("click", () => {
-    if(isFrozen) return;
-    combo++;
-    
-    let basePower = inHoneyGalaxy ? honeyUpgrades.power : s.power;
-    let scanValue = inHoneyGalaxy ? honeyUpgrades.scanner : s.scanner;
-    let clickGain = basePower * scanValue * eventMultiplier * adminBoostMultiplier;
-    
-    if(s.up2 > 0 && Math.random() < (s.up2 * 0.05)) {
-        clickGain *= 3; document.getElementById("combo-display").textContent = "🔥 CRITIQUE x3 !";
-    }
-    
-    if(inHoneyGalaxy) { s.honeyCredits += clickGain; } else { s.credits += clickGain; }
-    ui(); verificationZone();
-    
-    if(Math.random() < 0.02 && document.getElementById("comet").style.display !== "block") { spawnComet(); }
-});
-
-function spawnComet() {
-    let c = document.getElementById("comet");
-    c.style.top = Math.random() * 80 + "%"; c.style.left = "-50px"; c.style.display = "block";
-    let pos = -50;
-    let anim = setInterval(() => {
-        pos += 5; c.style.left = pos + "px";
-        if(pos > window.innerWidth) { clearInterval(anim); c.style.display = "none"; }
-    }, 20);
-    c.onclick = () => {
-        clearInterval(anim); c.style.display = "none";
-        let bonus = (inHoneyGalaxy ? honeyUpgrades.power : s.power) * 150;
-        if(inHoneyGalaxy) s.honeyCredits += bonus; else s.credits += bonus;
-        msg("☄️ Comète interceptée !"); ui();
-    };
+let ActiveQuests = [];
+function toggleModal(id, open) { document.getElementById(id).style.display = open ? "block" : "none"; }
+function genererQuetes() {
+    ActiveQuests = [{ desc: "Miner 25 fois la planète", target: 25, type: "clicks" }];
+    let container = document.getElementById("quests-container"); container.innerHTML = "";
+    ActiveQuests.forEach((q, idx) => { container.innerHTML += `<div class="quest-item"><div>${q.desc}</div><button onclick="this.parentElement.style.display='none'">Vérifier</button></div>`; });
 }
 
-setInterval(() => {
-    save();
-}, 4000);
+function loadPlayerSave() {
+    let name = document.getElementById("player").value.trim(); if(!name) return;
+    try { Object.assign(s, JSON.parse(localStorage.getItem("gmv3save_" + name) || "{}")); } catch(e){}
+    if(droneInterval) clearInterval(droneInterval); droneInterval = setInterval(lancerProductionDrones, 1000);
+    ui();
+}
+function save() { let name = document.getElementById("player").value.trim(); if(name) localStorage.setItem("gmv3save_" + name, JSON.stringify(s)); }
+setInterval(save, 5000);
 </script>
 </body>
 </html>
