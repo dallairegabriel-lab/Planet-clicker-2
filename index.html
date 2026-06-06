@@ -279,7 +279,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div id="secret-merchant-btn" onclick="openMerchantShop()">🐻</div>
 <div id="merchant-shop-modal" class="merchant-modal">
     <h3 style="color:#fbbf24; margin:0 0 5px 0;">🍯 Boutique Éphémère</h3>
-    <p style="font-size:11px; color:#aaa; margin:0 0 10px 0;">Fermeture dans : <span id="merchant-timer">5:00</span></p>
     <div id="merchant-items-container"></div>
     <button onclick="closeMerchantShop()" style="background:#ff4444; color:white; margin-top:10px; width:100%; padding:8px;">Fermer</button>
 </div>
@@ -462,18 +461,19 @@ function executerCmdPanel(type) {
 
     let target = parts[1] ? parts[1].toLowerCase() : "all";
     let valNum = Number(parts[2] || 0);
-    let texteComplet = parts.slice(1).join(" ");
+    let texteComplet = parts.slice(2).join(" ");
 
-    if(baseCmd === "chat") { target = "all"; texteComplet = parts.slice(1).join(" "); }
-    else if(parts[1] && parts[2]) { texteComplet = parts.slice(2).join(" "); }
+    if(baseCmd === "chat") { 
+        target = "all"; 
+        texteComplet = parts.slice(1).join(" "); 
+    }
 
     socket.emit("envoyerAdminAbuse", { commande: cmd, baseCmd: baseCmd, cible: target, value: valNum, texteBrut: texteComplet, role: type });
     
-    let monPseudo = document.getElementById("player").value.trim().toLowerCase();
-    if(target === "all" || target === monPseudo) {
-        appliquerCommandeLocale(baseCmd, valNum, texteComplet, type);
-    }
-    inp.value = ""; logBox.scrollTop = logBox.scrollHeight;
+    appliquerCommandeLocale(baseCmd, valNum, texteComplet, type);
+    
+    inp.value = ""; 
+    logBox.scrollTop = logBox.scrollHeight;
 }
 
 // --- STRUCTURE ET VARIABLES DU SYSTEME ---
@@ -533,8 +533,12 @@ socket.on("recevoirAdminAbuse", (data) => {
     appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, data.role);
 });
 
+// --- EXECUTEUR INTERNE ---
 function appliquerCommandeLocale(baseCmd, val, texteBrut, role) {
-    if (role === "admin" && ["credits", "power", "drones", "shards", "prestige", "spawnshop", "rjcoin", "givebadge", "infinitecash"].includes(baseCmd)) return;
+    if (role === "admin" && ["credits", "power", "drones", "shards", "prestige", "spawnshop", "rjcoin", "givebadge", "infinitecash"].includes(baseCmd)) {
+        console.warn("Action non autorisée.");
+        return;
+    }
 
     if (baseCmd === "chat") {
         let alertBox = document.getElementById("global-chat-alert");
@@ -545,13 +549,23 @@ function appliquerCommandeLocale(baseCmd, val, texteBrut, role) {
     }
 
     if (baseCmd === "givebadge") {
-        let titleReceived = texteBrut.trim().toLowerCase();
-        if(titleReceived !== "" && !s.ownedTitles.includes(titleReceived)) { s.ownedTitles.push(titleReceived); }
-        document.getElementById("notice").textContent = `🎁 Nouveau titre débloqué : [${texteBrut}] !`;
+        let titleReceived = texteBrut.trim();
+        if(titleReceived !== "") {
+            if(!s.ownedTitles.includes(titleReceived.toLowerCase())) {
+                s.ownedTitles.push(titleReceived.toLowerCase());
+            }
+            document.getElementById("notice").textContent = `🎁 Titre débloqué : [${titleReceived}] !`;
+            document.getElementById("notice").style.top = "20px";
+            setTimeout(() => { document.getElementById("notice").style.top = "70px"; }, 4000);
+        }
         ui(); save(); return;
     }
 
-    if (baseCmd === "spawnshop") { triggerMerchantAppearance(); }
+    if (baseCmd === "spawnshop") { 
+        triggerMerchantAppearance(); 
+        return;
+    }
+
     if (baseCmd === "rjcoin") { s.rjCoins += (val === 0 ? 10 : val); }
     if (baseCmd === "credits") { s.credits = val; }
     if (baseCmd === "honeycredits") { s.honeyCredits = val; }
@@ -560,10 +574,14 @@ function appliquerCommandeLocale(baseCmd, val, texteBrut, role) {
     if (baseCmd === "drones") { s.drones = val; }
     if (baseCmd === "honeydrones") { honeyUpgrades.drones = val; }
     if (baseCmd === "shards") { s.shards = val; }
-    if (baseCmd === "zone") { s.zone = val; }
+    if (baseCmd === "zone") { s.zone = Math.max(1, val); }
     if (baseCmd === "prestige") { s.prestige = val; }
     if (baseCmd === "infinitecash") { s.credits = 999999999999; s.honeyCredits = 999999999999; }
-    if (baseCmd === "resetplayer") { s = JSON.parse(JSON.stringify(defaultState)); honeyUpgrades={power:1,drones:0,scanner:1,pCost:40,dCost:150,sCost:300}; }
+    
+    if (baseCmd === "resetplayer") { 
+        s = JSON.parse(JSON.stringify(defaultState)); 
+        honeyUpgrades = {power:1,drones:0,scanner:1,pCost:40,dCost:150,sCost:300}; 
+    }
     
     if (baseCmd === "freeze") { isFrozen = true; document.body.classList.add("frozen"); }
     if (baseCmd === "unfreeze") { isFrozen = false; document.body.classList.remove("frozen"); }
@@ -582,10 +600,12 @@ function appliquerCommandeLocale(baseCmd, val, texteBrut, role) {
         document.body.className = inHoneyGalaxy ? "honey-theme" : "";
         ui();
     }
+    
     if (baseCmd === "kick") { document.getElementById("kick-screen").style.display = "block"; deconnexionComplete(); }
     if (baseCmd === "ban") { document.getElementById("ban-screen").style.display = "block"; deconnexionComplete(); }
     if (baseCmd === "warn") { alert(`⚠️ COMPTE AVERTI ⚠️\n\nRaison: ${texteBrut}`); }
     if (baseCmd === "clear") { document.getElementById("chat-box").innerHTML = ""; }
+    
     ui();
 }
 
@@ -680,6 +700,36 @@ function genererQuetes() {
     let container = document.getElementById("quests-container"); container.innerHTML = "";
     ActiveQuests.forEach((q, idx) => { container.innerHTML += `<div class="quest-item"><div>${q.desc}</div><button onclick="this.parentElement.style.display='none'">Vérifier</button></div>`; });
 }
+
+// --- LOGIQUE DU MARCHAND EXCLUSIF ---
+function triggerMerchantAppearance() {
+    let btn = document.getElementById("secret-merchant-btn");
+    if (!btn) return;
+    btn.style.display = "block";
+    
+    let container = document.getElementById("merchant-items-container");
+    if (container) {
+        container.innerHTML = `
+            <div class="merchant-item">
+                <span>🍯 Super Miel (Bonus +50% Clics)</span>
+                <button onclick="s.honeyCredits += 500; ui(); this.disabled=true; this.textContent='Acheté'">Gratuit</button>
+            </div>
+            <div class="merchant-item">
+                <span>👑 Clé des Dieux (+5 RJ Coins)</span>
+                <button onclick="s.rjCoins += 5; ui(); this.disabled=true; this.textContent='Réclamé'">Gratuit</button>
+            </div>
+        `;
+    }
+
+    let notice = document.getElementById("notice");
+    if (notice) {
+        notice.textContent = "🐻 L'Ours Marchand est apparu en bas à droite !";
+        notice.style.top = "20px";
+        setTimeout(() => { notice.style.top = "70px"; }, 4000);
+    }
+}
+function openMerchantShop() { toggleModal('merchant-shop-modal', true); }
+function closeMerchantShop() { toggleModal('merchant-shop-modal', false); }
 
 function loadPlayerSave() {
     let name = document.getElementById("player").value.trim(); if(!name) return;
