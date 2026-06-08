@@ -1,3 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-select=none">
+<title>Galaxy Miner Deluxe V3 - Full Premium Edition</title>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<style>
+/* --- STYLES DE BASE D'ORIGINE --- */
+body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow-x:hidden;transition: filter 0.3s, animation 0.3s, transform 0.3s, transform-origin 0.3s;}
+#stars,#stars2{position:fixed;inset:0;pointer-events:none}
+#stars{background-image:radial-gradient(white 1px,transparent 1px);background-size:45px 45px;opacity:.2}
+#stars2{background-image:radial-gradient(cyan 1px,transparent 1px);background-size:90px 90px;opacity:.08;animation:drift 60s linear infinite}
+@keyframes drift{from{transform:translateY(0)}to{transform:translateY(90px)}}
+
+/* --- INTERFACE DE JEU PAR DÉFAUT (PC) --- */
+#game-interface { display: none; padding: 20px; box-sizing: border-box; }
+.top{display:flex;justify-content:center;gap:15px;padding:10px;flex-wrap:wrap;transition: transform 0.5s ease;}
+.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);transition: transform 0.5s ease;}
+#money{text-align:center;font-size:54px;color:#52ffe0;text-shadow:0 0 15px #52ffe0;margin-top:10px;transition: transform 0.5s ease;}
+#planet-container{text-align:center;position:relative;margin:10px auto;width:220px;transition: transform 0.5s ease;}
+#planet{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
+#planet:active{transform:scale(.85)}
+#planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
+
+/* Positionnement PC original */
+.mode-pc .left { position: fixed; top: 110px; left: 10px; width: 280px; }
+.mode-pc .right { position: fixed; top: 110px; right: 10px; width: 280px; }
+.mode-pc #ui-chat { position: fixed; bottom: 10px; left: 10px; width: 280px; background: rgba(0,0,0,0.85); z-index: 9999; }
+
+button{border:none;border-radius:10px;padding:10px 14px;margin:4px;cursor:pointer;font-weight:bold;background:#fff;color:#000;transition:0.2s}
+button:hover{background:#52ffe0;transform:translateY(-2px)}
+.btn-max{background:#ffaa00;color:#000;padding:10px 8px;font-size:11px;}
+.btn-max:hover{background:#ffcc66;}
+
+.shop{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:15px;transition: transform 0.5s ease;}
+.utility-bar { display:flex; justify-content:center; gap:8px; margin: 15px auto; max-width: 600px; flex-wrap: wrap; }
+
+.notice{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10;transition: 0.3s;}
+.progress-bar-container{width:180px;background:rgba(255,255,255,0.1);height:8px;border-radius:4px;margin:5px auto;overflow:hidden;transition: transform 0.5s ease;}
+#progress-bar{width:0%;height:100%;background:linear-gradient(90deg, #52ffe0, #0077ff);transition:width 0.2s}
+#comet{position:fixed;font-size:40px;cursor:pointer;z-index:99;display:none;user-select:none}
+
+/* 📱 ADAPTATIVE MOBILE */
+.mode-mobile { display: flex !important; flex-direction: column; align-items: center; padding: 10px 10px 180px 10px !important; overflow-y: auto; }
+.mode-mobile .pc-only { display: none !important; }
+.mode-mobile .card { width: 100%; max-width: 420px; box-sizing: border-box; margin-bottom: 15px; position: static !important; }
+.mode-mobile #main-game-area { order: -1; width: 100%; text-align: center; }
+.mode-mobile #planet { font-size: 130px !important; }
+.mode-mobile button { width: 100%; padding: 16px !important; font-size: 15px !important; margin: 6px 0 !important; box-sizing: border-box; }
+.mode-mobile .btn-max { width: auto !important; padding: 10px 15px !important; font-size: 12px !important; display: inline-block; margin-left: 5px !important; }
+.mode-mobile .shop, .mode-mobile .utility-bar { display: block; width: 100%; max-width: 420px; }
+.mode-mobile .shop > div { display: flex !important; align-items: center; width: 100%; }
+.mode-mobile .shop > div > button:first-child { flex: 1; }
+.mode-mobile #ui-chat { position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important; background: #090e21 !important; border-top: 3px solid #52ffe0; border-radius: 0 !important; padding: 12px !important; box-sizing: border-box; z-index: 99999; }
+.mode-mobile #chat-box { height: 80px !important; }
+
+/* THEMES GALAXIES */
+.honey-theme { background: radial-gradient(circle at center, #78350f, #451a03 80%) !important; }
+.crystal-theme { background: radial-gradient(circle at center, #1e1b4b, #4c1d95 80%) !important; }
+.plasma-theme { background: radial-gradient(circle at center, #450a0a, #7f1d1d 80%) !important; }
+
+/* PANELS CONFIGURÉS */
+.roblox-panel { display: none; position: fixed; top: 150px; left: 150px; width: 90%; max-width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif; color: #ffffff; box-shadow: 0px 10px 30px rgba(0,0,0,0.7); overflow: hidden; z-index: 100000; user-select: none; }
+#panel-owner { background-color: rgba(45, 15, 15, 0.8); border: 1px solid rgba(255, 68, 68, 0.3); }
+#panel-admin { background-color: rgba(15, 30, 45, 0.8); border: 1px solid rgba(68, 136, 255, 0.3); }
+.admin-header { background-color: rgba(20, 20, 20, 0.9); padding: 12px; font-weight: 600; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; cursor: move; }
+.close-admin-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 16px; cursor: pointer; font-weight: bold; padding: 0 5px; margin: 0; }
+.admin-body { padding: 12px; }
+.command-log { height: 220px; background-color: rgba(0, 0, 0, 0.6); border-radius: 4px; padding: 10px; font-size: 12px; font-family: 'Courier New', monospace; overflow-y: auto; margin-bottom: 12px; }
+#log-owner { color: #ff5555; } #log-admin { color: #55aaff; }
+.input-area { display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; padding: 6px 10px; }
+.prefix { font-family: monospace; margin-right: 8px; font-weight: bold; font-size: 14px; }
+.admin-input-text { flex: 1; background: none; border: none; color: #ffffff; font-size: 13px; outline: none; }
+.panel-btn { background-color: rgba(60, 60, 60, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 4px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; }
+
+/* MODERATEURS CSS VISUELS COMBINÉS */
+.frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
+.seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
+@keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
+.blur-active { filter: blur(8px) !important; }
+.blackout-active { filter: brightness(0) !important; background: black !important; }
+
+/* COMPTE ET SESSIONS */
+#auth-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #15224a, #02040a 80%); z-index: 9999999; display: flex; justify-content: center; align-items: center; }
+.auth-card { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15); width: 340px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center; }
+.auth-card h2 { margin-top: 0; color: #52ffe0; text-shadow: 0 0 15px rgba(82, 255, 224, 0.4); font-size: 26px; }
+.auth-input-group { margin-bottom: 14px; text-align: left; }
+.auth-input-group label { display: block; font-size: 11px; color: #9de; margin-bottom: 6px; text-transform: uppercase; }
+.auth-input { width: 100%; padding: 12px; box-sizing: border-box; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: #fff; font-size: 14px; outline: none; }
+.device-selector { display: flex; gap: 8px; margin-bottom: 15px; }
+.device-btn { flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 12px; }
+.device-btn.active { background: #52ffe0; color: #02040a; border-color: #52ffe0; }
+.auth-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; }
+.auth-btn-login { background: #52ffe0; color: #02040a; }
+.auth-btn-register { background: #ffaa00; color: #02040a; }
+.auth-toggle { margin-top: 15px; font-size: 12px; color: #9de; cursor: pointer; text-decoration: underline; }
+#ban-screen, #kick-screen { display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; text-align: center; }
+#ban-screen { background: #4a0000; } #kick-screen { background: #222; }
+
+#global-chat-alert { position: fixed; top: -150px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff0055, #ffaa00); color: white; padding: 20px 40px; border-radius: 12px; font-size: 24px; font-weight: bold; z-index: 200000; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 3px solid #fff; box-shadow: 0 0 35px rgba(255,0,85,0.6); }
+#owner-rainbow-bar { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet, red); background-size: 200% auto; animation: rainbowShift 2s linear infinite; z-index: 999999; }
+@keyframes rainbowShift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+
+.merchant-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 340px; background: rgba(20, 25, 40, 0.98); border: 3px solid #fbbf24; border-radius: 12px; padding: 20px; z-index: 100000; box-shadow: 0 0 25px rgba(251,191,36,0.4); text-align: center; color: #fff; }
+#secret-merchant-btn { display: none; position: fixed; bottom: 20px; right: 20px; font-size: 45px; cursor: pointer; z-index: 9999; user-select: none; }
+.titles-container-v3 { max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 4px; margin-top: 5px; }
+.title-row-v3 { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; font-size: 11px; }
+.title-row-v3.active-v3 { border: 1px solid #52ffe0; background: rgba(82,255,224,0.15); }
+.btn-equip-v3 { background: #52ffe0; color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+.btn-equip-v3.equipped-v3 { background: #26ff63; }
+.title-locked-v3 { color: #555; font-style: italic; }
+.quest-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; margin: 6px 0; text-align: left; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+
+<div id="auth-overlay">
+    <div id="auth-login-view" class="auth-card">
+        <h2>🚀 GALAXY MINER</h2>
+        <div class="device-selector">
+            <button id="dev-pc" class="device-btn active" onclick="choisirSupport('pc')">🖥️ MODE PC</button>
+            <button id="dev-mobile" class="device-btn" onclick="choisirSupport('mobile')">📱 MODE MOBILE</button>
+        </div>
+        <div class="auth-input-group">
+            <label>Nom de mineur</label>
+            <input type="text" id="auth-log-user" class="auth-input" placeholder="Ex: MineurCosmique">
+        </div>
+        <div class="auth-input-group">
+            <label>Mot de passe</label>
+            <input type="password" id="auth-log-pass" class="auth-input" placeholder="••••••••">
+        </div>
+        <button onclick="gererConnexion()" class="auth-btn auth-btn-login">Initialiser la Session</button>
+        <div class="auth-toggle" onclick="basculerAuth('register')">Créer un compte</div>
+    </div>
+    <div id="auth-register-view" class="auth-card" style="display: none;">
+        <h2>✨ INSCRIPTION</h2>
+        <div class="auth-input-group">
+            <label>Créer un pseudo</label>
+            <input type="text" id="auth-reg-user" class="auth-input" placeholder="Ex: MineurCosmique">
+        </div>
+        <div class="auth-input-group">
+            <label>Définir le code d'accès</label>
+            <input type="password" id="auth-reg-pass" class="auth-input" placeholder="••••••••">
+        </div>
+        <button onclick="gererInscription()" class="auth-btn auth-btn-register">Générer le Compte</button>
+        <div class="auth-toggle" onclick="basculerAuth('login')">Se connecter</div>
+    </div>
+</div>
+
+<div id="owner-rainbow-bar"></div>
+<div id="stars"></div><div id="stars2"></div>
+<div id="global-chat-alert">📢 ANNONCE GLOBALE</div>
+
+<div id="ban-screen">
+    <span style="font-size: 80px;">🚫</span>
+    <h2>COMPTE VERROUILLÉ / BANNI</h2>
+    <p>Tu as été banni de l'infrastructure de minage par l'Owner principal.</p>
+</div>
+
+<div id="kick-screen" onclick="location.reload();">
+    <span style="font-size: 80px;">👢</span>
+    <h2>EXPULSÉ DE LA SESSION</h2>
+    <p>Cliquez sur l'écran pour tenter une reconnexon.</p>
+</div>
+
+<div id="game-interface">
+    <div class="top" id="ui-top">
+        <div class="card" style="color: #26ff63; font-weight: bold;">🟢 En ligne: <span id="onlineCount">1</span></div>
+        <div class="card">💰 <span id="moneyTop">0</span></div>
+        <div class="card">🌍 Zone <span id="zone">1</span></div>
+        <div class="card">🔁 Prestige <span id="prestige">0</span></div>
+        <div class="card">✨ Éclats: <span id="shards">0</span></div>
+        <div class="card" id="rj-card" style="color:#fbbf24; font-weight:bold;">👑 RJ Coins: <span id="rjCoins">0</span></div>
+        <div class="card">👤 <input id="player" readonly style="background:transparent; border:none; color:#52ffe0; font-weight:bold; width:110px; outline:none; text-align:center;"></div>
+    </div>
+
+    <div id="notice" class="notice">En attente...</div>
+
+    <div id="main-game-area">
+        <div id="money">0</div>
+        <div id="planetName">Terra</div>
+        <div id="planet-container"><div id="planet">🌍</div></div>
+        <div class="progress-bar-container" id="ui-progress"><div id="progress-bar"></div></div>
+    </div>
+
+    <div class="utility-bar">
+        <button onclick="toggleModal('rj-modal', true)" style="background:#fbbf24; color:black;">👑 Marché Royal Jelly</button>
+        <button onclick="toggleModal('quests-modal', true)" style="background:#ffaa00; color:black;">📋 Centre des Quêtes</button>
+        <button onclick="buyPrestigeUpgrade(1)" style="background:#a855f7; color:white; font-size:12px;">🚀 Up Drones Shards (Niv: <span id="up1Lvl">0</span>)</button>
+        <button onclick="buyPrestigeUpgrade(2)" style="background:#3b82f6; color:white; font-size:12px;">🎯 Up Crit Shards (Niv: <span id="up2Lvl">0</span>)</button>
+    </div>
+
+    <div class="shop" id="ui-shop">
+        <div>
+            <button onclick="buyPower()"><span id="pIcon">⚡</span> Drill <span id="pc">20</span></button>
+            <button onclick="buyMaxPower()" class="btn-max">[MAX]</button>
+        </div>
+        <div>
+            <button onclick="buyDrone()"><span id="dIcon">🤖</span> Drone <span id="dc">70</span></button>
+            <button onclick="buyMaxDrone()" class="btn-max">[MAX]</button>
+        </div>
+        <div>
+            <button onclick="buyScanner()"><span id="sIcon">🔭</span> Scanner <span id="sc">120</span></button>
+            <button onclick="buyMaxScanner()" class="btn-max">[MAX]</button>
+        </div>
+        <button id="btn-prestige-normal" onclick="doPrestige()" style="background:#52ffe0; color:black;">🔁 Déclencher Prestige</button>
+        
+        <button id="btn-goto-honey" onclick="changerGalaxie('honey')" style="background:#fbbf24; color:black; font-weight:bold;">🍯 Honey Galaxy</button>
+        <button id="btn-goto-crystal" onclick="changerGalaxie('crystal')" style="background:#a855f7; color:white; font-weight:bold;">🔮 Crystal Galaxy (Prestige 2)</button>
+        <button id="btn-goto-plasma" onclick="changerGalaxie('plasma')" style="background:#ef4444; color:white; font-weight:bold;">🔥 Plasma Galaxy (Prestige 5)</button>
+        <button id="btn-leave-galaxy" onclick="changerGalaxie('normale')" style="background:#ff4444; color:white; font-weight:bold; display:none;">🚀 Retour Galaxie Normale</button>
+    </div>
+
+    <div class="left card" id="ui-left">
+        <h3>Stats & Reliques ✨</h3>
+        Power: <span id="power">1</span> | Drones: <span id="drones">0</span> | Scanner: <span id="scanner">1</span><br>
+        Zone Max: <span id="maxzone">1</span> | Clics: <span id="stat-clicks">0</span><br>
+        <span style="color:#fbbf24">RJ Mult Clics: <span id="rjMultClic">1</span>x</span><br>
+        <span style="color:#fbbf24">RJ Mult Drones: <span id="rjMultDrone">1</span>x</span>
+        <hr style="border:1px solid rgba(255,255,255,0.1)">
+        <h4 style="margin:5px 0 2px 0; font-size:12px; color:#52ffe0;">🏆 Vos Titres & Succès</h4>
+        <div class="titles-container-v3" id="titles-wrapper-v3"></div>
+        <hr style="border:1px solid rgba(255,255,255,0.1)">
+        <button onclick="deconnexionComplete()" style="background:#ff4444; color:white; font-size:11px; width:100%;">🔒 Déconnexion</button>
+    </div>
+
+    <div class="card" id="ui-chat">
+        <h3 class="pc-only" style="margin: 0 0 5px 0; font-size:14px;">💬 Chat Global</h3>
+        <div id="chat-box" style="height: 110px; overflow-y: auto; font-size: 12px; margin-bottom: 5px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);"></div>
+        <div style="display: flex; gap: 5px;">
+            <input id="chat-input" placeholder="Message..." style="flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 6px; font-size: 12px; outline: none;">
+            <button onclick="envoyerMessage()" style="padding: 4px 12px; margin: 0; font-size: 12px; border-radius: 6px; background:#52ffe0; color:#000;">Envoyer</button>
+        </div>
+    </div>
+</div>
+
+<div id="comet">☄️</div>
+
+<div id="rj-modal" class="merchant-modal">
+    <h3 style="color:#fbbf24; margin:0 0 10px 0;">👑 Magasin Royal Jelly (Permanent)</h3>
+    <div style="font-size:11px; margin-bottom:10px; color:#ddd;">Les bonus achetés ici durent indéfiniment.</div>
+    <button onclick="buyRJUpgrade('clic')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">🎯 Multiplicateur Clics +1x (Coût: 5 RJ)</button>
+    <button onclick="buyRJUpgrade('drone')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">🤖 Multiplicateur Drones +1x (Coût: 8 RJ)</button>
+    <button onclick="buyRJUpgrade('reduction')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">📉 -10% Coût des Outils Mondes Alternatifs (Coût: 12 RJ)</button>
+    <button onclick="buyRJUpgrade('speed')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">⚡ Hyper-Fréquence Drones +25% (Coût: 15 RJ)</button>
+    <button onclick="toggleModal('rj-modal', false)" style="background:#ff4444; color:white; margin-top:10px; width:100%; padding:6px;">Fermer</button>
+</div>
+
+<div id="quests-modal" class="merchant-modal" style="background: rgba(15,25,50,0.95); border-color:#52ffe0;">
+    <h3 style="color:#52ffe0; margin:0 0 10px 0;">📋 Centre des Missions</h3>
+    <div id="quests-container"></div>
+    <button onclick="toggleModal('quests-modal', false)" style="background:#ff4444; color:white; margin-top:10px; width:100%; padding:8px;">Fermer</button>
+</div>
+
+<div id="secret-merchant-btn" onclick="openMerchantShop()">🐻</div>
+<div id="merchant-shop-modal" class="merchant-modal">
+    <h3 style="color:#fbbf24; margin:0 0 5px 0;">🍯 Boutique Éphémère de l'Ours</h3>
+    <div id="merchant-items-container">
+        <button onclick="acheterProduitMarchand('rj', 5000)" style="background:white; color:black; font-size:11px; width:100%; margin:3px 0;">🍯 Acheter 1 RJ Coin (Coût: 5,000 Crédits)</button>
+        <button onclick="acheterProduitMarchand('shard', 12000)" style="background:white; color:black; font-size:11px; width:100%; margin:3px 0;">✨ Acheter 1 Shard Éclat (Coût: 12,000 Crédits)</button>
+    </div>
+    <button onclick="closeMerchantShop()" style="background:#ff4444; color:white; margin-top:10px; width:100%; padding:8px;">Fermer</button>
+</div>
+
+<div id="panel-owner" class="roblox-panel">
+    <div id="header-owner" class="admin-header"><span>👑 GALAXY MINER - OWNER PANEL</span><button class="close-admin-btn" onclick="togglePanel('owner')">✕</button></div>
+    <div class="admin-body">
+        <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒 VERROUILLÉ] Rentrer la clé ROOT.</div></div>
+        <div class="input-area">
+            <span class="prefix" style="color:#ff4444;">🔑</span>
+            <input type="password" id="input-owner" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
+            <button id="btn-action-owner" class="panel-btn" onclick="loginPanel('owner')">Connexion</button>
+        </div>
+    </div>
+</div>
+
+<div id="panel-admin" class="roblox-panel">
+    <div id="header-admin" class="admin-header"><span>🛡️ GALAXY MINER - ADMIN PANEL</span><button class="close-admin-btn" onclick="togglePanel('admin')">✕</button></div>
+    <div class="admin-body">
+        <div class="command-log" id="log-admin"><div style="color: #4488ff;">[🔒 VERROUILLÉ] Rentrer la clé MODÉRATION.</div></div>
+        <div class="input-area">
+            <span class="prefix" style="color:#4488ff;">🔑</span>
+            <input type="password" id="input-admin" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
+            <button id="btn-action-admin" class="panel-btn" onclick="loginPanel('admin')">Connexion</button>
+        </div>
+    </div>
+</div>
+
 <script>
 let supportChoisi = "pc";
 let currentGalaxy = "normale";
@@ -139,6 +428,22 @@ function buyPrestigeUpgrade(id) {
 }
 function doPrestige() {
     if(s.credits >= 500000) { s.shards += Math.floor(Math.sqrt(s.credits / 500000)); s.credits = 0; s.zone = 1; s.power = 1; s.drones = 0; s.scanner = 1; s.pCost = 20; s.dCost = 70; s.sCost = 120; s.prestige++; ui(); save(); }
+}
+
+function openMerchantShop() { toggleModal('merchant-shop-modal', true); }
+function closeMerchantShop() { toggleModal('merchant-shop-modal', false); }
+
+function acheterProduitMarchand(type, cout) {
+    let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
+    if(s[currentAttr] >= cout) {
+        s[currentAttr] -= cout;
+        if(type === 'rj') s.rjCoins++;
+        if(type === 'shard') s.shards++;
+        alert("🛒 Achat effectué chez l'Ours !");
+        ui(); save();
+    } else {
+        alert("❌ Fonds insuffisants !");
+    }
 }
 
 function toggleModal(id, open) {
@@ -303,14 +608,13 @@ socket.on("recevoirMessageGlobal", (data) => {
 });
 
 // --- RÉCEPTION DES ACTIONS DU SERVEUR ---
-
 socket.on("retourCommande", (data) => {
     let actifLog = (ownerConnected && document.getElementById("panel-owner").style.display === "block") ? "log-owner" : "log-admin";
     const log = document.getElementById(actifLog);
     if(log) {
         const div = document.createElement("div");
         div.style.color = "#ffff55";
-        div.style.whiteSpace = "pre-line"; // Gère les retours à la ligne propres pour l'aide
+        div.style.whiteSpace = "pre-line";
         div.textContent = data.texte;
         log.appendChild(div); log.scrollTop = log.scrollHeight;
     }
@@ -332,10 +636,8 @@ socket.on("recevoirSpawnShop", () => {
 socket.on("effetVisuelCumulable", (data) => {
     let monPseudo = document.getElementById("player").value.trim().toLowerCase();
     
-    // Si la commande a une cible et que ce n'est pas moi, on ignore
     if (data.cible && data.cible.toLowerCase() !== monPseudo) return;
 
-    // Application ou cumul des filtres et animations CSS
     if (data.action === "seisme") {
         document.body.classList.add("seisme-active");
     } else if (data.action === "blackout") {
@@ -372,3 +674,5 @@ document.getElementById("input-admin").addEventListener("keydown", function(even
 
 socket.on("gameVersion", (version) => { console.log("Version du serveur connectée :", version); });
 </script>
+</body>
+</html>
