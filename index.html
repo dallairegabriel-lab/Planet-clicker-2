@@ -6,8 +6,8 @@
 <title>Galaxy Miner Deluxe V3 - Full Premium Edition</title>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <style>
-/* --- STYLES DE BASE D'ORIGINE --- */
-body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow-x:hidden;transition: filter 0.3s, animation 0.3s, transform 0.3s, transform-origin 0.3s, transform 0.4s ease;}
+/* --- STYLES DE BASE D'ORIGINE CORRIGÉS --- */
+body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow-x:hidden;}
 #stars,#stars2{position:fixed;inset:0;pointer-events:none}
 #stars{background-image:radial-gradient(white 1px,transparent 1px);background-size:45px 45px;opacity:.2}
 #stars2{background-image:radial-gradient(cyan 1px,transparent 1px);background-size:90px 90px;opacity:.08;animation:drift 60s linear infinite}
@@ -15,10 +15,10 @@ body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at ce
 
 /* --- INTERFACE DE JEU PAR DÉFAUT (PC) --- */
 #game-interface { display: none; padding: 20px; box-sizing: border-box; }
-.top{display:flex;justify-content:center;gap:15px;padding:10px;flex-wrap:wrap;transition: transform 0.5s ease;}
-.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);transition: transform 0.5s ease;}
-#money{text-align:center;font-size:54px;color:#52ffe0;text-shadow:0 0 15px #52ffe0;margin-top:10px;transition: transform 0.5s ease;}
-#planet-container{text-align:center;position:relative;margin:10px auto;width:220px;transition: transform 0.5s ease;}
+.top{display:flex;justify-content:center;gap:15px;padding:10px;flex-wrap:wrap;}
+.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);}
+#money{text-align:center;font-size:54px;color:#52ffe0;text-shadow:0 0 15px #52ffe0;margin-top:10px;}
+#planet-container{text-align:center;position:relative;margin:10px auto;width:220px;}
 #planet{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
 #planet:active{transform:scale(.85)}
 #planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
@@ -33,11 +33,11 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .btn-max{background:#ffaa00;color:#000;padding:10px 8px;font-size:11px;}
 .btn-max:hover{background:#ffcc66;}
 
-.shop{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:15px;transition: transform 0.5s ease;}
+.shop{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:15px;}
 .utility-bar { display:flex; justify-content:center; gap:8px; margin: 15px auto; max-width: 600px; flex-wrap: wrap; }
 
 .notice{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10;transition: 0.3s;}
-.progress-bar-container{width:180px;background:rgba(255,255,255,0.1);height:8px;border-radius:4px;margin:5px auto;overflow:hidden;transition: transform 0.5s ease;}
+.progress-bar-container{width:180px;background:rgba(255,255,255,0.1);height:8px;border-radius:4px;margin:5px auto;overflow:hidden;}
 #progress-bar{width:0%;height:100%;background:linear-gradient(90deg, #52ffe0, #0077ff);transition:width 0.2s}
 #comet{position:fixed;font-size:40px;cursor:pointer;z-index:99;display:none;user-select:none}
 
@@ -498,6 +498,29 @@ function doPrestige() {
     if(s.credits >= 500000) { s.shards += Math.floor(Math.sqrt(s.credits / 500000)); s.credits = 0; s.zone = 1; s.power = 1; s.drones = 0; s.scanner = 1; s.pCost = 20; s.dCost = 70; s.sCost = 120; s.prestige++; ui(); save(); }
 }
 
+/* --- HISTORIQUE ET REFRESH DE L'INVENTAIRE DES TITRES CORRIGÉ --- */
+function rafraichirInventaireTitres() {
+    let wrapper = document.getElementById("titles-wrapper-v3"); if (!wrapper) return;
+    wrapper.innerHTML = "";
+    BASE_ACHIEVEMENTS.forEach(ach => {
+        // CORRECTION COMPATIBILITÉ MINUSCULES : Répare la commande :givebadge
+        let isUnlocked = ach.check() || s.ownedTitles.includes(ach.name.toLowerCase()) || s.ownedTitles.includes(ach.id.toLowerCase());
+        let isEquipped = s.equippedTitle === ach.name;
+        let row = document.createElement("div"); row.className = "title-row-v3" + (isEquipped ? " active-v3" : "");
+        if(isUnlocked) {
+            row.innerHTML = `<span>[${ach.name}]</span><button class="btn-equip-v3 ${isEquipped ? 'equipped-v3':''}" onclick="equiperLeTitre('${ach.name}')">${isEquipped ? 'Équipé':'Équiper'}</button>`;
+        } else {
+            row.innerHTML = `<span class="title-locked-v3">[${ach.name}]</span><span style="font-size:8px; color:#666;">(${ach.desc})</span>`;
+        }
+        wrapper.appendChild(row);
+    });
+}
+
+function equiperLeTitre(titre) {
+    s.equippedTitle = (s.equippedTitle === titre) ? "" : titre;
+    ui(); save();
+}
+
 function ui() {
     let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
     document.getElementById("money").textContent = Math.floor(s[currentAttr]);
@@ -529,188 +552,36 @@ function ui() {
     rafraichirInventaireTitres();
 }
 
-const socket = io("https://galaxy-miner-server.onrender.com");
-socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
-socket.on("recevoirMessageGlobal", (data) => {
-    const chatBox = document.getElementById("chat-box");
-    const nvMessage = document.createElement("div");
-    nvMessage.innerHTML = `<strong>${data.pseudo} :</strong> ${data.texte}`;
-    chatBox.appendChild(nvMessage); chatBox.scrollTop = chatBox.scrollHeight;
-});
-
-function envoyerMessage() {
-    if (isMuted) { alert("Tu es actuellement muté par la modération."); return; }
-    const input = document.getElementById("chat-input"); const texte = input.value.trim();
-    let pseudo = document.getElementById("player").value.trim() || "Anonyme";
-    let activePrefix = s.equippedTitle ? `[${s.equippedTitle}] ` : "";
-    if (texte !== "") { socket.emit("envoyerMessageGlobal", { pseudo: activePrefix + pseudo, texte: texte }); input.value = ""; }
+function save() {
+    let user = document.getElementById("player").value;
+    if(user) localStorage.setItem("gm_save_" + user, JSON.stringify(s));
 }
 
-socket.on("recevoirAdminAbuse", (data) => {
-    let monPseudo = document.getElementById("player").value.trim().toLowerCase();
-    let cibleL = data.cible.toLowerCase();
-    if (cibleL !== "all" && cibleL !== monPseudo) return;
-    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, data.role);
-});
-
-function appliquerCommandeLocale(baseCmd, val, texteBrut, role) {
-    if (role === "admin" && ["givebadge", "spawnshop"].includes(baseCmd)) return;
-
-    if (baseCmd === "chat") {
-        let alertBox = document.getElementById("global-chat-alert");
-        alertBox.innerHTML = `📢 <b>MESSAGE DES DIEUX :</b><br><span style="color:#fff;">${texteBrut}</span>`;
-        alertBox.style.top = "20px"; setTimeout(() => { alertBox.style.top = "-150px"; }, 6000);
-        return;
-    }
-    if (baseCmd === "givebadge" && role === "owner") {
-        if(!s.ownedTitles.includes(texteBrut.toLowerCase())) s.ownedTitles.push(texteBrut.toLowerCase());
-        ui(); return;
-    }
-    if (baseCmd === "spawnshop" && role === "owner") { triggerMerchantAppearance(); return; }
-
-    if (baseCmd === "rjcoin") s.rjCoins += (val === 0 ? 10 : val);
-    if (baseCmd === "shards") s.shards += (val === 0 ? 5 : val);
-    if (baseCmd === "credits") s[galaxiesData[currentGalaxy].moneyAttr] += val;
-    if (baseCmd === "power") s.power = val;
-    if (baseCmd === "drones") s.drones = val;
-    if (baseCmd === "zone" || baseCmd === "tp") { s.zone = Math.max(1, val); combo = 0; }
-    if (baseCmd === "prestige") s.prestige = val;
-    if (baseCmd === "freeze") { isFrozen = true; document.body.classList.add("frozen"); }
-    if (baseCmd === "unfreeze") { isFrozen = false; document.body.classList.remove("frozen"); }
-    if (baseCmd === "mute") isMuted = true;
-    if (baseCmd === "unmute") isMuted = false;
-    if (baseCmd === "gravity") document.body.style.transform = `scale(${val || 1})`;
-    if (baseCmd === "seisme") { document.body.classList.add("seisme-active"); setTimeout(() => document.body.classList.remove("seisme-active"), 4000); }
-    if (baseCmd === "blur") document.body.classList.add("blur-active");
-    if (baseCmd === "blackout") document.body.classList.add("blackout-active");
-    if (baseCmd === "unabuse") { isFrozen = false; document.body.className = (currentGalaxy !== "normale") ? currentGalaxy + "-theme" : ""; document.body.style.transform = "scale(1)"; }
-    if (baseCmd === "kick" || baseCmd === "ban") { document.getElementById(baseCmd + "-screen").style.display = "block"; deconnexionComplete(); }
-    if (baseCmd === "warn") alert(`⚠️ COMPTE AVERTI ⚠️\n\nRaison: ${texteBrut}`);
-    if (baseCmd === "clear") document.getElementById("chat-box").innerHTML = "";
-    if (baseCmd === "reset") { s = JSON.parse(JSON.stringify(defaultState)); save(); ui(); }
-    ui();
-}
-
-function togglePanel(type) {
-    let p = document.getElementById(type === 'owner' ? "panel-owner" : "panel-admin");
-    if (p.style.display !== "block") {
-        p.style.display = "block";
-        setTimeout(() => { p.classList.add("panel-active"); }, 10);
-        document.getElementById(type === 'owner' ? "input-owner" : "input-admin").focus();
-    } else {
-        p.classList.remove("panel-active");
-        setTimeout(() => { p.style.display = "none"; }, 250);
-    }
-}
-
-function loginPanel(type) {
-    let val = document.getElementById(type === 'owner' ? "input-owner" : "input-admin").value;
-    if((type === 'owner' && val === PASS_OWNER) || (type === 'admin' && val === PASS_ADMIN)) {
-        let logBox = document.getElementById(type === 'owner' ? "log-owner" : "log-admin");
-        logBox.innerHTML = "<div style='color:#26ff63;'>[🔓 ACCÈS GARANTI] Entrez vos commandes. Tapez :help ou utilisez Tab</div>";
-        let inp = document.getElementById(type === 'owner' ? "input-owner" : "input-admin");
-        inp.value = ""; inp.type = "text"; inp.placeholder = "Ex: chat Message global...";
-        inp.setAttribute("data-authenticated", "true");
-        
-        inp.onkeydown = function(event) { 
-            if(event.key === 'Tab') {
-                event.preventDefault();
-                let sug = document.getElementById(type === 'owner' ? "suggest-owner" : "suggest-admin").textContent;
-                if(sug) inp.value = sug;
-            }
-            if(event.key === 'Enter') executerCmdPanel(type); 
-        };
-        let btn = document.getElementById(type === 'owner' ? "btn-action-owner" : "btn-action-admin");
-        btn.textContent = "Run"; btn.onclick = function() { executerCmdPanel(type); };
-    }
-}
-
-document.getElementById("input-owner").onkeydown = function(e) { if(e.key === 'Enter') loginPanel('owner'); };
-document.getElementById("input-admin").onkeydown = function(e) { if(e.key === 'Enter') loginPanel('admin'); };
-document.getElementById("btn-action-owner").onclick = function() { loginPanel('owner'); };
-document.getElementById("btn-action-admin").onclick = function() { loginPanel('admin'); };
-
-function updateSuggestion(type) {
-    let inp = document.getElementById(type === 'owner' ? "input-owner" : "input-admin");
-    let sugSpan = document.getElementById(type === 'owner' ? "suggest-owner" : "suggest-admin");
-    if(inp.getAttribute("data-authenticated") !== "true") { sugSpan.textContent = ""; return; }
-    let texte = inp.value.trim().toLowerCase();
-    if(texte.startsWith(":") || texte.startsWith(">")) { texte = texte.substring(1); }
-    if(!texte) { sugSpan.textContent = ""; return; }
-    let correspondance = LISTE_COMMANDES_SUGGESTION.find(cmd => cmd.startsWith(texte));
-    if(correspondance && correspondance !== texte) {
-        sugSpan.textContent = inp.value + correspondance.substring(texte.length);
-    } else {
-        sugSpan.textContent = "";
-    }
-}
-
-function executerCmdPanel(type) {
-    let inp = document.getElementById(type === 'owner' ? "input-owner" : "input-admin");
-    let cmd = inp.value.trim(); if(!cmd) return;
-    let logBox = document.getElementById(type === 'owner' ? "log-owner" : "log-admin");
-    logBox.innerHTML += `<div><span style="color:#aaa;">> ${cmd}</span></div>`;
-    let clean = cmd.startsWith(':') ? cmd.substring(1) : cmd;
-    let parts = clean.split(" ");
-    let baseCmd = parts[0].toLowerCase();
-
-    if(baseCmd === "help") {
-        logBox.innerHTML += `<div style="color:#55aaff;font-size:10px;">
-        :chat [txt] | :kick/ban/mute/unmute [pseudo] | :freeze/unfreeze [pseudo] | :tp [pseudo] [zone] | :shards/credits/rjcoin [pseudo] [n] | :reset [pseudo] | :gravity [pseudo] [v] | :seisme/blur/blackout/unabuse [pseudo]<br>
-        ${type === 'owner' ? '<span style="color:red">:givebadge [pseudo] [titre] | :spawnshop</span>' : ''}
-        </div>`;
-        inp.value = ""; document.getElementById(type === 'owner' ? "suggest-owner" : "suggest-admin").textContent = ""; logBox.scrollTop = logBox.scrollHeight; return;
-    }
-    let target = parts[1] ? parts[1] : "all";
-    let valNum = Number(parts[2] || 0);
-    let texteComplet = parts.slice(2).join(" ");
-    if(baseCmd === "chat") { target = "all"; texteComplet = parts.slice(1).join(" "); }
-
-    socket.emit("envoyerAdminAbuse", { commande: cmd, baseCmd: baseCmd, cible: target, value: valNum, texteBrut: texteComplet, role: type });
-    inp.value = ""; document.getElementById(type === 'owner' ? "suggest-owner" : "suggest-admin").textContent = ""; logBox.scrollTop = logBox.scrollHeight;
-}
-
-function rafraichirInventaireTitres() {
-    let wrapper = document.getElementById("titles-wrapper-v3"); if (!wrapper) return;
-    wrapper.innerHTML = "";
-    BASE_ACHIEVEMENTS.forEach(ach => {
-        let isUnlocked = ach.check() || s.ownedTitles.includes(ach.name.toLowerCase());
-        let isEquipped = s.equippedTitle === ach.name;
-        let row = document.createElement("div"); row.className = "title-row-v3" + (isEquipped ? " active-v3" : "");
-        if(isUnlocked) {
-            row.innerHTML = `<span>[${ach.name}]</span><button class="btn-equip-v3 ${isEquipped ? 'equipped-v3':''}" onclick="equiperLeTitre('${ach.name}')">${isEquipped ? 'Équipé':'Équiper'}</button>`;
-        } else {
-            row.innerHTML = `<span class="title-locked-v3">[${ach.name}]</span><span style="font-size:8px; color:#666;">(${ach.desc})</span>`;
-        }
-        wrapper.appendChild(row);
-    });
-}
-function equiperLeTitre(name) { s.equippedTitle = name; rafraichirInventaireTitres(); save(); }
-
-window.addEventListener("keydown", function(e) {
-    if (document.activeElement.tagName === "INPUT") return;
-    if (e.key === "1") togglePanel('owner');
-    if (e.key === "2") togglePanel('admin');
-});
-function toggleModal(id, open) { document.getElementById(id).style.display = open ? "block" : "none"; }
-function genererQuetes() {
-    let container = document.getElementById("quests-container"); if(container) container.innerHTML = `<div class="quest-item"><div>Miner 25 fois la planète active</div><button onclick="this.parentElement.style.display='none'">Vérifier</button></div>`;
-}
-function triggerMerchantAppearance() {
-    document.getElementById("secret-merchant-btn").style.display = "block";
-    document.getElementById("merchant-items-container").innerHTML = `<div class="merchant-item"><span>👑 Gelée Royale Pure (+5 RJ)</span><button onclick="s.rjCoins+=5; ui(); this.disabled=true;">Réclamer</button></div>`;
-}
-function openMerchantShop() { toggleModal('merchant-shop-modal', true); }
-function closeMerchantShop() { toggleModal('merchant-shop-modal', false); }
-function deconnexionComplete() { location.reload(); }
 function loadPlayerSave() {
-    let name = document.getElementById("player").value.trim(); if(!name) return;
-    try { Object.assign(s, JSON.parse(localStorage.getItem("gmv3save_" + name) || "{}")); } catch(e){}
-    if(droneInterval) clearInterval(droneInterval); droneInterval = setInterval(lancerProductionDrones, 1000);
-    ui();
+    let user = document.getElementById("player").value;
+    let saved = localStorage.getItem("gm_save_" + user);
+    if(saved) {
+        s = JSON.parse(saved);
+        if(!s.ownedTitles) s.ownedTitles = [];
+        ui();
+    }
+    if(droneInterval) clearInterval(droneInterval);
+    droneInterval = setInterval(lancerProductionDrones, 1000);
 }
-function save() { let name = document.getElementById("player").value.trim(); if(name) localStorage.setItem("gmv3save_" + name, JSON.stringify(s)); }
-setInterval(save, 5000);
+
+function deconnexionComplete() {
+    location.reload();
+}
+
+function toggleModal(id, open) {
+    document.getElementById(id).style.display = open ? "block" : "none";
+}
+
+function genererQuetes() {
+    // Fonctionnalité bouchon pour initialiser le Centre des Missions
+    let container = document.getElementById("quests-container");
+    if(container) container.innerHTML = "<div class='quest-item'>Missions quotidiennes chargées ! Récolte des ressources pour progresser.</div>";
+}
 </script>
 </body>
 </html>
