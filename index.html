@@ -529,7 +529,7 @@ function ui() {
     rafraichirInventaireTitres();
 }
 
-const socket = io("http://127.0.0.1:3000");
+const socket = io("https://galaxy-miner-server.onrender.com");
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
 socket.on("recevoirMessageGlobal", (data) => {
     const chatBox = document.getElementById("chat-box");
