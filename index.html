@@ -60,21 +60,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .crystal-theme { background: radial-gradient(circle at center, #1e1b4b, #4c1d95 80%) !important; }
 .plasma-theme { background: radial-gradient(circle at center, #450a0a, #7f1d1d 80%) !important; }
 
-/* PANELS DEPLAÇABLES */
-.roblox-panel { display: none; position: fixed; top: 150px; left: 150px; width: 90%; max-width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif; color: #ffffff; box-shadow: 0px 10px 30px rgba(0,0,0,0.7); overflow: hidden; z-index: 100000; user-select: none; }
-#panel-owner { background-color: rgba(45, 15, 15, 0.8); border: 1px solid rgba(255, 68, 68, 0.3); }
-#panel-admin { background-color: rgba(15, 30, 45, 0.8); border: 1px solid rgba(68, 136, 255, 0.3); }
-.admin-header { background-color: rgba(20, 20, 20, 0.9); padding: 12px; font-weight: 600; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; cursor: move; }
-.close-admin-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 16px; cursor: pointer; font-weight: bold; padding: 0 5px; margin: 0; }
-.admin-body { padding: 12px; }
-.command-log { height: 220px; background-color: rgba(0, 0, 0, 0.6); border-radius: 4px; padding: 10px; font-size: 12px; font-family: 'Courier New', monospace; overflow-y: auto; margin-bottom: 12px; }
-#log-owner { color: #ff5555; } #log-admin { color: #55aaff; }
-.input-area { display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; padding: 6px 10px; }
-.prefix { font-family: monospace; margin-right: 8px; font-weight: bold; font-size: 14px; }
-.admin-input-text { flex: 1; background: none; border: none; color: #ffffff; font-size: 13px; outline: none; }
-.panel-btn { background-color: rgba(60, 60, 60, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 4px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; }
-
-/* EFFETS VISUELS */
+/* EFFETS VISUELS PANNEAUX ADM */
 .frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
 .seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
 @keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
@@ -111,6 +97,96 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .btn-equip-v3.equipped-v3 { background: #26ff63; }
 .title-locked-v3 { color: #555; font-style: italic; }
 .quest-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; margin: 6px 0; text-align: left; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+/* --- PANELS DESIGN ROBLOX COMMAND BAR ULTRA-PREMIUM --- */
+.roblox-panel { 
+    display: none; 
+    position: fixed; 
+    bottom: -120px; 
+    left: 50%;
+    transform: translateX(-50%); 
+    width: 90%; 
+    max-width: 620px; 
+    background: rgba(10, 10, 10, 0.75);
+    backdrop-filter: blur(15px); 
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 6px; 
+    font-family: 'Consolas', 'Courier New', monospace; 
+    color: #ffffff; 
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7); 
+    z-index: 100000; 
+    user-select: none;
+    padding: 6px;
+    box-sizing: border-box;
+    transition: bottom 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+}
+.roblox-panel.panel-active { bottom: 30px; }
+#panel-owner { border-bottom: 3px solid #ef4444; }
+#panel-admin { border-bottom: 3px solid #3b82f6; }
+
+.command-log { 
+    height: 90px; 
+    background: rgba(0, 0, 0, 0.4); 
+    border-radius: 4px; 
+    padding: 8px; 
+    font-size: 11.5px; 
+    overflow-y: auto; 
+    margin-bottom: 6px; 
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    line-height: 1.4;
+}
+#log-owner { color: #fca5a5; } 
+#log-admin { color: #93c5fd; }
+
+.input-container-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.9); 
+    border: 1px solid rgba(255, 255, 255, 0.08); 
+    border-radius: 4px; 
+    padding: 8px 12px;
+    height: 38px;
+    box-sizing: border-box;
+}
+.rank-badge {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-right: 10px;
+    letter-spacing: 0.5px;
+}
+#panel-owner .rank-badge { background: rgba(239, 64, 64, 0.2); color: #f87171; border: 1px solid rgba(239, 64, 64, 0.4); }
+#panel-admin .rank-badge { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+.prefix { margin-right: 6px; font-weight: bold; font-size: 13px; color: rgba(255, 255, 255, 0.3); }
+
+.admin-input-text { 
+    flex: 1; 
+    background: transparent; 
+    border: none; 
+    color: #ffffff; 
+    font-size: 13px; 
+    outline: none; 
+    font-family: 'Consolas', monospace;
+    z-index: 2;
+    position: relative;
+}
+.admin-input-text::placeholder { color: rgba(255, 255, 255, 0.2); }
+
+.autocomplete-suggestion {
+    position: absolute;
+    left: 82px; 
+    color: rgba(255, 255, 255, 0.25);
+    font-size: 13px;
+    font-family: 'Consolas', monospace;
+    pointer-events: none;
+    z-index: 1;
+    white-space: pre;
+}
+.panel-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 4px 10px; font-size: 10px; cursor: pointer; border-radius: 3px; font-weight: bold; text-transform: uppercase; z-index: 3; margin-left: 5px; }
+.panel-btn:hover { background: rgba(255, 255, 255, 0.15); }
 </style>
 </head>
 <body>
@@ -260,25 +336,27 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 </div>
 
 <div id="panel-owner" class="roblox-panel">
-    <div id="header-owner" class="admin-header"><span>👑 GALAXY MINER - OWNER PANEL</span><button class="close-admin-btn" onclick="togglePanel('owner')">✕</button></div>
     <div class="admin-body">
-        <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒 VERROUILLÉ] Rentrer la clé ROOT.</div></div>
-        <div class="input-area">
-            <span class="prefix" style="color:#ff4444;">🔑</span>
-            <input type="password" id="input-owner" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
-            <button id="btn-action-owner" class="panel-btn">Connexion</button>
+        <div class="command-log" id="log-owner"><div>[SYSTEM] Enter ROOT access key to unlock console...</div></div>
+        <div class="input-container-wrapper">
+            <span class="rank-badge">Owner</span>
+            <span class="prefix">></span>
+            <input type="password" id="input-owner" class="admin-input-text" placeholder="Password required..." autocomplete="off" oninput="updateSuggestion('owner')">
+            <span id="suggest-owner" class="autocomplete-suggestion"></span>
+            <button id="btn-action-owner" class="panel-btn">Enter</button>
         </div>
     </div>
 </div>
 
 <div id="panel-admin" class="roblox-panel">
-    <div id="header-admin" class="admin-header"><span>🛡️ GALAXY MINER - ADMIN PANEL</span><button class="close-admin-btn" onclick="togglePanel('admin')">✕</button></div>
     <div class="admin-body">
-        <div class="command-log" id="log-admin"><div style="color: #4488ff;">[🔒 VERROUILLÉ] Rentrer la clé MODÉRATION.</div></div>
-        <div class="input-area">
-            <span class="prefix" style="color:#4488ff;">🔑</span>
-            <input type="password" id="input-admin" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
-            <button id="btn-action-admin" class="panel-btn">Connexion</button>
+        <div class="command-log" id="log-admin"><div>[STAFF] Enter Moderator token to initialize...</div></div>
+        <div class="input-container-wrapper">
+            <span class="rank-badge">Admin</span>
+            <span class="prefix">:</span>
+            <input type="password" id="input-admin" class="admin-input-text" placeholder="Token required..." autocomplete="off" oninput="updateSuggestion('admin')">
+            <span id="suggest-admin" class="autocomplete-suggestion"></span>
+            <button id="btn-action-admin" class="panel-btn">Enter</button>
         </div>
     </div>
 </div>
@@ -288,6 +366,8 @@ let supportChoisi = "pc";
 let currentGalaxy = "normale";
 const PASS_OWNER = "admin123";
 const PASS_ADMIN = "admin321";
+
+const LISTE_COMMANDES_SUGGESTION = ["help", "chat", "kick", "ban", "mute", "unmute", "freeze", "unfreeze", "tp", "shards", "credits", "rjcoin", "reset", "gravity", "seisme", "blur", "blackout", "unabuse", "givebadge", "spawnshop", "clear"];
 
 const BASE_ACHIEVEMENTS = [
     { id: "cadet", name: "Cadet", desc: "10 Clics", check: () => s.totalClicks >= 10 },
@@ -449,8 +529,7 @@ function ui() {
     rafraichirInventaireTitres();
 }
 
-// CHANGER ADRESSE ICI SELON TON HEBERGEMENT RENDER
-const socket = io("https://galaxy-miner-server.onrender.com");
+const socket = io("http://localhost:3000");
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
 socket.on("recevoirMessageGlobal", (data) => {
     const chatBox = document.getElementById("chat-box");
@@ -489,7 +568,6 @@ function appliquerCommandeLocale(baseCmd, val, texteBrut, role) {
     }
     if (baseCmd === "spawnshop" && role === "owner") { triggerMerchantAppearance(); return; }
 
-    // Traitement des commandes classiques et NOUVELLES commandes
     if (baseCmd === "rjcoin") s.rjCoins += (val === 0 ? 10 : val);
     if (baseCmd === "shards") s.shards += (val === 0 ? 5 : val);
     if (baseCmd === "credits") s[galaxiesData[currentGalaxy].moneyAttr] += val;
@@ -515,31 +593,57 @@ function appliquerCommandeLocale(baseCmd, val, texteBrut, role) {
 
 function togglePanel(type) {
     let p = document.getElementById(type === 'owner' ? "panel-owner" : "panel-admin");
-    p.style.display = (p.style.display === "block") ? "none" : "block";
-    if(p.style.display === "block") document.getElementById(type === 'owner' ? "input-owner" : "input-admin").focus();
+    if (p.style.display !== "block") {
+        p.style.display = "block";
+        setTimeout(() => { p.classList.add("panel-active"); }, 10);
+        document.getElementById(type === 'owner' ? "input-owner" : "input-admin").focus();
+    } else {
+        p.classList.remove("panel-active");
+        setTimeout(() => { p.style.display = "none"; }, 250);
+    }
 }
 
 function loginPanel(type) {
     let val = document.getElementById(type === 'owner' ? "input-owner" : "input-admin").value;
     if((type === 'owner' && val === PASS_OWNER) || (type === 'admin' && val === PASS_ADMIN)) {
         let logBox = document.getElementById(type === 'owner' ? "log-owner" : "log-admin");
-        logBox.innerHTML = "<div style='color:#26ff63;'>[🔓 ACCÈS VALIDE] Appuyez sur Entrée pour exécuter vos commandes. (:help)</div>";
+        logBox.innerHTML = "<div style='color:#26ff63;'>[🔓 ACCÈS GARANTI] Entrez vos commandes. Tapez :help ou utilisez Tab</div>";
         let inp = document.getElementById(type === 'owner' ? "input-owner" : "input-admin");
-        inp.value = ""; inp.type = "text"; inp.placeholder = "Entrez une commande... (:help)";
+        inp.value = ""; inp.type = "text"; inp.placeholder = "Ex: chat Message global...";
+        inp.setAttribute("data-authenticated", "true");
         
-        // Liaison de la touche Entrée pour l'envoi de commandes dans le panel
-        inp.onkeydown = function(event) { if(event.key === 'Enter') executerCmdPanel(type); };
-        
+        inp.onkeydown = function(event) { 
+            if(event.key === 'Tab') {
+                event.preventDefault();
+                let sug = document.getElementById(type === 'owner' ? "suggest-owner" : "suggest-admin").textContent;
+                if(sug) inp.value = sug;
+            }
+            if(event.key === 'Enter') executerCmdPanel(type); 
+        };
         let btn = document.getElementById(type === 'owner' ? "btn-action-owner" : "btn-action-admin");
-        btn.textContent = "Exécuter"; btn.onclick = function() { executerCmdPanel(type); };
+        btn.textContent = "Run"; btn.onclick = function() { executerCmdPanel(type); };
     }
 }
 
-// Initialisation de la touche Entrée pour l'étape de connexion des Panels
 document.getElementById("input-owner").onkeydown = function(e) { if(e.key === 'Enter') loginPanel('owner'); };
 document.getElementById("input-admin").onkeydown = function(e) { if(e.key === 'Enter') loginPanel('admin'); };
 document.getElementById("btn-action-owner").onclick = function() { loginPanel('owner'); };
 document.getElementById("btn-action-admin").onclick = function() { loginPanel('admin'); };
+
+function updateSuggestion(type) {
+    let inp = document.getElementById(type === 'owner' ? "input-owner" : "input-admin");
+    let sugSpan = document.getElementById(type === 'owner' ? "suggest-owner" : "suggest-admin");
+    if(inp.getAttribute("data-authenticated") !== "true") { sugSpan.textContent = ""; return; }
+    let texte = inp.value.trim().toLowerCase();
+    if(texte.startsWith(":") || texte.startsWith(">")) { texte = texte.substring(1); }
+    if(!texte) { sugSpan.textContent = ""; return; }
+    let correspondance = LISTE_COMMANDES_SUGGESTION.find(cmd => cmd.startsWith(texte));
+    if(correspondance && correspondance !== texte) {
+        sugSpan.textContent = inp.value + correspondance.substring(texte.length);
+    } else {
+        sugSpan.textContent = "";
+    }
+}
 
 function executerCmdPanel(type) {
     let inp = document.getElementById(type === 'owner' ? "input-owner" : "input-admin");
@@ -552,11 +656,10 @@ function executerCmdPanel(type) {
 
     if(baseCmd === "help") {
         logBox.innerHTML += `<div style="color:#55aaff;font-size:10px;">
-        <b>--- COMMANDES DISPONIBLES ---</b><br>
-        :chat [texte] | :kick/ban/mute/unmute [pseudo] | :freeze/unfreeze [pseudo] | :tp [pseudo] [zone] | :shards [pseudo] [nbr] | :credits [pseudo] [nbr] | :rjcoin [pseudo] [nbr] | :reset [pseudo] | :gravity [pseudo] [0.5-2] | :seisme/blur/blackout/unabuse [pseudo]<br>
+        :chat [txt] | :kick/ban/mute/unmute [pseudo] | :freeze/unfreeze [pseudo] | :tp [pseudo] [zone] | :shards/credits/rjcoin [pseudo] [n] | :reset [pseudo] | :gravity [pseudo] [v] | :seisme/blur/blackout/unabuse [pseudo]<br>
         ${type === 'owner' ? '<span style="color:red">:givebadge [pseudo] [titre] | :spawnshop</span>' : ''}
         </div>`;
-        inp.value = ""; logBox.scrollTop = logBox.scrollHeight; return;
+        inp.value = ""; document.getElementById(type === 'owner' ? "suggest-owner" : "suggest-admin").textContent = ""; logBox.scrollTop = logBox.scrollHeight; return;
     }
     let target = parts[1] ? parts[1] : "all";
     let valNum = Number(parts[2] || 0);
@@ -564,7 +667,7 @@ function executerCmdPanel(type) {
     if(baseCmd === "chat") { target = "all"; texteComplet = parts.slice(1).join(" "); }
 
     socket.emit("envoyerAdminAbuse", { commande: cmd, baseCmd: baseCmd, cible: target, value: valNum, texteBrut: texteComplet, role: type });
-    inp.value = ""; logBox.scrollTop = logBox.scrollHeight;
+    inp.value = ""; document.getElementById(type === 'owner' ? "suggest-owner" : "suggest-admin").textContent = ""; logBox.scrollTop = logBox.scrollHeight;
 }
 
 function rafraichirInventaireTitres() {
@@ -583,17 +686,6 @@ function rafraichirInventaireTitres() {
     });
 }
 function equiperLeTitre(name) { s.equippedTitle = name; rafraichirInventaireTitres(); save(); }
-
-/* --- MOTEUR DRAG & DROP --- */
-function rendreGlissable(panelId, headerId) {
-    let panel = document.getElementById(panelId); let header = document.getElementById(headerId);
-    let xDiff = 0, yDiff = 0, xAncien = 0, yAncien = 0;
-    header.onmousedown = lancerGlissement;
-    function lancerGlissement(e) { e.preventDefault(); xAncien = e.clientX; yAncien = e.clientY; document.onmouseup = arreterGlissement; document.onmousemove = deplacerElement; }
-    function deplacerElement(e) { e.preventDefault(); xDiff = xAncien - e.clientX; yDiff = yAncien - e.clientY; xAncien = e.clientX; yAncien = e.clientY; panel.style.top = (panel.offsetTop - yDiff) + "px"; panel.style.left = (panel.offsetLeft - xDiff) + "px"; }
-    function arreterGlissement() { document.onmouseup = null; document.onmousemove = null; }
-}
-rendreGlissable("panel-owner", "header-owner"); rendreGlissable("panel-admin", "header-admin");
 
 window.addEventListener("keydown", function(e) {
     if (document.activeElement.tagName === "INPUT") return;
