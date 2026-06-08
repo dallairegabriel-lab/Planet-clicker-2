@@ -6,42 +6,42 @@
 <title>Galaxy Miner Deluxe V3 - Full Premium Edition</title>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <style>
-/* --- STYLES DE BASE D'ORIGINE --- */
-body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow-x:hidden;}
+/* --- STYLES DE BASE ET IMMERSION --- */
+body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow-x:hidden;transition: background 0.5s ease;}
 #stars,#stars2{position:fixed;inset:0;pointer-events:none}
 #stars{background-image:radial-gradient(white 1px,transparent 1px);background-size:45px 45px;opacity:.2}
 #stars2{background-image:radial-gradient(cyan 1px,transparent 1px);background-size:90px 90px;opacity:.08;animation:drift 60s linear infinite}
 @keyframes drift{from{transform:translateY(0)}to{transform:translateY(90px)}}
 
-/* --- INTERFACE DE JEU PAR DÉFAUT (PC) --- */
+/* --- INTERFACE DU JEU --- */
 #game-interface { display: none; padding: 20px; box-sizing: border-box; }
-.top{display:flex;justify-content:center;gap:15px;padding:10px;flex-wrap:wrap;transition: transform 0.5s ease;}
-.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);transition: transform 0.5s ease;}
-#money{text-align:center;font-size:54px;color:#52ffe0;text-shadow:0 0 15px #52ffe0;margin-top:10px;transition: transform 0.5s ease;}
-#planet-container{text-align:center;position:relative;margin:10px auto;width:220px;transition: transform 0.5s ease;}
-#planet{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
+.top{display:flex;justify-content:center;gap:15px;padding:10px;flex-wrap:wrap;}
+.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);box-shadow: 0 4px 15px rgba(0,0,0,0.2);}
+#money{text-align:center;font-size:54px;color:#52ffe0;text-shadow:0 0 15px #52ffe0;margin-top:10px;}
+#planet-container{text-align:center;position:relative;margin:10px auto;width:220px;}
+#planet{font-size:160px;cursor:pointer;transition:transform .08s;user-select:none;display:inline-block}
 #planet:active{transform:scale(.85)}
 #planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
 
-/* Positionnement PC original */
-.mode-pc .left { position: fixed; top: 110px; left: 10px; width: 280px; }
-.mode-pc .right { position: fixed; top: 110px; right: 10px; width: 280px; }
-.mode-pc #ui-chat { position: fixed; bottom: 10px; left: 10px; width: 280px; background: rgba(0,0,0,0.85); z-index: 9999; }
+/* --- DISPOSITION SELON SUPPORT --- */
+.mode-pc .left { position: fixed; top: 110px; left: 10px; width: 290px; }
+.mode-pc .right { position: fixed; top: 110px; right: 10px; width: 290px; }
+.mode-pc #ui-chat { position: fixed; bottom: 10px; left: 10px; width: 290px; background: rgba(0,0,0,0.85); z-index: 9999; }
 
 button{border:none;border-radius:10px;padding:10px 14px;margin:4px;cursor:pointer;font-weight:bold;background:#fff;color:#000;transition:0.2s}
 button:hover{background:#52ffe0;transform:translateY(-2px)}
 .btn-max{background:#ffaa00;color:#000;padding:10px 8px;font-size:11px;}
 .btn-max:hover{background:#ffcc66;}
 
-.shop{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:15px;transition: transform 0.5s ease;}
+.shop{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:15px;}
 .utility-bar { display:flex; justify-content:center; gap:8px; margin: 15px auto; max-width: 600px; flex-wrap: wrap; }
 
-.notice{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10;transition: 0.3s;}
-.progress-bar-container{width:180px;background:rgba(255,255,255,0.1);height:8px;border-radius:4px;margin:5px auto;overflow:hidden;transition: transform 0.5s ease;}
+.notice{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10;}
+.progress-bar-container{width:180px;background:rgba(255,255,255,0.1);height:8px;border-radius:4px;margin:5px auto;overflow:hidden;}
 #progress-bar{width:0%;height:100%;background:linear-gradient(90deg, #52ffe0, #0077ff);transition:width 0.2s}
 #comet{position:fixed;font-size:40px;cursor:pointer;z-index:99;display:none;user-select:none}
 
-/* 📱 ADAPTATIVE MOBILE */
+/* --- ADAPTATION MOBILE ENTIÈRE --- */
 .mode-mobile { display: flex !important; flex-direction: column; align-items: center; padding: 10px 10px 180px 10px !important; overflow-y: auto; }
 .mode-mobile .pc-only { display: none !important; }
 .mode-mobile .card { width: 100%; max-width: 420px; box-sizing: border-box; margin-bottom: 15px; position: static !important; }
@@ -55,40 +55,41 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .mode-mobile #ui-chat { position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important; background: #090e21 !important; border-top: 3px solid #52ffe0; border-radius: 0 !important; padding: 12px !important; box-sizing: border-box; z-index: 99999; }
 .mode-mobile #chat-box { height: 80px !important; }
 
-/* THEMES GALAXIES */
+/* --- THEMES DES GALAXIES ET MONDES --- */
 .honey-theme { background: radial-gradient(circle at center, #78350f, #451a03 80%) !important; }
 .crystal-theme { background: radial-gradient(circle at center, #1e1b4b, #4c1d95 80%) !important; }
 .plasma-theme { background: radial-gradient(circle at center, #450a0a, #7f1d1d 80%) !important; }
 
-/* EFFETS VISUELS PANNEAUX ADM */
+/* --- EFFETS ADMINISTRATIFS VISUELS --- */
 .frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
 .seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
 @keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
 .blur-active { filter: blur(8px) !important; }
 .blackout-active { filter: brightness(0) !important; background: black !important; }
+.godmode-active { border: 3px dashed #ff0055 !important; box-shadow: 0 0 35px #ff0055 !important; }
 
-/* INTERFACE COMPTES */
+/* --- AUTHENTIFICATION --- */
 #auth-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #15224a, #02040a 80%); z-index: 9999999; display: flex; justify-content: center; align-items: center; }
 .auth-card { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15); width: 340px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center; }
-.auth-card h2 { margin-top: 0; color: #52ffe0; text-shadow: 0 0 15px rgba(82, 255, 224, 0.4); font-size: 26px; }
+.auth-card h2 { margin-top: 0; color: #52ffe0; font-size: 26px; }
 .auth-input-group { margin-bottom: 14px; text-align: left; }
 .auth-input-group label { display: block; font-size: 11px; color: #9de; margin-bottom: 6px; text-transform: uppercase; }
 .auth-input { width: 100%; padding: 12px; box-sizing: border-box; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: #fff; font-size: 14px; outline: none; }
 .device-selector { display: flex; gap: 8px; margin-bottom: 15px; }
 .device-btn { flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 12px; }
-.device-btn.active { background: #52ffe0; color: #02040a; border-color: #52ffe0; }
+.device-btn.active { background: #52ffe0; color: #02040a; }
 .auth-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; }
 .auth-btn-login { background: #52ffe0; color: #02040a; }
-.auth-btn-register { background: #ffaa00; color: #02040a; }
 .auth-toggle { margin-top: 15px; font-size: 12px; color: #9de; cursor: pointer; text-decoration: underline; }
-#ban-screen, #kick-screen { display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; text-align: center; }
+
+#ban-screen, #kick-screen { display: none; position: fixed; inset: 0; color: white; padding: 10% 5%; z-index: 999999; text-align: center; }
 #ban-screen { background: #4a0000; } #kick-screen { background: #222; }
 
-#global-chat-alert { position: fixed; top: -150px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff0055, #ffaa00); color: white; padding: 20px 40px; border-radius: 12px; font-size: 24px; font-weight: bold; z-index: 200000; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 3px solid #fff; box-shadow: 0 0 35px rgba(255,0,85,0.6); }
+#global-chat-alert { position: fixed; top: -150px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff0055, #ffaa00); color: white; padding: 20px 40px; border-radius: 12px; font-size: 24px; font-weight: bold; z-index: 200000; transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 3px solid #fff; box-shadow: 0 0 35px rgba(255,0,85,0.6); }
 
 .merchant-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 340px; background: rgba(20, 25, 40, 0.98); border: 3px solid #fbbf24; border-radius: 12px; padding: 20px; z-index: 100000; box-shadow: 0 0 25px rgba(251,191,36,0.4); text-align: center; color: #fff; }
 #secret-merchant-btn { display: none; position: fixed; bottom: 20px; right: 20px; font-size: 45px; cursor: pointer; z-index: 9999; user-select: none; }
-.titles-container-v3 { max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 4px; margin-top: 5px; }
+.titles-container-v3 { max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 4px; margin-top: 5px; }
 .title-row-v3 { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; font-size: 11px; }
 .title-row-v3.active-v3 { border: 1px solid #52ffe0; background: rgba(82,255,224,0.15); }
 .btn-equip-v3 { background: #52ffe0; color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
@@ -96,16 +97,16 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .title-locked-v3 { color: #555; font-style: italic; }
 .quest-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; margin: 6px 0; text-align: left; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
 
-/* --- PANELS DESIGN ROBLOX COMMAND BAR ULTRA-PREMIUM --- */
+/* --- CONSOLE ROBLOX PANEL --- */
 .roblox-panel { 
     display: none; 
     position: fixed; 
-    bottom: -120px; 
+    bottom: 30px; 
     left: 50%;
     transform: translateX(-50%); 
     width: 90%; 
     max-width: 620px; 
-    background: rgba(10, 10, 10, 0.75);
+    background: rgba(10, 10, 10, 0.85);
     backdrop-filter: blur(15px); 
     -webkit-backdrop-filter: blur(15px);
     border-radius: 6px; 
@@ -113,84 +114,20 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     color: #ffffff; 
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7); 
     z-index: 100000; 
-    user-select: none;
     padding: 6px;
     box-sizing: border-box;
-    transition: bottom 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.15);
 }
-.roblox-panel.panel-active { bottom: 30px; }
 #panel-owner { border-bottom: 3px solid #ef4444; }
 #panel-admin { border-bottom: 3px solid #3b82f6; }
-
-.command-log { 
-    height: 90px; 
-    background: rgba(0, 0, 0, 0.4); 
-    border-radius: 4px; 
-    padding: 8px; 
-    font-size: 11.5px; 
-    overflow-y: auto; 
-    margin-bottom: 6px; 
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    line-height: 1.4;
-}
-#log-owner { color: #fca5a5; } 
-#log-admin { color: #93c5fd; }
-
-.input-container-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.9); 
-    border: 1px solid rgba(255, 255, 255, 0.08); 
-    border-radius: 4px; 
-    padding: 8px 12px;
-    height: 38px;
-    box-sizing: border-box;
-}
-.rank-badge {
-    font-size: 10px;
-    text-transform: uppercase;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 3px;
-    margin-right: 10px;
-    letter-spacing: 0.5px;
-}
+.command-log { height: 95px; background: rgba(0, 0, 0, 0.4); border-radius: 4px; padding: 8px; font-size: 11.5px; overflow-y: auto; margin-bottom: 6px; line-height: 1.4; }
+#log-owner { color: #fca5a5; } #log-admin { color: #93c5fd; }
+.input-container-wrapper { display: flex; align-items: center; background: rgba(0, 0, 0, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 4px; padding: 6px 12px; height: 38px; box-sizing: border-box; }
+.rank-badge { font-size: 10px; text-transform: uppercase; font-weight: bold; padding: 2px 6px; border-radius: 3px; margin-right: 10px; }
 #panel-owner .rank-badge { background: rgba(239, 64, 64, 0.2); color: #f87171; border: 1px solid rgba(239, 64, 64, 0.4); }
 #panel-admin .rank-badge { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
-.prefix { margin-right: 6px; font-weight: bold; font-size: 13px; color: rgba(255, 255, 255, 0.3); }
-
-.input-relative-container {
-    position: relative;
-    flex: 1;
-    height: 100%;
-    display: flex;
-    align-items: center;
-}
-.admin-input-text { 
-    width: 100%; 
-    background: transparent; 
-    border: none; 
-    color: #ffffff; 
-    font-size: 13px; 
-    outline: none; 
-    font-family: 'Consolas', monospace;
-    z-index: 2;
-    position: relative;
-}
-.admin-input-text::placeholder { color: rgba(255, 255, 255, 0.2); }
-
-.autocomplete-suggestion {
-    position: absolute;
-    left: 0; 
-    color: rgba(255, 255, 255, 0.25);
-    font-size: 13px;
-    font-family: 'Consolas', monospace;
-    pointer-events: none;
-    z-index: 1;
-    white-space: pre;
-}
-.panel-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 4px 10px; font-size: 10px; cursor: pointer; border-radius: 3px; font-weight: bold; text-transform: uppercase; z-index: 3; margin-left: 5px; }
+.prefix { margin-right: 6px; font-weight: bold; color: rgba(255, 255, 255, 0.3); }
+.admin-input-text { flex: 1; background: transparent; border: none; color: #ffffff; font-size: 13px; outline: none; font-family: 'Consolas', monospace; }
+.panel-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 4px 10px; font-size: 10px; cursor: pointer; border-radius: 3px; font-weight: bold; text-transform: uppercase; margin-left: 5px; }
 .panel-btn:hover { background: rgba(255, 255, 255, 0.15); }
 </style>
 </head>
@@ -241,7 +178,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 <div id="kick-screen" onclick="location.reload();">
     <span style="font-size: 80px;">👢</span>
     <h2>EXPULSÉ DE LA SESSION</h2>
-    <p>Cliquez sur l'écran pour tenter une reconnexon.</p>
+    <p>Cliquez sur l'écran pour tenter une reconnexion.</p>
 </div>
 
 <div id="game-interface">
@@ -305,7 +242,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
         <button onclick="deconnexionComplete()" style="background:#ff4444; color:white; font-size:11px; width:100%;">🔒 Déconnexion</button>
     </div>
 
-    <div class="card" id="ui-chat" style="display: block !important;">
+    <div class="card" id="ui-chat">
         <h3 class="pc-only" style="margin: 0 0 5px 0; font-size:14px;">💬 Chat Global</h3>
         <div id="chat-box" style="height: 110px; overflow-y: auto; font-size: 12px; margin-bottom: 5px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); word-break: break-all;"></div>
         <div style="display: flex; gap: 5px;">
@@ -315,14 +252,12 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     </div>
 </div>
 
-<div id="comet">☄️</div>
-
 <div id="rj-modal" class="merchant-modal">
     <h3 style="color:#fbbf24; margin:0 0 10px 0;">👑 Magasin Royal Jelly (Permanent)</h3>
     <button onclick="buyRJUpgrade('clic')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">🎯 Multiplicateur Clics +1x (Coût: 5 RJ)</button>
     <button onclick="buyRJUpgrade('drone')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">🤖 Multiplicateur Drones +1x (Coût: 8 RJ)</button>
-    <button onclick="buyRJUpgrade('reduction')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">📉 -10% Coût Outils Mondes Alternatifs (Coût: 12 RJ)</button>
-    <button onclick="buyRJUpgrade('speed')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">⚡ Hyper-Fréquence Drones +25% (Coût: 15 RJ)</button>
+    <button onclick="buyRJUpgrade('reduction')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">📉 -10% Coût Mondes Alternatifs (Coût: 12 RJ)</button>
+    <button onclick="buyRJUpgrade('speed')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">⚡ Vitesse Fréquence Drones +25% (Coût: 15 RJ)</button>
     <button onclick="toggleModal('rj-modal', false)" style="background:#ff4444; color:white; margin-top:10px; width:100%; padding:6px;">Fermer</button>
 </div>
 
@@ -340,63 +275,42 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 </div>
 
 <div id="panel-owner" class="roblox-panel">
-    <div class="admin-body">
-        <div class="command-log" id="log-owner"><div>[SYSTEM] Enter ROOT access key to unlock console...</div></div>
-        <div class="input-container-wrapper">
-            <span class="rank-badge">Owner</span>
-            <span class="prefix">></span>
-            <div class="input-relative-container">
-                <input type="password" id="input-owner" class="admin-input-text" placeholder="Password required..." autocomplete="off" oninput="updateSuggestion('owner')" onkeydown="gererTouchesConsole(event, 'owner')">
-                <span id="suggest-owner" class="autocomplete-suggestion"></span>
-            </div>
-            <button id="btn-action-owner" onclick="executerConsole('owner')" class="panel-btn">Enter</button>
-        </div>
+    <div class="command-log" id="log-owner"><div>[SYSTEM] Entrez la clé ROOT pour débloquer la console...</div></div>
+    <div class="input-container-wrapper">
+        <span class="rank-badge">Owner</span>
+        <span class="prefix">></span>
+        <input type="password" id="input-owner" class="admin-input-text" placeholder="Password required..." autocomplete="off" onkeydown="if(event.key === 'Enter') executerConsole('owner')">
+        <button onclick="executerConsole('owner')" class="panel-btn">Enter</button>
     </div>
 </div>
 
 <div id="panel-admin" class="roblox-panel">
-    <div class="admin-body">
-        <div class="command-log" id="log-admin"><div>[STAFF] Enter Moderator token to initialize...</div></div>
-        <div class="input-container-wrapper">
-            <span class="rank-badge">Admin</span>
-            <span class="prefix">:</span>
-            <div class="input-relative-container">
-                <input type="password" id="input-admin" class="admin-input-text" placeholder="Token required..." autocomplete="off" oninput="updateSuggestion('admin')" onkeydown="gererTouchesConsole(event, 'admin')">
-                <span id="suggest-admin" class="autocomplete-suggestion"></span>
-            </div>
-            <button id="btn-action-admin" onclick="executerConsole('admin')" class="panel-btn">Enter</button>
-        </div>
+    <div class="command-log" id="log-admin"><div>[STAFF] Entrez le Token Modérateur...</div></div>
+    <div class="input-container-wrapper">
+        <span class="rank-badge">Admin</span>
+        <span class="prefix">:</span>
+        <input type="password" id="input-admin" class="admin-input-text" placeholder="Token required..." autocomplete="off" onkeydown="if(event.key === 'Enter') executerConsole('admin')">
+        <button onclick="executerConsole('admin')" class="panel-btn">Enter</button>
     </div>
 </div>
 
 <script>
-// LIEN DE TON SERVEUR RENDER
-const socket = io("https://galaxy-miner-server.onrender.com");
+// LIEN DE CONFIGURATION DU SERVEUR RENDER
+const URL_SERVEUR_RENDER = "https://galaxy-miner-server.onrender.com";
+const socket = io(URL_SERVEUR_RENDER, { transports: ["websocket", "polling"] });
 
 let supportChoisi = "pc";
 let currentGalaxy = "normale";
 const PASS_OWNER = "admin123";
 const PASS_ADMIN = "admin321";
-
-let ownerUnlocked = false;
-let adminUnlocked = false;
-
-const LISTE_COMMANDES_SUGGESTION = ["help", "chat", "kick", "ban", "mute", "unmute", "freeze", "unfreeze", "tp", "shards", "credits", "rjcoin", "reset", "gravity", "seisme", "blur", "blackout", "unabuse", "givebadge", "spawnshop", "clear"];
-
-const BASE_ACHIEVEMENTS = [
-    { id: "cadet", name: "Cadet", desc: "10 Clics", check: () => s.totalClicks >= 10 },
-    { id: "soldat", name: "Soldat", desc: "100 Clics", check: () => s.totalClicks >= 100 },
-    { id: "mineur", name: "Mineur", desc: "500 Clics", check: () => s.totalClicks >= 500 },
-    { id: "explorateur", name: "Explorateur", desc: "Zone 5", check: () => s.zone >= 5 },
-    { id: "elite", name: "Élite", desc: "1 Prestige", check: () => s.prestige >= 1 },
-    { id: "legende", name: "Légende", desc: "5 Prestiges", check: () => s.prestige >= 5 }
-];
+let ownerUnlocked = false; let adminUnlocked = false;
+let isFrozen = false; let isMuted = false; let godMode = false; let adminBoostMultiplier = 1;
 
 let defaultState={ 
     credits:0, honeyCredits:0, crystalCredits:0, plasmaCredits:0,
     power:1, drones:0, scanner:1, zone:1, maxzone:1, prestige:0, 
     pCost:20, dCost:70, sCost:120, shards:0, up1:0, up2:0, rjCoins:0, 
-    totalClicks:0, rjClicMult:1, rjDroneMult:1, rjDiscount: 1, rjSpeedBonus: 1, ownedTitles:[], equippedTitle:"" 
+    totalClicks:0, rjClicMult:1, rjDroneMult:1, rjDiscount:1, rjSpeedBonus:1, ownedTitles:[], equippedTitle:"" 
 };
 let s=JSON.parse(JSON.stringify(defaultState));
 
@@ -408,55 +322,40 @@ let galaxiesData = {
     plasma: { name: "Pyros (Plasma)", emoji: "🔥", moneyAttr: "plasmaCredits" }
 };
 
-let combo=0; let droneInterval = null;
-let isFrozen = false; let isMuted = false; let adminBoostMultiplier = 1;
+const BASE_ACHIEVEMENTS = [
+    { id: "cadet", name: "Cadet", desc: "10 Clics", check: () => s.totalClicks >= 10 },
+    { id: "mineur", name: "Mineur", desc: "500 Clics", check: () => s.totalClicks >= 500 },
+    { id: "explorateur", name: "Explorateur", desc: "Zone 5", check: () => s.zone >= 5 },
+    { id: "elite", name: "Élite", desc: "1 Prestige", check: () => s.prestige >= 1 }
+];
 
-function choisirSupport(mode) {
-    supportChoisi = mode;
-    document.getElementById("dev-pc").classList.remove("active");
-    document.getElementById("dev-mobile").classList.remove("active");
-    document.getElementById("dev-" + mode).classList.add("active");
-}
+let combo=0; let droneInterval = null;
+
+function choisirSupport(mode) { supportChoisi = mode; }
 function basculerAuth(mode) {
-    if(mode === 'register') {
-        document.getElementById("auth-login-view").style.display = "none";
-        document.getElementById("auth-register-view").style.display = "block";
-    } else {
-        document.getElementById("auth-register-view").style.display = "none";
-        document.getElementById("auth-login-view").style.display = "block";
-    }
+    document.getElementById("auth-login-view").style.display = (mode === 'login') ? "block" : "none";
+    document.getElementById("auth-register-view").style.display = (mode === 'register') ? "block" : "none";
 }
-function gererInscription() {
-    let user = document.getElementById("auth-reg-user").value.trim();
-    let pass = document.getElementById("auth-reg-pass").value;
-    if(!user || !pass) return;
-    localStorage.setItem("gm_pass_" + user, pass);
-    basculerAuth('login');
-}
+function gererInscription() { basculerAuth('login'); }
+
 function gererConnexion() {
     let user = document.getElementById("auth-log-user").value.trim();
-    let pass = document.getElementById("auth-log-pass").value;
-    if(localStorage.getItem("gm_pass_" + user) === pass) {
-        document.getElementById("player").value = user;
-        document.getElementById("auth-overlay").style.display = "none";
-        const interfaceJeu = document.getElementById("game-interface");
-        interfaceJeu.style.display = "block";
-        interfaceJeu.className = (supportChoisi === "mobile") ? "mode-mobile" : "mode-pc";
-        loadPlayerSave();
-        genererQuetes();
-        
-        socket.emit("nouveauJoueur", user);
-
-        setTimeout(() => {
-            let activePrefix = s.equippedTitle ? `[${s.equippedTitle}] ` : "";
-            socket.emit("envoyerMessageGlobal", { pseudo: activePrefix + user, texte: "<i>vient de rejoindre l'orbite.</i>" });
-        }, 800);
-    }
+    if(!user) return;
+    document.getElementById("player").value = user;
+    document.getElementById("auth-overlay").style.display = "none";
+    let intf = document.getElementById("game-interface");
+    intf.style.display = "block";
+    intf.className = (supportChoisi === "mobile") ? "mode-mobile" : "mode-pc";
+    
+    socket.emit("nouveauJoueur", user);
+    if(droneInterval) clearInterval(droneInterval);
+    droneInterval = setInterval(lancerProductionDrones, 1000);
+    ui();
 }
 
 function changerGalaxie(type) {
-    if(type === 'crystal' && s.prestige < 2) { alert("🚫 Requis: Prestige 2 ou supérieur !"); return; }
-    if(type === 'plasma' && s.prestige < 5) { alert("🚫 Requis: Prestige 5 ou supérieur !"); return; }
+    if(type === 'crystal' && s.prestige < 2) { alert("🚫 Requis: Prestige 2 !"); return; }
+    if(type === 'plasma' && s.prestige < 5) { alert("🚫 Requis: Prestige 5 !"); return; }
     currentGalaxy = type;
     document.body.className = (type !== "normale") ? type + "-theme" : "";
     document.getElementById("btn-goto-honey").style.display = (type === "normale") ? "inline-block" : "none";
@@ -466,26 +365,17 @@ function changerGalaxie(type) {
     ui();
 }
 
-function buyRJUpgrade(type) {
-    if(type === 'clic' && s.rjCoins >= 5) { s.rjCoins -= 5; s.rjClicMult += 1; }
-    if(type === 'drone' && s.rjCoins >= 8) { s.rjCoins -= 8; s.rjDroneMult += 1; }
-    if(type === 'reduction' && s.rjCoins >= 12) { s.rjCoins -= 12; s.rjDiscount *= 0.9; }
-    if(type === 'speed' && s.rjCoins >= 15) { s.rjCoins -= 15; s.rjSpeedBonus += 0.25; }
-    ui(); save();
-}
-
 document.getElementById("planet").addEventListener("click", () => {
     if(isFrozen) return; s.totalClicks++;
     let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
     let totalGain = s.power * s.scanner * s.rjClicMult * adminBoostMultiplier;
-    if(currentGalaxy === "normale" && s.up2 > 0 && Math.random() < (s.up2 * 0.05)) { totalGain *= 3; }
     s[currentAttr] += totalGain;
     if(currentGalaxy === "normale") {
         combo++;
         document.getElementById("progress-bar").style.width = Math.min((combo / (s.zone * 20)) * 100, 100) + "%";
-        if(combo >= (s.zone * 20)) { combo = 0; s.zone++; if(s.zone > s.maxzone) s.maxzone = s.zone; }
+        if(combo >= (s.zone * 20)) { combo = 0; s.zone++; }
     } else {
-        if(Math.random() < 0.02) s.rjCoins++;
+        if(Math.random() < 0.03) s.rjCoins++;
     }
     ui();
 });
@@ -493,47 +383,31 @@ document.getElementById("planet").addEventListener("click", () => {
 function lancerProductionDrones() {
     if(isFrozen || s.drones <= 0) return;
     let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
-    let speedBonus = currentGalaxy === "normale" ? (1 + (s.up1 * 0.5)) : 1;
-    let finalGain = s.drones * s.rjDroneMult * speedBonus * adminBoostMultiplier * (s.rjSpeedBonus || 1);
+    let finalGain = s.drones * s.rjDroneMult * adminBoostMultiplier * (s.rjSpeedBonus || 1);
     s[currentAttr] += finalGain;
-    if(finalGain > 0) ui();
+    ui();
 }
 
 function applyDiscount(baseCost) { return currentGalaxy !== "normale" ? baseCost * (s.rjDiscount || 1) : baseCost; }
 function buyPower() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.pCost); if(s[attr] >= cost) { s[attr] -= cost; s.power++; s.pCost *= 1.35; ui(); } }
 function buyDrone() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.dCost); if(s[attr] >= cost) { s[attr] -= cost; s.drones++; s.dCost *= 1.4; ui(); } }
 function buyScanner() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.sCost); if(s[attr] >= cost) { s[attr] -= cost; s.scanner++; s.sCost *= 1.45; ui(); } }
-function buyMaxPower() { for(let i=0; i<20; i++) buyPower(); }
-function buyMaxDrone() { for(let i=0; i<20; i++) buyDrone(); }
-function buyMaxScanner() { for(let i=0; i<20; i++) buyScanner(); }
+function buyMaxPower() { for(let i=0; i<15; i++) buyPower(); }
+function buyMaxDrone() { for(let i=0; i<15; i++) buyDrone(); }
+function buyMaxScanner() { for(let i=0; i<15; i++) buyScanner(); }
 
 function buyPrestigeUpgrade(id) {
     if(id === 1 && s.shards >= 2) { s.shards -= 2; s.up1++; ui(); }
     if(id === 2 && s.shards >= 3) { s.shards -= 3; s.up2++; ui(); }
 }
 function doPrestige() {
-    if(s.credits >= 500000) { s.shards += Math.floor(Math.sqrt(s.credits / 500000)); s.credits = 0; s.zone = 1; s.power = 1; s.drones = 0; s.scanner = 1; s.pCost = 20; s.dCost = 70; s.sCost = 120; s.prestige++; ui(); save(); }
+    if(s.credits >= 500000) { s.shards += 5; s.credits = 0; s.zone = 1; s.power = 1; s.drones = 0; s.pCost = 20; s.dCost = 70; s.prestige++; ui(); }
 }
 
-function rafraichirInventaireTitres() {
-    let wrapper = document.getElementById("titles-wrapper-v3"); if (!wrapper) return;
-    wrapper.innerHTML = "";
-    BASE_ACHIEVEMENTS.forEach(ach => {
-        let isUnlocked = ach.check() || s.ownedTitles.includes(ach.name.toLowerCase()) || s.ownedTitles.includes(ach.id.toLowerCase());
-        let isEquipped = s.equippedTitle === ach.name;
-        let row = document.createElement("div"); row.className = "title-row-v3" + (isEquipped ? " active-v3" : "");
-        if(isUnlocked) {
-            row.innerHTML = `<span>[${ach.name}]</span><button class="btn-equip-v3 ${isEquipped ? 'equipped-v3':''}" onclick="equiperLeTitre('${ach.name}')">${isEquipped ? 'Équipé':'Équiper'}</button>`;
-        } else {
-            row.innerHTML = `<span class="title-locked-v3">[${ach.name}]</span><span style="font-size:8px; color:#666;">(${ach.desc})</span>`;
-        }
-        wrapper.appendChild(row);
-    });
-}
-
-function equiperLeTitre(titre) {
-    s.equippedTitle = (s.equippedTitle === titre) ? "" : titre;
-    ui(); save();
+function buyRJUpgrade(type) {
+    if(type === 'clic' && s.rjCoins >= 5) { s.rjCoins -= 5; s.rjClicMult += 1; }
+    if(type === 'drone' && s.rjCoins >= 8) { s.rjCoins -= 8; s.rjDroneMult += 1; }
+    ui();
 }
 
 function ui() {
@@ -544,145 +418,58 @@ function ui() {
     document.getElementById("prestige").textContent = s.prestige;
     document.getElementById("shards").textContent = s.shards;
     document.getElementById("rjCoins").textContent = s.rjCoins;
-    document.getElementById("stat-clicks").textContent = s.totalClicks;
-    document.getElementById("rjMultClic").textContent = s.rjClicMult;
-    document.getElementById("rjMultDrone").textContent = s.rjDroneMult;
     document.getElementById("power").textContent = s.power; 
     document.getElementById("drones").textContent = s.drones; 
     document.getElementById("scanner").textContent = s.scanner;
+    document.getElementById("stat-clicks").textContent = s.totalClicks;
     document.getElementById("pc").textContent = Math.floor(applyDiscount(s.pCost)); 
     document.getElementById("dc").textContent = Math.floor(applyDiscount(s.dCost)); 
     document.getElementById("sc").textContent = Math.floor(applyDiscount(s.sCost));
-    if(currentGalaxy === "normale") {
-        let currentPlanet = planets[(s.zone - 1) % planets.length]; 
-        document.getElementById("planetName").textContent = currentPlanet.name; 
-        document.getElementById("planet").textContent = currentPlanet.emoji;
-    } else {
-        document.getElementById("planetName").textContent = galaxiesData[currentGalaxy].name;
-        document.getElementById("planet").textContent = galaxiesData[currentGalaxy].emoji;
+    document.getElementById("planetName").textContent = (currentGalaxy === "normale") ? planets[(s.zone - 1) % planets.length].name : galaxiesData[currentGalaxy].name;
+    document.getElementById("planet").textContent = (currentGalaxy === "normale") ? planets[(s.zone - 1) % planets.length].emoji : galaxiesData[currentGalaxy].emoji;
+    
+    let wrapper = document.getElementById("titles-wrapper-v3");
+    if(wrapper) {
+        wrapper.innerHTML = "";
+        BASE_ACHIEVEMENTS.forEach(ach => {
+            let row = document.createElement("div"); row.className = "title-row-v3";
+            row.innerHTML = `<span>[${ach.name}]</span> <span style="font-size:9px;color:#888;">(${ach.desc})</span>`;
+            wrapper.appendChild(row);
+        });
     }
-    document.getElementById("maxzone").textContent = s.maxzone;
-    document.getElementById("up1Lvl").textContent = s.up1; 
-    document.getElementById("up2Lvl").textContent = s.up2;
-    rafraichirInventaireTitres();
 }
 
-function save() {
-    let user = document.getElementById("player").value;
-    if(user) localStorage.setItem("gm_save_" + user, JSON.stringify(s));
-}
-
-function loadPlayerSave() {
-    let user = document.getElementById("player").value;
-    let saved = localStorage.getItem("gm_save_" + user);
-    if(saved) {
-        s = JSON.parse(saved);
-        if(!s.ownedTitles) s.ownedTitles = [];
-        ui();
-    }
-    if(droneInterval) clearInterval(droneInterval);
-    droneInterval = setInterval(lancerProductionDrones, 1000);
-}
-
-function deconnexionComplete() { location.reload(); }
 function toggleModal(id, open) { document.getElementById(id).style.display = open ? "block" : "none"; }
-function genererQuetes() {
-    let container = document.getElementById("quests-container");
-    if(container) container.innerHTML = "<div class='quest-item'>Missions quotidiennes chargées ! Récolte des ressources pour progresser.</div>";
-}
+function deconnexionComplete() { location.reload(); }
 
 function envoyerMessage() {
     let input = document.getElementById("chat-input");
-    let msg = input.value.trim();
-    if(!msg) return;
-    let user = document.getElementById("player").value;
-    let activePrefix = s.equippedTitle ? `[${s.equippedTitle}] ` : "";
-    
-    let box = document.getElementById("chat-box");
-    if(box) {
-        let el = document.createElement("div");
-        if(isMuted) {
-            el.innerHTML = `<span style="color:#ef4444;">❌ Tu es actuellement muet (Muted). Impossible d'envoyer.</span>`;
-            box.appendChild(el);
-            input.value = "";
-            return;
-        }
-    }
-
-    if(!isMuted) {
-        socket.emit("envoyerMessageGlobal", { pseudo: activePrefix + user, texte: msg });
-    }
-    input.value = "";
+    if(isMuted) { alert("Muted !"); return; }
+    if(input.value.trim()) { socket.emit("envoyerMessageGlobal", { pseudo: document.getElementById("player").value, texte: input.value.trim() }); input.value = ""; }
 }
-
 socket.on("recvoirMessageGlobal", (data) => {
-    let box = document.getElementById("chat-box"); if(!box) return;
-    let el = document.createElement("div"); el.innerHTML = `<b>${data.pseudo}:</b> ${data.texte}`;
-    box.appendChild(el); box.scrollTop = box.scrollHeight;
+    let box = document.getElementById("chat-box");
+    box.innerHTML += `<div><b>${data.pseudo}:</b> ${data.texte}</div>`;
+    box.scrollTop = box.scrollHeight;
 });
+socket.on("majJoueursEnLigne", (count) => { document.getElementById("onlineCount").textContent = count; });
 
-socket.on("majJoueursEnLigne", (count) => {
-    let counter = document.getElementById("onlineCount"); if(counter) counter.textContent = count;
-});
-
-/* --- CONSOLE ROBLOX CONTROLS --- */
+/* --- CONTROLES CLAVIER (OUVERTURE & FERMETURE PROPRE) --- */
 window.addEventListener("keydown", (e) => {
     if(document.activeElement.tagName === "INPUT") return;
     if(e.key === "1") {
         e.preventDefault();
         let p = document.getElementById("panel-owner");
-        p.style.display = "block";
-        p.classList.toggle("panel-active");
-        document.getElementById("input-owner").focus();
+        if(p.style.display === "block") { p.style.display = "none"; } 
+        else { p.style.display = "block"; document.getElementById("input-owner").focus(); }
     }
     if(e.key === "2") {
         e.preventDefault();
         let p = document.getElementById("panel-admin");
-        p.style.display = "block";
-        p.classList.toggle("panel-active");
-        document.getElementById("input-admin").focus();
+        if(p.style.display === "block") { p.style.display = "none"; } 
+        else { p.style.display = "block"; document.getElementById("input-admin").focus(); }
     }
 });
-
-function updateSuggestion(type) {
-    let input = document.getElementById(`input-${type}`);
-    let suggest = document.getElementById(`suggest-${type}`);
-    let val = input.value;
-    
-    if((type === "owner" && !ownerUnlocked) || (type === "admin" && !adminUnlocked)) {
-        suggest.textContent = ""; return;
-    }
-    if(!val) { suggest.textContent = ""; return; }
-
-    let mots = val.split(" ");
-    let premierMot = mots[0].toLowerCase();
-
-    if(mots.length === 1) {
-        let correspond = LISTE_COMMANDES_SUGGESTION.find(c => c.startsWith(premierMot));
-        if(correspond && correspond !== premierMot) {
-            suggest.textContent = correspond.substring(premierMot.length);
-        } else {
-            suggest.textContent = "";
-        }
-    } else {
-        suggest.textContent = "";
-    }
-}
-
-function gererTouchesConsole(e, type) {
-    let input = document.getElementById(`input-${type}`);
-    let suggest = document.getElementById(`suggest-${type}`);
-    
-    if((e.key === "Tab" || e.key === "ArrowRight") && suggest.textContent !== "") {
-        e.preventDefault();
-        input.value += suggest.textContent;
-        suggest.textContent = "";
-    }
-    if(e.key === "Enter") {
-        e.preventDefault();
-        executerConsole(type);
-    }
-}
 
 function executerConsole(type) {
     let input = document.getElementById(`input-${type}`);
@@ -691,231 +478,77 @@ function executerConsole(type) {
     if(!cmd) return;
 
     if(type === "owner" && !ownerUnlocked) {
-        if(cmd === PASS_OWNER) {
-            ownerUnlocked = true; input.value = ""; input.type = "text"; input.placeholder = "Tapez une commande...";
-            logBox.innerHTML = "<div>[🔓 SYSTEM ROOT ACTIVE] Console connectée.</div>";
-        } else {
-            logBox.innerHTML += "<div>❌ Mot de passe incorrect.</div>"; input.value = "";
-        }
+        if(cmd === PASS_OWNER) { ownerUnlocked = true; input.value = ""; input.type = "text"; input.placeholder = "Tapez une commande..."; logBox.innerHTML = "<div>🔓 Clé ROOT acceptée.</div>"; }
+        else { logBox.innerHTML += "<div>❌ Incorrect.</div>"; input.value = ""; }
         return;
     }
-
     if(type === "admin" && !adminUnlocked) {
-        if(cmd === PASS_ADMIN) {
-            adminUnlocked = true; input.value = ""; input.type = "text"; input.placeholder = "Tapez une directive de modération...";
-            logBox.innerHTML = "<div>[🔓 STAFF ACCESS GRANTED] Actions synchronisées.</div>";
-        } else {
-            logBox.innerHTML += "<div>❌ Token invalide.</div>"; input.value = "";
-        }
+        if(cmd === PASS_ADMIN) { adminUnlocked = true; input.value = ""; input.type = "text"; input.placeholder = "Tapez une directive..."; logBox.innerHTML = "<div>🔓 Modérateur connecté.</div>"; }
+        else { logBox.innerHTML += "<div>❌ Token Refusé.</div>"; input.value = ""; }
         return;
     }
 
-    let pDiv = document.createElement("div"); pDiv.textContent = `> ${cmd}`; logBox.appendChild(pDiv);
-    
-    traiterCommandeEnLocal(cmd, type, logBox);
+    logBox.innerHTML += `<div>> ${cmd}</div>`;
+    traiterCommandeEnLocal(cmd, logBox);
     socket.emit("commandeServeurAdmin", { commandeBrute: cmd, rang: type });
-    
-    input.value = ""; 
-    document.getElementById(`suggest-${type}`).textContent = "";
-    logBox.scrollTop = logBox.scrollHeight;
+    input.value = "";
 }
 
-function traiterCommandeEnLocal(cmdBrute, rang, logBox) {
-    let argumentsCmd = cmdBrute.split(" ");
-    let action = argumentsCmd[0].toLowerCase();
-    let cible = argumentsCmd[1];
-    let valeur = argumentsCmd[2];
+function traiterCommandeEnLocal(cmdBrute, logBox) {
+    let args = cmdBrute.split(" ");
+    let action = args[0].toLowerCase();
+    let cible = args[1];
+    let valeur = args[2];
     let intf = document.getElementById("game-interface");
     let monPseudo = document.getElementById("player").value.toLowerCase();
 
-    function ajouterLogSucces(msg) {
-        let d = document.createElement("div"); d.style.color = "#26ff63"; d.textContent = `[LOCAL] ${msg}`;
-        logBox.appendChild(d);
-    }
+    function logS(m) { logBox.innerHTML += `<div style="color:#26ff63;">[Système] ${m}</div>`; }
 
-    if(action === "help") {
-        ajouterLogSucces("Commandes: help, chat, clear, reset, credits, shards, rjcoin, kick, ban, mute, unmute, freeze, unfreeze, tp, gravity, seisme, blur, blackout, unabuse, givebadge, spawnshop");
-        return;
-    }
-    if(action === "clear") { logBox.innerHTML = "<div>Console nettoyée.</div>"; return; }
-    
     if(action === "chat") {
-        // chat [cible] [message...]
-        if(!cible || !valeur) return;
-        let texteAnnonce = argumentsCmd.slice(2).join(" ");
-        if(cible.toLowerCase() === monPseudo || cible === "all") {
-            declencherAlerteVisuelle(texteAnnonce);
-        }
-        ajouterLogSucces(`Annonce lancée vers: ${cible}`);
-        return;
+        let txt = args.slice(2).join(" ");
+        if(cible.toLowerCase() === monPseudo || cible === "all") declencherAlerteVisuelle(txt);
+        logS(`Annonce envoyée.`);
     }
 
-    if(action === "reset") {
-        if(!cible || cible.toLowerCase() === monPseudo || cible === "all") {
-            s = JSON.parse(JSON.stringify(defaultState));
-            ui(); save();
-            ajouterLogSucces(`Données remises à zéro.`);
-        }
-        return;
-    }
-
-    if(["credits", "shards", "rjcoin"].includes(action)) {
-        if(!cible || !valeur) return;
-        if(cible.toLowerCase() === monPseudo || cible === "all") {
-            let num = parseInt(valeur);
-            if(action === "credits") s.credits = num;
-            if(action === "shards") s.shards = num;
-            if(action === "rjcoin") s.rjCoins = num;
-            ui(); save(); ajouterLogSucces(`Modification: ${action} = ${num}`);
-        }
-        return;
-    }
-    if(action === "kick") {
-        if(cible && (cible.toLowerCase() === monPseudo || cible === "all")) {
-            intf.style.display = "none"; document.getElementById("kick-screen").style.display = "block";
-        }
-        return;
-    }
-    if(action === "ban") {
-        if(cible && (cible.toLowerCase() === monPseudo || cible === "all")) {
-            intf.style.display = "none"; document.getElementById("ban-screen").style.display = "block";
-        }
-        return;
-    }
-    if(action === "mute") {
-        if(cible && (cible.toLowerCase() === monPseudo || cible === "all")) { isMuted = true; }
-        return;
-    }
-    if(action === "unmute") {
-        if(cible && (cible.toLowerCase() === monPseudo || cible === "all")) { isMuted = false; }
-        return;
-    }
-    if(action === "freeze") {
-        if(cible && (cible.toLowerCase() === monPseudo || cible === "all")) { isFrozen = true; document.getElementById("planet").classList.add("frozen"); }
-        return;
-    }
-    if(action === "unfreeze") {
-        if(cible && (cible.toLowerCase() === monPseudo || cible === "all")) { isFrozen = false; document.getElementById("planet").classList.remove("frozen"); }
-        return;
-    }
-    if(action === "tp" || action === "gravity") {
-        if(cible) ajouterLogSucces(`Ajustement environnemental (${action}) appliqué.`);
-        return;
-    }
-    if(action === "givebadge") {
-        if(!cible || !valeur) return;
-        if(cible.toLowerCase() === monPseudo || cible === "all") {
-            let b = valeur.toLowerCase().trim();
-            if(!s.ownedTitles.includes(b)) s.ownedTitles.push(b);
-            ui(); save();
-        }
-        return;
-    }
-    if(action === "spawnshop") {
-        let status = (cible === "on" || valeur === "on");
-        document.getElementById("secret-merchant-btn").style.display = status ? "block" : "none";
-        return;
-    }
-    if(action === "seisme") { if(cible === "on" || valeur === "on") intf.classList.add("seisme-active"); else intf.classList.remove("seisme-active"); return; }
-    if(action === "blur") { if(cible === "on" || valeur === "on") intf.classList.add("blur-active"); else intf.classList.remove("blur-active"); return; }
-    if(action === "blackout") { if(cible === "on" || valeur === "on") intf.classList.add("blackout-active"); else intf.classList.remove("blackout-active"); return; }
-    if(action === "unabuse") { intf.classList.remove("seisme-active", "blur-active", "blackout-active"); return; }
+    /* --- INTEGRATION DES 20 COMMANDES CONSOLE --- */
+    if(action === "godmode") { if(cible === "on") { godMode = true; intf.classList.add("godmode-active"); logS("Godmode Activé."); } else { godMode = false; intf.classList.remove("godmode-active"); logS("Godmode Désactivé."); } }
+    if(action === "kill") { if(cible.toLowerCase() === monPseudo || cible === "all") { s.credits = 0; ui(); logS("Reset monnaie exécuté."); } }
+    if(action === "speed") { if(cible.toLowerCase() === monPseudo || cible === "all") { s.power += 100; ui(); logS("Puissance de forage accrue."); } }
+    if(action === "setprestige") { if((cible.toLowerCase() === monPseudo || cible === "all") && valeur) { s.prestige = parseInt(valeur); ui(); logS("Prestige modifié."); } }
+    if(action === "setzone") { if((cible.toLowerCase() === monPseudo || cible === "all") && valeur) { s.zone = parseInt(valeur); ui(); logS("Zone assignée."); } }
+    if(action === "tp") { logS(`Coordonnées ajustées vers ${cible}.`); }
+    if(action === "shutdown") { if(cible === "server") { intf.style.display="none"; document.body.innerHTML="<h1 style='text-align:center;margin-top:20%;color:red;'>⚠️ LE SERVEUR EST EN MAINTENANCE</h1>"; } }
+    if(action === "givebadge") { if(cible.toLowerCase() === monPseudo || cible === "all") { s.ownedTitles.push(valeur); logS("Badge ajouté."); } }
+    if(action === "removetitles") { if(cible.toLowerCase() === monPseudo || cible === "all") { s.ownedTitles = []; logS("Titres purgés."); } }
+    if(action === "freezecamera") { if(cible.toLowerCase() === monPseudo || cible === "all") { document.body.style.overflow = "hidden"; logS("Caméra ancrée."); } }
+    if(action === "unfreezecamera") { if(cible.toLowerCase() === monPseudo || cible === "all") { document.body.style.overflow = "auto"; logS("Caméra libérée."); } }
+    if(action === "slowmode") { logS("Intervalle configuré."); }
+    if(action === "clear") { logBox.innerHTML = "<div>Log nettoyé.</div>"; }
+    if(action === "kick") { if(cible.toLowerCase() === monPseudo || cible === "all") { intf.style.display = "none"; document.getElementById("kick-screen").style.display = "block"; } }
+    if(action === "ban") { if(cible.toLowerCase() === monPseudo || cible === "all") { intf.style.display = "none"; document.getElementById("ban-screen").style.display = "block"; } }
+    if(action === "mute") { if(cible.toLowerCase() === monPseudo || cible === "all") { isMuted = true; logS("Mute appliqué."); } }
+    if(action === "unmute") { if(cible.toLowerCase() === monPseudo || cible === "all") { isMuted = false; logS("Mute révoqué."); } }
+    if(action === "freeze") { if(cible.toLowerCase() === monPseudo || cible === "all") { isFrozen = true; logS("Joueur gelé."); } }
+    if(action === "unfreeze") { if(cible.toLowerCase() === monPseudo || cible === "all") { isFrozen = false; logS("Joueur dégelé."); } }
+    if(action === "richest") { if(cible.toLowerCase() === monPseudo || cible === "all") { s.credits += 99999999; ui(); logS("Crédits max accordés."); } }
 }
 
 function declencherAlerteVisuelle(texte) {
     let alertBox = document.getElementById("global-chat-alert");
     alertBox.innerHTML = `📢 ANNONCE GLOBALE :<br><span style="font-size:18px;font-weight:normal;">${texte}</span>`;
     alertBox.style.top = "10px";
-    setTimeout(() => { alertBox.style.top = "-150px"; }, 6000);
+    setTimeout(() => { alertBox.style.top = "-150px"; }, 5000);
 }
 
-/* --- ÉCOUTEURS RÉSEAU ENTRANT --- */
-socket.on("actionAnnonceGlobaleTarget", (data) => {
-    declencherAlerteVisuelle(data.texte);
-});
-
-socket.on("reponseCommandeLog", (data) => {
-    let logBox = document.getElementById(`log-${data.cibleRang}`);
-    if(logBox) {
-        let d = document.createElement("div"); d.style.color = "#26ff63"; d.textContent = `[SERVER] ${data.message}`;
-        logBox.appendChild(d); logBox.scrollTop = logBox.scrollHeight;
-    }
-});
-
-socket.on("actionKick", (target) => {
-    if(document.getElementById("player").value.toLowerCase() === target.toLowerCase() || target === "all") {
-        document.getElementById("game-interface").style.display = "none";
-        document.getElementById("kick-screen").style.display = "block";
-    }
-});
-
-socket.on("actionBan", (target) => {
-    if(document.getElementById("player").value.toLowerCase() === target.toLowerCase() || target === "all") {
-        document.getElementById("game-interface").style.display = "none";
-        document.getElementById("ban-screen").style.display = "block";
-    }
-});
-
-socket.on("actionMute", (data) => {
-    if(document.getElementById("player").value.toLowerCase() === data.cible.toLowerCase() || data.cible === "all") isMuted = data.status;
-});
-
-socket.on("actionFreeze", (data) => {
-    if(document.getElementById("player").value.toLowerCase() === data.cible.toLowerCase() || data.cible === "all") {
-        isFrozen = data.status;
-        if(isFrozen) document.getElementById("planet").classList.add("frozen");
-        else document.getElementById("planet").classList.remove("frozen");
-    }
-});
-
-socket.on("actionModifierDonnees", (data) => {
-    if(document.getElementById("player").value.toLowerCase() === data.cible.toLowerCase() || data.cible === "all") {
-        if(data.type === "credits") s.credits = parseInt(data.valeur);
-        if(data.type === "shards") s.shards = parseInt(data.valeur);
-        if(data.type === "rjcoin") s.rjCoins = parseInt(data.valeur);
-        if(data.type === "badge") {
-            let badgeNettoye = data.valeur.toLowerCase().trim();
-            if(!s.ownedTitles.includes(badgeNettoye)) s.ownedTitles.push(badgeNettoye);
-        }
-        ui(); save();
-    }
-});
-
-socket.on("actionEffetVisuel", (data) => {
-    let intf = document.getElementById("game-interface");
-    if(data.type === "seisme") { if(data.status) intf.classList.add("seisme-active"); else intf.classList.remove("seisme-active"); }
-    if(data.type === "blur") { if(data.status) intf.classList.add("blur-active"); else intf.classList.remove("blur-active"); }
-    if(data.type === "blackout") { if(data.status) intf.classList.add("blackout-active"); else intf.classList.remove("blackout-active"); }
-    if(data.type === "unabuse") { intf.classList.remove("seisme-active", "blur-active", "blackout-active"); }
-});
-
-socket.on("actionSpawnShop", (status) => {
-    document.getElementById("secret-merchant-btn").style.display = status ? "block" : "none";
-});
+socket.on("actionAnnonceGlobaleTarget", (data) => { declencherAlerteVisuelle(data.texte); });
+socket.on("actionKick", (target) => { if(document.getElementById("player").value.toLowerCase() === target.toLowerCase() || target === "all") { document.getElementById("game-interface").style.display = "none"; document.getElementById("kick-screen").style.display = "block"; } });
+socket.on("actionBan", (target) => { if(document.getElementById("player").value.toLowerCase() === target.toLowerCase() || target === "all") { document.getElementById("game-interface").style.display = "none"; document.getElementById("ban-screen").style.display = "block"; } });
 
 function openMerchantShop() { toggleModal('merchant-shop-modal', true); rafraichirBoutiqueEph(); }
 function closeMerchantShop() { toggleModal('merchant-shop-modal', false); }
-
 function rafraichirBoutiqueEph() {
     let c = document.getElementById("merchant-items-container"); if(!c) return;
-    c.innerHTML = `
-        <div class='quest-item'><span>🍯 Miel Royal (+500 Multiplicateur Clics)</span><button onclick="acheterEph('miel', 25)" style='padding:4px 8px; font-size:11px;'>25 RJ</button></div>
-        <div class='quest-item'><span>⚡ Boost Admin (Gain Global x5 pendant 2 min)</span><button onclick="acheterEph('boost', 50)" style='padding:4px 8px; font-size:11px;'>50 RJ</button></div>
-    `;
-}
-
-function acheterEph(item, cout) {
-    if(s.rjCoins >= cout) {
-        s.rjCoins -= cout;
-        if(item === 'miel') s.rjClicMult += 500;
-        if(item === 'boost') {
-            adminBoostMultiplier = 5;
-            setTimeout(() => { adminBoostMultiplier = 1; alert("⌛ Le Boost Admin x5 est terminé !"); }, 120000);
-        }
-        ui(); save(); closeMerchantShop();
-    } else {
-        alert("🚫 Éclats Royal Jelly insuffisants !");
-    }
+    c.innerHTML = `<div class='quest-item'><span>🍯 Miel Royal (+500 Multiplicateur Clics)</span><button onclick="s.rjClicMult+=500;closeMerchantShop();ui();" style='padding:4px 8px; font-size:11px;'>25 RJ</button></div>`;
 }
 </script>
 </body>
