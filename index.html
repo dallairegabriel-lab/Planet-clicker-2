@@ -67,8 +67,14 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .admin-header { background-color: rgba(20, 20, 20, 0.9); padding: 12px; font-weight: 600; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; cursor: move; }
 .close-admin-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 16px; cursor: pointer; font-weight: bold; padding: 0 5px; margin: 0; }
 .admin-body { padding: 12px; }
-.command-log { height: 220px; background-color: rgba(0, 0, 0, 0.6); border-radius: 4px; padding: 10px; font-size: 12px; font-family: 'Courier New', monospace; overflow-y: auto; margin-bottom: 12px; }
+.command-log { height: 180px; background-color: rgba(0, 0, 0, 0.6); border-radius: 4px; padding: 10px; font-size: 12px; font-family: 'Courier New', monospace; overflow-y: auto; margin-bottom: 8px; }
 #log-owner { color: #ff5555; } #log-admin { color: #55aaff; }
+
+/* ZONE DE SUGGESTIONS RAPIDES */
+.suggest-box { display: flex; gap: 5px; flex-wrap: wrap; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px; margin-bottom: 8px; min-height: 25px; max-height: 85px; overflow-y: auto; align-items: center; }
+.suggest-badge { background: rgba(255,255,255,0.15); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: monospace; transition: 0.15s; }
+.suggest-badge:hover { background: #52ffe0; color: #000; }
+
 .input-area { display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; padding: 6px 10px; }
 .prefix { font-family: monospace; margin-right: 8px; font-weight: bold; font-size: 14px; }
 .admin-input-text { flex: 1; background: none; border: none; color: #ffffff; font-size: 13px; outline: none; }
@@ -267,8 +273,11 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     <div id="header-owner" class="admin-header"><span>👑 GALAXY MINER - OWNER PANEL</span><button class="close-admin-btn" onclick="togglePanel('owner')">✕</button></div>
     <div class="admin-body">
         <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒 VERROUILLÉ] Rentrer la clé ROOT.</div></div>
+        
+        <div class="suggest-box" id="suggest-owner" style="display: none;"></div>
+
         <div class="input-area">
-            <span class="prefix" style="color:#ff4444;">🔑</span>
+            <span class="prefix" id="prefix-owner" style="color:#ff4444;">🔑</span>
             <input type="password" id="input-owner" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
             <button id="btn-action-owner" class="panel-btn" onclick="loginPanel('owner')">Connexion</button>
         </div>
@@ -279,8 +288,11 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     <div id="header-admin" class="admin-header"><span>🛡️ GALAXY MINER - ADMIN PANEL</span><button class="close-admin-btn" onclick="togglePanel('admin')">✕</button></div>
     <div class="admin-body">
         <div class="command-log" id="log-admin"><div style="color: #4488ff;">[🔒 VERROUILLÉ] Rentrer la clé MODÉRATION.</div></div>
+        
+        <div class="suggest-box" id="suggest-admin" style="display: none;"></div>
+
         <div class="input-area">
-            <span class="prefix" style="color:#4488ff;">🔑</span>
+            <span class="prefix" id="prefix-admin" style="color:#4488ff;">🔑</span>
             <input type="password" id="input-admin" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
             <button id="btn-action-admin" class="panel-btn" onclick="loginPanel('admin')">Connexion</button>
         </div>
@@ -295,6 +307,16 @@ const PASS_ADMIN = "admin321";
 
 let ownerConnected = false;
 let adminConnected = false;
+
+// Listes complètes avec les 20 nouvelles commandes intégrées
+const COMMANDS_LIST = [
+    // Anciennes
+    "help", "players", "announcement", "spawnshop", "seisme", "blackout", "matrix", "clearvisuals",
+    // Nouvelles Commandes Fun & Modération
+    "givecredits", "giverj", "giveshards", "setzone", "setprestige", "resetplayer",
+    "kick", "ban", "unban", "freeze", "unfreeze", "boostall", "stopboost",
+    "nightmode", "daymode", "rainbowui", "stoprainbow", "clearchat", "mutestatus", "serverinfo", "cometstorm"
+];
 
 const BASE_ACHIEVEMENTS = [
     { id: "cadet", name: "Cadet", desc: "10 Clics", check: () => s.totalClicks >= 10 },
@@ -323,6 +345,7 @@ let galaxiesData = {
 
 let combo=0; let droneInterval = null;
 let isFrozen = false; let adminBoostMultiplier = 1;
+let rainbowUiInterval = null;
 
 function choisirSupport(mode) {
     supportChoisi = mode;
@@ -459,11 +482,39 @@ function togglePanel(type) {
     }
 }
 
-// --- SYSTÈME D'EXÉCUTION DES COMMANDES ---
+// --- GESTIONNAIRE D'AUTO-COMPLÉTION EN DIRECT ---
+function gererFrappeAide(type) {
+    const val = document.getElementById("input-" + type).value.trim().toLowerCase();
+    const box = document.getElementById("suggest-" + type);
+    box.innerHTML = "";
+
+    if (!val) {
+        COMMANDS_LIST.forEach(cmd => creerBadgeAide(type, cmd, box));
+        return;
+    }
+
+    const correspondances = COMMANDS_LIST.filter(c => c.startsWith(val));
+    correspondances.forEach(cmd => creerBadgeAide(type, cmd, box));
+}
+
+function creerBadgeAide(type, text, parentElement) {
+    let badge = document.createElement("span");
+    badge.className = "suggest-badge";
+    badge.textContent = text;
+    badge.onclick = () => {
+        let input = document.getElementById("input-" + type);
+        input.value = text + " "; 
+        input.focus();
+        gererFrappeAide(type);
+    };
+    parentElement.appendChild(badge);
+}
+
+// --- EXECUTION DES COMMANDES ---
 function executerCommande(type) {
     const input = document.getElementById("input-" + type);
     const log = document.getElementById("log-" + type);
-    const commande = input.value.trim();
+    let commande = input.value.trim();
     
     if (!commande) return;
 
@@ -471,13 +522,15 @@ function executerCommande(type) {
     nvLog.textContent = "> " + commande;
     log.appendChild(nvLog);
     
+    // Le serveur gérant le préfixe, on passe la structure attendue nativement
     socket.emit("commandeAdmin", { 
         typePanel: type, 
-        commande: commande, 
+        commande: "~/" + commande, 
         pseudo: document.getElementById("player").value 
     });
 
     input.value = "";
+    gererFrappeAide(type);
     log.scrollTop = log.scrollHeight;
 }
 
@@ -485,22 +538,34 @@ function loginPanel(type) {
     let input = document.getElementById("input-" + type);
     let log = document.getElementById("log-" + type);
     let btn = document.getElementById("btn-action-" + type);
+    let prefix = document.getElementById("prefix-" + type);
+    let suggestBox = document.getElementById("suggest-" + type);
     
     if (type === 'owner' && ownerConnected) { executerCommande('owner'); return; }
     if (type === 'admin' && adminConnected) { executerCommande('admin'); return; }
 
     if(type === 'owner' && input.value === PASS_OWNER) {
         ownerConnected = true;
-        log.innerHTML = "<div style='color:#26ff63;'>[🔓 ACCÈS OWNER CONFORMÉ] Taper ~/help pour commencer.</div>";
+        log.innerHTML = "<div style='color:#26ff63;'>[🔓 ACCÈS OWNER CONFORMÉ] Choisis ou tape ta commande ci-dessous.</div>";
         btn.textContent = "Envoyer";
+        prefix.textContent = ">";
         input.value = ""; input.type = "text"; 
-        input.placeholder = "Taper une commande...";
+        input.placeholder = "Ex: seisme, givecredits...";
+        suggestBox.style.display = "flex";
+        
+        input.addEventListener("input", () => gererFrappeAide('owner'));
+        gererFrappeAide('owner');
     } else if(type === 'admin' && input.value === PASS_ADMIN) {
         adminConnected = true;
-        log.innerHTML = "<div style='color:#26ff63;'>[🔓 MODÉRATION RECONNUE] Taper ~/help pour commencer.</div>";
+        log.innerHTML = "<div style='color:#26ff63;'>[🔓 MODÉRATION RECONNUE] Choisis ou tape ta commande ci-dessous.</div>";
         btn.textContent = "Envoyer";
+        prefix.textContent = ">";
         input.value = ""; input.type = "text";
-        input.placeholder = "Taper une commande...";
+        input.placeholder = "Ex: blackout, players...";
+        suggestBox.style.display = "flex";
+        
+        input.addEventListener("input", () => gererFrappeAide('admin'));
+        gererFrappeAide('admin');
     } else {
         alert("Clé d'accès incorrecte !");
     }
@@ -615,7 +680,8 @@ socket.on("retourCommande", (data) => {
         const div = document.createElement("div");
         div.style.color = "#ffff55";
         div.style.whiteSpace = "pre-line";
-        div.textContent = data.texte;
+        let textPropre = data.texte.replaceAll("~/", "");
+        div.textContent = textPropre;
         log.appendChild(div); log.scrollTop = log.scrollHeight;
     }
 });
@@ -632,10 +698,46 @@ socket.on("recevoirSpawnShop", () => {
     alert("🐻 L'Ours Marchand vient d'apparaître sur la carte ! Check le bouton en bas à droite.");
 });
 
-// Gestion des visuels cumulables et ciblés
+// Gestion des visuels cumulables et ciblés + Intégration des nouvelles commandes UI directes
+socket.on("effetVisualDirectV3", (data) => {
+    let monPseudo = document.getElementById("player").value.trim().toLowerCase();
+    if (data.cible && data.cible.toLowerCase() !== monPseudo) return;
+
+    if (data.action === "nightmode") {
+        document.body.style.filter = "brightness(0.3) contrast(1.2)";
+    } else if (data.action === "daymode") {
+        document.body.style.filter = "none";
+    } else if (data.action === "rainbowui") {
+        clearInterval(rainbowUiInterval);
+        let hue = 0;
+        rainbowUiInterval = setInterval(() => {
+            hue = (hue + 5) % 360;
+            document.querySelectorAll('.card, button').forEach(el => {
+                el.style.borderColor = `hsl(${hue}, 100%, 50%)`;
+            });
+        }, 100);
+    } else if (data.action === "stoprainbow") {
+        clearInterval(rainbowUiInterval);
+        document.querySelectorAll('.card, button').forEach(el => el.style.borderColor = "");
+    } else if (data.action === "clearchat") {
+        document.getElementById("chat-box").innerHTML = "<div style='color:gray;'><i>Chat nettoyé par la modération.</i></div>";
+    } else if (data.action === "cometstorm") {
+        let count = 0;
+        let cInt = setInterval(() => {
+            count++;
+            let c = document.getElementById("comet");
+            if(c) {
+                c.style.display = "block";
+                c.style.top = Math.random() * window.innerHeight + "px";
+                c.style.left = Math.random() * window.innerWidth + "px";
+            }
+            if(count > 15) { clearInterval(cInt); if(c) c.style.display="none"; }
+        }, 300);
+    }
+});
+
 socket.on("effetVisuelCumulable", (data) => {
     let monPseudo = document.getElementById("player").value.trim().toLowerCase();
-    
     if (data.cible && data.cible.toLowerCase() !== monPseudo) return;
 
     if (data.action === "seisme") {
@@ -646,7 +748,32 @@ socket.on("effetVisuelCumulable", (data) => {
         document.body.classList.add("blur-active");
     } else if (data.action === "clearvisuals") {
         document.body.classList.remove("seisme-active", "blackout-active", "blur-active");
+        document.body.style.filter = "none";
     }
+});
+
+// Traitement des données joueur directes (Gives / Sets) reçues du serveur
+socket.on("actionDataJoueur", (data) => {
+    let monPseudo = document.getElementById("player").value.trim().toLowerCase();
+    if (data.cible.toLowerCase() !== monPseudo) return;
+
+    if (data.action === "givecredits") s.credits += Number(data.valeur);
+    if (data.action === "giverj") s.rjCoins += Number(data.valeur);
+    if (data.action === "giveshards") s.shards += Number(data.valeur);
+    if (data.action === "setzone") s.zone = Number(data.valeur);
+    if (data.action === "setprestige") s.prestige = Number(data.valeur);
+    if (data.action === "resetplayer") s = JSON.parse(JSON.stringify(defaultState));
+    if (data.action === "freeze") isFrozen = true;
+    if (data.action === "unfreeze") isFrozen = false;
+    if (data.action === "kick") { document.getElementById("game-interface").style.display = "none"; document.getElementById("kick-screen").style.display = "block"; }
+    if (data.action === "ban") { document.getElementById("game-interface").style.display = "none"; document.getElementById("ban-screen").style.display = "block"; }
+    
+    ui(); save();
+});
+
+socket.on("boostGlobalEvent", (data) => {
+    adminBoostMultiplier = Number(data.multiplier);
+    document.getElementById("notice").textContent = adminBoostMultiplier > 1 ? `🚀 BOOST GLOBAL MULTI-MINER ${adminBoostMultiplier}x EN COURS` : "En attente...";
 });
 
 function envoyerMessage() {
