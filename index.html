@@ -46,21 +46,19 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .mode-mobile .pc-only { display: none !important; }
 .mode-mobile .card { width: 100%; max-width: 420px; box-sizing: border-box; margin-bottom: 15px; position: static !important; }
 .mode-mobile #main-game-area { order: -1; width: 100%; text-align: center; }
-.mode-mobile #planet { font-size: 130px !important; }
-.mode-mobile button { width: 100%; padding: 16px !important; font-size: 15px !important; margin: 6px 0 !important; box-sizing: border-box; }
-.mode-mobile .btn-max { width: auto !important; padding: 10px 15px !important; font-size: 12px !important; display: inline-block; margin-left: 5px !important; }
-.mode-mobile .shop, .mode-mobile .utility-bar { display: block; width: 100%; max-width: 420px; }
-.mode-mobile .shop > div { display: flex !important; align-items: center; width: 100%; }
-.mode-mobile .shop > div > button:first-child { flex: 1; }
-.mode-mobile #ui-chat { position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important; background: #090e21 !important; border-top: 3px solid #52ffe0; border-radius: 0 !important; padding: 12px !important; box-sizing: border-box; z-index: 99999; }
-.mode-mobile #chat-box { height: 80px !important; }
+.mode-mobile #planet { font-size: 160px !important; } /* Taille normale rétablie ici aussi */
+.mode-mobile button { width: auto; padding: 10px 14px !important; font-size: 14px !important; margin: 4px !important; box-sizing: content-box; }
+.mode-mobile .btn-max { width: auto !important; padding: 10px 8px !important; font-size: 11px !important; display: inline-block; margin-left: 5px !important; }
+.mode-mobile .shop, .mode-mobile .utility-bar { display: flex; width: auto; max-width: none; }
+.mode-mobile #ui-chat { position: fixed !important; bottom: 10px !important; left: 10px !important; width: 280px !important; background: rgba(0,0,0,0.85) !important; border-top: none; border-radius: 14px !important; padding: 14px !important; box-sizing: border-box; z-index: 99999; }
+.mode-mobile #chat-box { height: 110px !important; }
 
 /* THEMES GALAXIES */
 .honey-theme { background: radial-gradient(circle at center, #78350f, #451a03 80%) !important; }
 .crystal-theme { background: radial-gradient(circle at center, #1e1b4b, #4c1d95 80%) !important; }
 .plasma-theme { background: radial-gradient(circle at center, #450a0a, #7f1d1d 80%) !important; }
 
-/* PANELS CONFIGURÉS */
+/* PANELS CONFIGURÉS ET DÉPLAÇABLES */
 .roblox-panel { display: none; position: fixed; top: 150px; left: 150px; width: 90%; max-width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif; color: #ffffff; box-shadow: 0px 10px 30px rgba(0,0,0,0.7); overflow: hidden; z-index: 100000; user-select: none; }
 #panel-owner { background-color: rgba(45, 15, 15, 0.8); border: 1px solid rgba(255, 68, 68, 0.3); }
 #panel-admin { background-color: rgba(15, 30, 45, 0.8); border: 1px solid rgba(68, 136, 255, 0.3); }
@@ -110,12 +108,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 
 .merchant-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 340px; background: rgba(20, 25, 40, 0.98); border: 3px solid #fbbf24; border-radius: 12px; padding: 20px; z-index: 100000; box-shadow: 0 0 25px rgba(251,191,36,0.4); text-align: center; color: #fff; }
 #secret-merchant-btn { display: none; position: fixed; bottom: 20px; right: 20px; font-size: 45px; cursor: pointer; z-index: 9999; user-select: none; }
-.titles-container-v3 { max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 4px; margin-top: 5px; }
-.title-row-v3 { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; font-size: 11px; }
-.title-row-v3.active-v3 { border: 1px solid #52ffe0; background: rgba(82,255,224,0.15); }
-.btn-equip-v3 { background: #52ffe0; color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-.btn-equip-v3.equipped-v3 { background: #26ff63; }
-.title-locked-v3 { color: #555; font-style: italic; }
 .quest-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; margin: 6px 0; text-align: left; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
 </style>
 </head>
@@ -219,14 +211,11 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     </div>
 
     <div class="left card" id="ui-left">
-        <h3>Stats & Reliques ✨</h3>
+        <h3>Stats Globales ✨</h3>
         Power: <span id="power">1</span> | Drones: <span id="drones">0</span> | Scanner: <span id="scanner">1</span><br>
         Zone Max: <span id="maxzone">1</span> | Clics: <span id="stat-clicks">0</span><br>
         <span style="color:#fbbf24">RJ Mult Clics: <span id="rjMultClic">1</span>x</span><br>
         <span style="color:#fbbf24">RJ Mult Drones: <span id="rjMultDrone">1</span>x</span>
-        <hr style="border:1px solid rgba(255,255,255,0.1)">
-        <h4 style="margin:5px 0 2px 0; font-size:12px; color:#52ffe0;">🏆 Vos Titres & Succès</h4>
-        <div class="titles-container-v3" id="titles-wrapper-v3"></div>
         <hr style="border:1px solid rgba(255,255,255,0.1)">
         <button onclick="deconnexionComplete()" style="background:#ff4444; color:white; font-size:11px; width:100%;">🔒 Déconnexion</button>
     </div>
@@ -273,9 +262,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     <div id="header-owner" class="admin-header"><span>👑 GALAXY MINER - OWNER PANEL</span><button class="close-admin-btn" onclick="togglePanel('owner')">✕</button></div>
     <div class="admin-body">
         <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒 VERROUILLÉ] Rentrer la clé ROOT.</div></div>
-        
         <div class="suggest-box" id="suggest-owner" style="display: none;"></div>
-
         <div class="input-area">
             <span class="prefix" id="prefix-owner" style="color:#ff4444;">🔑</span>
             <input type="password" id="input-owner" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
@@ -288,9 +275,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     <div id="header-admin" class="admin-header"><span>🛡️ GALAXY MINER - ADMIN PANEL</span><button class="close-admin-btn" onclick="togglePanel('admin')">✕</button></div>
     <div class="admin-body">
         <div class="command-log" id="log-admin"><div style="color: #4488ff;">[🔒 VERROUILLÉ] Rentrer la clé MODÉRATION.</div></div>
-        
         <div class="suggest-box" id="suggest-admin" style="display: none;"></div>
-
         <div class="input-area">
             <span class="prefix" id="prefix-admin" style="color:#4488ff;">🔑</span>
             <input type="password" id="input-admin" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
@@ -308,30 +293,18 @@ const PASS_ADMIN = "admin321";
 let ownerConnected = false;
 let adminConnected = false;
 
-// Listes complètes avec les 20 nouvelles commandes intégrées
 const COMMANDS_LIST = [
-    // Anciennes
     "help", "players", "announcement", "spawnshop", "seisme", "blackout", "matrix", "clearvisuals",
-    // Nouvelles Commandes Fun & Modération
     "givecredits", "giverj", "giveshards", "setzone", "setprestige", "resetplayer",
     "kick", "ban", "unban", "freeze", "unfreeze", "boostall", "stopboost",
     "nightmode", "daymode", "rainbowui", "stoprainbow", "clearchat", "mutestatus", "serverinfo", "cometstorm"
-];
-
-const BASE_ACHIEVEMENTS = [
-    { id: "cadet", name: "Cadet", desc: "10 Clics", check: () => s.totalClicks >= 10 },
-    { id: "soldat", name: "Soldat", desc: "100 Clics", check: () => s.totalClicks >= 100 },
-    { id: "mineur", name: "Mineur", desc: "500 Clics", check: () => s.totalClicks >= 500 },
-    { id: "explorateur", name: "Explorateur", desc: "Zone 5", check: () => s.zone >= 5 },
-    { id: "elite", name: "Élite", desc: "1 Prestige", check: () => s.prestige >= 1 },
-    { id: "legende", name: "Légende", desc: "5 Prestiges", check: () => s.prestige >= 5 }
 ];
 
 let defaultState={ 
     credits:0, honeyCredits:0, crystalCredits:0, plasmaCredits:0,
     power:1, drones:0, scanner:1, zone:1, maxzone:1, prestige:0, 
     pCost:20, dCost:70, sCost:120, shards:0, up1:0, up2:0, rjCoins:0, 
-    totalClicks:0, rjClicMult:1, rjDroneMult:1, rjDiscount: 1, rjSpeedBonus: 1, ownedTitles:[], equippedTitle:"" 
+    totalClicks:0, rjClicMult:1, rjDroneMult:1, rjDiscount: 1, rjSpeedBonus: 1
 };
 let s=JSON.parse(JSON.stringify(defaultState));
 
@@ -381,8 +354,7 @@ function gererConnexion() {
         loadPlayerSave();
         genererQuetes();
         setTimeout(() => {
-            let activePrefix = s.equippedTitle ? `[${s.equippedTitle}] ` : "";
-            socket.emit("envoyerMessageGlobal", { pseudo: activePrefix + user, texte: "<i>vient de se connecter.</i>" });
+            socket.emit("envoyerMessageGlobal", { pseudo: user, texte: "<i>vient de se connecter.</i>" });
         }, 800);
     }
 }
@@ -390,7 +362,6 @@ function gererConnexion() {
 function changerGalaxie(type) {
     if(type === 'crystal' && s.prestige < 2) { alert("🚫 Requis: Prestige 2 ou supérieur !"); return; }
     if(type === 'plasma' && s.prestige < 5) { alert("🚫 Requis: Prestige 5 ou supérieur !"); return; }
-    
     currentGalaxy = type;
     document.body.className = (type !== "normale") ? type + "-theme" : "";
     document.getElementById("btn-goto-honey").style.display = (type === "normale") ? "inline-block" : "none";
@@ -412,10 +383,8 @@ document.getElementById("planet").addEventListener("click", () => {
     if(isFrozen) return; s.totalClicks++;
     let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
     let totalGain = s.power * s.scanner * s.rjClicMult * adminBoostMultiplier;
-    
     if(currentGalaxy === "normale" && s.up2 > 0 && Math.random() < (s.up2 * 0.05)) { totalGain *= 3; }
     s[currentAttr] += totalGain;
-    
     if(currentGalaxy === "normale") {
         combo++;
         document.getElementById("progress-bar").style.width = Math.min((combo / (s.zone * 20)) * 100, 100) + "%";
@@ -431,7 +400,6 @@ function lancerProductionDrones() {
     let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
     let speedBonus = currentGalaxy === "normale" ? (1 + (s.up1 * 0.5)) : 1;
     let finalGain = s.drones * s.rjDroneMult * speedBonus * adminBoostMultiplier * (s.rjSpeedBonus || 1);
-    
     s[currentAttr] += finalGain;
     if(finalGain > 0) ui();
 }
@@ -469,30 +437,18 @@ function acheterProduitMarchand(type, cout) {
     }
 }
 
-function toggleModal(id, open) {
-    document.getElementById(id).style.display = open ? "block" : "none";
-}
+function toggleModal(id, open) { document.getElementById(id).style.display = open ? "block" : "none"; }
 
 function togglePanel(type) {
     let panel = document.getElementById("panel-" + type);
-    if(panel.style.display === "block") {
-        panel.style.display = "none";
-    } else {
-        panel.style.display = "block";
-    }
+    if(panel.style.display === "block") { panel.style.display = "none"; } else { panel.style.display = "block"; }
 }
 
-// --- GESTIONNAIRE D'AUTO-COMPLÉTION EN DIRECT ---
 function gererFrappeAide(type) {
     const val = document.getElementById("input-" + type).value.trim().toLowerCase();
     const box = document.getElementById("suggest-" + type);
     box.innerHTML = "";
-
-    if (!val) {
-        COMMANDS_LIST.forEach(cmd => creerBadgeAide(type, cmd, box));
-        return;
-    }
-
+    if (!val) { COMMANDS_LIST.forEach(cmd => creerBadgeAide(type, cmd, box)); return; }
     const correspondances = COMMANDS_LIST.filter(c => c.startsWith(val));
     correspondances.forEach(cmd => creerBadgeAide(type, cmd, box));
 }
@@ -503,35 +459,21 @@ function creerBadgeAide(type, text, parentElement) {
     badge.textContent = text;
     badge.onclick = () => {
         let input = document.getElementById("input-" + type);
-        input.value = text + " "; 
-        input.focus();
-        gererFrappeAide(type);
+        input.value = text + " "; input.focus(); gererFrappeAide(type);
     };
     parentElement.appendChild(badge);
 }
 
-// --- EXECUTION DES COMMANDES ---
 function executerCommande(type) {
     const input = document.getElementById("input-" + type);
     const log = document.getElementById("log-" + type);
     let commande = input.value.trim();
-    
     if (!commande) return;
-
     const nvLog = document.createElement("div");
     nvLog.textContent = "> " + commande;
     log.appendChild(nvLog);
-    
-    // Le serveur gérant le préfixe, on passe la structure attendue nativement
-    socket.emit("commandeAdmin", { 
-        typePanel: type, 
-        commande: "~/" + commande, 
-        pseudo: document.getElementById("player").value 
-    });
-
-    input.value = "";
-    gererFrappeAide(type);
-    log.scrollTop = log.scrollHeight;
+    socket.emit("commandeAdmin", { typePanel: type, commande: "~/" + commande, pseudo: document.getElementById("player").value });
+    input.value = ""; gererFrappeAide(type); log.scrollTop = log.scrollHeight;
 }
 
 function loginPanel(type) {
@@ -540,63 +482,22 @@ function loginPanel(type) {
     let btn = document.getElementById("btn-action-" + type);
     let prefix = document.getElementById("prefix-" + type);
     let suggestBox = document.getElementById("suggest-" + type);
-    
     if (type === 'owner' && ownerConnected) { executerCommande('owner'); return; }
     if (type === 'admin' && adminConnected) { executerCommande('admin'); return; }
-
     if(type === 'owner' && input.value === PASS_OWNER) {
         ownerConnected = true;
         log.innerHTML = "<div style='color:#26ff63;'>[🔓 ACCÈS OWNER CONFORMÉ] Choisis ou tape ta commande ci-dessous.</div>";
-        btn.textContent = "Envoyer";
-        prefix.textContent = ">";
-        input.value = ""; input.type = "text"; 
-        input.placeholder = "Ex: seisme, givecredits...";
-        suggestBox.style.display = "flex";
-        
-        input.addEventListener("input", () => gererFrappeAide('owner'));
-        gererFrappeAide('owner');
+        btn.textContent = "Envoyer"; prefix.textContent = ">"; input.value = ""; input.type = "text"; 
+        input.placeholder = "Ex: seisme, givecredits..."; suggestBox.style.display = "flex";
+        input.addEventListener("input", () => gererFrappeAide('owner')); gererFrappeAide('owner');
     } else if(type === 'admin' && input.value === PASS_ADMIN) {
         adminConnected = true;
         log.innerHTML = "<div style='color:#26ff63;'>[🔓 MODÉRATION RECONNUE] Choisis ou tape ta commande ci-dessous.</div>";
-        btn.textContent = "Envoyer";
-        prefix.textContent = ">";
-        input.value = ""; input.type = "text";
-        input.placeholder = "Ex: blackout, players...";
-        suggestBox.style.display = "flex";
-        
-        input.addEventListener("input", () => gererFrappeAide('admin'));
-        gererFrappeAide('admin');
-    } else {
-        alert("Clé d'accès incorrecte !");
-    }
+        btn.textContent = "Envoyer"; prefix.textContent = ">"; input.value = ""; input.type = "text";
+        input.placeholder = "Ex: blackout, players..."; suggestBox.style.display = "flex";
+        input.addEventListener("input", () => gererFrappeAide('admin')); gererFrappeAide('admin');
+    } else { alert("Clé d'accès incorrecte !"); }
     log.scrollTop = log.scrollHeight;
-}
-
-function rafraichirInventaireTitres() {
-    let wrapper = document.getElementById("titles-wrapper-v3");
-    if(!wrapper) return;
-    wrapper.innerHTML = "";
-    
-    BASE_ACHIEVEMENTS.forEach(ach => {
-        let unlocked = ach.check();
-        let row = document.createElement("div");
-        row.className = "title-row-v3" + (s.equippedTitle === ach.name ? " active-v3" : "");
-        
-        if(unlocked) {
-            let activeText = s.equippedTitle === ach.name ? "Équipé" : "Équiper";
-            let btnClass = s.equippedTitle === ach.name ? "btn-equip-v3 equipped-v3" : "btn-equip-v3";
-            row.innerHTML = `<span><strong>[${ach.name}]</strong> - ${ach.desc}</span>
-                             <button class="${btnClass}" onclick="equiperTitre('${ach.name}')">${activeText}</button>`;
-        } else {
-            row.innerHTML = `<span class="title-locked-v3">🔒 [${ach.name}] - Bloqué (${ach.desc})</span>`;
-        }
-        wrapper.appendChild(row);
-    });
-}
-
-function equiperTitre(nomTitre) {
-    if(s.equippedTitle === nomTitre) { s.equippedTitle = ""; } else { s.equippedTitle = nomTitre; }
-    ui(); save();
 }
 
 function genererQuetes() {
@@ -612,13 +513,11 @@ function save() {
     let user = document.getElementById("player").value;
     if(user) localStorage.setItem("gm_save_" + user, JSON.stringify(s));
 }
-
 function loadPlayerSave() {
     let user = document.getElementById("player").value;
     let local = localStorage.getItem("gm_save_" + user);
     if(local) { s = JSON.parse(local); ui(); }
 }
-
 function deconnexionComplete() { save(); location.reload(); }
 
 setInterval(lancerProductionDrones, 1000);
@@ -634,14 +533,12 @@ function ui() {
     document.getElementById("stat-clicks").textContent = s.totalClicks;
     document.getElementById("rjMultClic").textContent = s.rjClicMult;
     document.getElementById("rjMultDrone").textContent = s.rjDroneMult;
-    
     document.getElementById("power").textContent = s.power; 
     document.getElementById("drones").textContent = s.drones; 
     document.getElementById("scanner").textContent = s.scanner;
     document.getElementById("pc").textContent = Math.floor(applyDiscount(s.pCost)); 
     document.getElementById("dc").textContent = Math.floor(applyDiscount(s.dCost)); 
     document.getElementById("sc").textContent = Math.floor(applyDiscount(s.sCost));
-    
     if(currentGalaxy === "normale") {
         let currentPlanet = planets[(s.zone - 1) % planets.length]; 
         document.getElementById("planetName").textContent = currentPlanet.name; 
@@ -653,10 +550,8 @@ function ui() {
     document.getElementById("maxzone").textContent = s.maxzone;
     document.getElementById("up1Lvl").textContent = s.up1; 
     document.getElementById("up2Lvl").textContent = s.up2;
-    rafraichirInventaireTitres();
 }
 
-// --- TOUCHES DE RACCOURCIS CLAVIER ---
 window.addEventListener("keydown", (e) => {
     if(document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return;
     if(e.key === "1") togglePanel('owner');
@@ -672,24 +567,19 @@ socket.on("recevoirMessageGlobal", (data) => {
     chatBox.appendChild(nvMessage); chatBox.scrollTop = chatBox.scrollHeight;
 });
 
-// --- RÉCEPTION DES ACTIONS DU SERVEUR ---
 socket.on("retourCommande", (data) => {
     let actifLog = (ownerConnected && document.getElementById("panel-owner").style.display === "block") ? "log-owner" : "log-admin";
     const log = document.getElementById(actifLog);
     if(log) {
-        const div = document.createElement("div");
-        div.style.color = "#ffff55";
-        div.style.whiteSpace = "pre-line";
-        let textPropre = data.texte.replaceAll("~/", "");
-        div.textContent = textPropre;
+        const div = document.createElement("div"); div.style.color = "#ffff55"; div.style.whiteSpace = "pre-line";
+        let textPropre = data.texte.replaceAll("~/", ""); div.textContent = textPropre;
         log.appendChild(div); log.scrollTop = log.scrollHeight;
     }
 });
 
 socket.on("alerteGlobale", (data) => {
     const alertBox = document.getElementById("global-chat-alert");
-    alertBox.textContent = "📢 " + data.texte;
-    alertBox.style.top = "20px";
+    alertBox.textContent = "📢 " + data.texte; alertBox.style.top = "20px";
     setTimeout(() => { alertBox.style.top = "-150px"; }, 6000);
 });
 
@@ -698,39 +588,24 @@ socket.on("recevoirSpawnShop", () => {
     alert("🐻 L'Ours Marchand vient d'apparaître sur la carte ! Check le bouton en bas à droite.");
 });
 
-// Gestion des visuels cumulables et ciblés + Intégration des nouvelles commandes UI directes
 socket.on("effetVisualDirectV3", (data) => {
     let monPseudo = document.getElementById("player").value.trim().toLowerCase();
     if (data.cible && data.cible.toLowerCase() !== monPseudo) return;
-
-    if (data.action === "nightmode") {
-        document.body.style.filter = "brightness(0.3) contrast(1.2)";
-    } else if (data.action === "daymode") {
-        document.body.style.filter = "none";
-    } else if (data.action === "rainbowui") {
-        clearInterval(rainbowUiInterval);
-        let hue = 0;
+    if (data.action === "nightmode") { document.body.style.filter = "brightness(0.3) contrast(1.2)"; } 
+    else if (data.action === "daymode") { document.body.style.filter = "none"; } 
+    else if (data.action === "rainbowui") {
+        clearInterval(rainbowUiInterval); let hue = 0;
         rainbowUiInterval = setInterval(() => {
             hue = (hue + 5) % 360;
-            document.querySelectorAll('.card, button').forEach(el => {
-                el.style.borderColor = `hsl(${hue}, 100%, 50%)`;
-            });
+            document.querySelectorAll('.card, button').forEach(el => { el.style.borderColor = `hsl(${hue}, 100%, 50%)`; });
         }, 100);
-    } else if (data.action === "stoprainbow") {
-        clearInterval(rainbowUiInterval);
-        document.querySelectorAll('.card, button').forEach(el => el.style.borderColor = "");
-    } else if (data.action === "clearchat") {
-        document.getElementById("chat-box").innerHTML = "<div style='color:gray;'><i>Chat nettoyé par la modération.</i></div>";
-    } else if (data.action === "cometstorm") {
+    } else if (data.action === "stoprainbow") { clearInterval(rainbowUiInterval); document.querySelectorAll('.card, button').forEach(el => el.style.borderColor = ""); } 
+    else if (data.action === "clearchat") { document.getElementById("chat-box").innerHTML = "<div style='color:gray;'><i>Chat nettoyé par la modération.</i></div>"; } 
+    else if (data.action === "cometstorm") {
         let count = 0;
         let cInt = setInterval(() => {
-            count++;
-            let c = document.getElementById("comet");
-            if(c) {
-                c.style.display = "block";
-                c.style.top = Math.random() * window.innerHeight + "px";
-                c.style.left = Math.random() * window.innerWidth + "px";
-            }
+            count++; let c = document.getElementById("comet");
+            if(c) { c.style.display = "block"; c.style.top = Math.random() * window.innerHeight + "px"; c.style.left = Math.random() * window.innerWidth + "px"; }
             if(count > 15) { clearInterval(cInt); if(c) c.style.display="none"; }
         }, 300);
     }
@@ -739,24 +614,15 @@ socket.on("effetVisualDirectV3", (data) => {
 socket.on("effetVisuelCumulable", (data) => {
     let monPseudo = document.getElementById("player").value.trim().toLowerCase();
     if (data.cible && data.cible.toLowerCase() !== monPseudo) return;
-
-    if (data.action === "seisme") {
-        document.body.classList.add("seisme-active");
-    } else if (data.action === "blackout") {
-        document.body.classList.add("blackout-active");
-    } else if (data.action === "matrix") {
-        document.body.classList.add("blur-active");
-    } else if (data.action === "clearvisuals") {
-        document.body.classList.remove("seisme-active", "blackout-active", "blur-active");
-        document.body.style.filter = "none";
-    }
+    if (data.action === "seisme") { document.body.classList.add("seisme-active"); } 
+    else if (data.action === "blackout") { document.body.classList.add("blackout-active"); } 
+    else if (data.action === "matrix") { document.body.classList.add("blur-active"); } 
+    else if (data.action === "clearvisuals") { document.body.classList.remove("seisme-active", "blackout-active", "blur-active"); document.body.style.filter = "none"; }
 });
 
-// Traitement des données joueur directes (Gives / Sets) reçues du serveur
 socket.on("actionDataJoueur", (data) => {
     let monPseudo = document.getElementById("player").value.trim().toLowerCase();
     if (data.cible.toLowerCase() !== monPseudo) return;
-
     if (data.action === "givecredits") s.credits += Number(data.valeur);
     if (data.action === "giverj") s.rjCoins += Number(data.valeur);
     if (data.action === "giveshards") s.shards += Number(data.valeur);
@@ -767,7 +633,6 @@ socket.on("actionDataJoueur", (data) => {
     if (data.action === "unfreeze") isFrozen = false;
     if (data.action === "kick") { document.getElementById("game-interface").style.display = "none"; document.getElementById("kick-screen").style.display = "block"; }
     if (data.action === "ban") { document.getElementById("game-interface").style.display = "none"; document.getElementById("ban-screen").style.display = "block"; }
-    
     ui(); save();
 });
 
@@ -777,27 +642,50 @@ socket.on("boostGlobalEvent", (data) => {
 });
 
 function envoyerMessage() {
-    const input = document.getElementById("chat-input"); 
-    const texte = input.value.trim();
+    const input = document.getElementById("chat-input"); const texte = input.value.trim();
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
-    let activePrefix = s.equippedTitle ? `[${s.equippedTitle}] ` : "";
-    if (texte !== "") { 
-        socket.emit("envoyerMessageGlobal", { pseudo: activePrefix + pseudo, texte: texte }); 
-        input.value = "";
-    }
+    if (texte !== "") { socket.emit("envoyerMessageGlobal", { pseudo: pseudo, texte: texte }); input.value = ""; }
 }
 
-document.getElementById("chat-input").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") { event.preventDefault(); envoyerMessage(); }
-});
+document.getElementById("chat-input").addEventListener("keydown", function(event) { if (event.key === "Enter") { event.preventDefault(); envoyerMessage(); } });
+document.getElementById("input-owner").addEventListener("keydown", function(event) { if (event.key === "Enter") { event.preventDefault(); loginPanel('owner'); } });
+document.getElementById("input-admin").addEventListener("keydown", function(event) { if (event.key === "Enter") { event.preventDefault(); loginPanel('admin'); } });
 
-document.getElementById("input-owner").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") { event.preventDefault(); loginPanel('owner'); }
-});
+// --- DRAG & DROP DES PANELS BARRE SUPÉRIEURE ---
+function initDragElement(panelId, headerId) {
+    let el = document.getElementById(panelId);
+    let header = document.getElementById(headerId);
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    header.onmousedown = dragMouseDown;
 
-document.getElementById("input-admin").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") { event.preventDefault(); loginPanel('admin'); }
-});
+    function dragMouseDown(e) {
+        e = e || window.event;
+        if(e.target.classList.contains('close-admin-btn')) return;
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        el.style.top = (el.offsetTop - pos2) + "px";
+        el.style.left = (el.offsetLeft - pos1) + "px";
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+initDragElement("panel-owner", "header-owner");
+initDragElement("panel-admin", "header-admin");
 
 socket.on("gameVersion", (version) => { console.log("Version du serveur connectée :", version); });
 </script>
