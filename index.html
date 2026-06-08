@@ -362,10 +362,16 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 </div>
 
 <script>
+// LIEN DE TON SERVEUR HÉBERGÉ SUR RENDER
+const socket = io("https://galaxy-miner-server.onrender.com");
+
 let supportChoisi = "pc";
 let currentGalaxy = "normale";
 const PASS_OWNER = "admin123";
 const PASS_ADMIN = "admin321";
+
+let ownerUnlocked = false;
+let adminUnlocked = false;
 
 const LISTE_COMMANDES_SUGGESTION = ["help", "chat", "kick", "ban", "mute", "unmute", "freeze", "unfreeze", "tp", "shards", "credits", "rjcoin", "reset", "gravity", "seisme", "blur", "blackout", "unabuse", "givebadge", "spawnshop", "clear"];
 
@@ -494,16 +500,15 @@ function buyPrestigeUpgrade(id) {
     if(id === 1 && s.shards >= 2) { s.shards -= 2; s.up1++; ui(); }
     if(id === 2 && s.shards >= 3) { s.shards -= 3; s.up2++; ui(); }
 }
+// CORRECTION : évite d'exécuter l'affichage pendant le calcul
 function doPrestige() {
     if(s.credits >= 500000) { s.shards += Math.floor(Math.sqrt(s.credits / 500000)); s.credits = 0; s.zone = 1; s.power = 1; s.drones = 0; s.scanner = 1; s.pCost = 20; s.dCost = 70; s.sCost = 120; s.prestige++; ui(); save(); }
 }
 
-/* --- HISTORIQUE ET REFRESH DE L'INVENTAIRE DES TITRES CORRIGÉ --- */
 function rafraichirInventaireTitres() {
     let wrapper = document.getElementById("titles-wrapper-v3"); if (!wrapper) return;
     wrapper.innerHTML = "";
     BASE_ACHIEVEMENTS.forEach(ach => {
-        // CORRECTION COMPATIBILITÉ MINUSCULES : Répare la commande :givebadge
         let isUnlocked = ach.check() || s.ownedTitles.includes(ach.name.toLowerCase()) || s.ownedTitles.includes(ach.id.toLowerCase());
         let isEquipped = s.equippedTitle === ach.name;
         let row = document.createElement("div"); row.className = "title-row-v3" + (isEquipped ? " active-v3" : "");
@@ -578,9 +583,205 @@ function toggleModal(id, open) {
 }
 
 function genererQuetes() {
-    // Fonctionnalité bouchon pour initialiser le Centre des Missions
     let container = document.getElementById("quests-container");
     if(container) container.innerHTML = "<div class='quest-item'>Missions quotidiennes chargées ! Récolte des ressources pour progresser.</div>";
+}
+
+/* --- GESTION DU CHAT ET SOCKET.IO INCLUS --- */
+function envoyerMessage() {
+    let input = document.getElementById("chat-input");
+    let msg = input.value.trim();
+    if(!msg || isMuted) return;
+    let user = document.getElementById("player").value;
+    let activePrefix = s.equippedTitle ? `[${s.equippedTitle}] ` : "";
+    socket.emit("envoyerMessageGlobal", { pseudo: activePrefix + user, texte: msg });
+    input.value = "";
+}
+
+socket.on("recvoirMessageGlobal", (data) => {
+    let box = document.getElementById("chat-box");
+    if(!box) return;
+    let el = document.createElement("div");
+    el.innerHTML = `<b>${data.pseudo}:</b> ${data.texte}`;
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+});
+
+socket.on("majJoueursEnLigne", (count) => {
+    let counter = document.getElementById("onlineCount");
+    if(counter) counter.textContent = count;
+});
+
+/* --- ACTIVATION ET OUVERTURE DES PANELS AVEC LES TOUCHES --- */
+window.addEventListener("keydown", (e) => {
+    if(document.activeElement.tagName === "INPUT") return;
+    if(e.key === "1") {
+        e.preventDefault();
+        document.getElementById("panel-owner").classList.toggle("panel-active");
+        document.getElementById("panel-owner").style.display = "block";
+        document.getElementById("input-owner").focus();
+    }
+    if(e.key === "2") {
+        e.preventDefault();
+        document.getElementById("panel-admin").classList.toggle("panel-active");
+        document.getElementById("panel-admin").style.display = "block";
+        document.getElementById("input-admin").focus();
+    }
+});
+
+/* --- EXÉCUTION ET TRAITEMENT DES COMMANDES --- */
+function updateSuggestion(type) {
+    let val = document.getElementById(`input-${type}`).value;
+    let suggest = document.getElementById(`suggest-${type}`);
+    if((type === "owner" && !ownerUnlocked) || (type === "admin" && !adminUnlocked)) {
+        suggest.textContent = ""; return;
+    }
+    if(!val) { suggest.textContent = ""; return; }
+    let correspond = LISTE_COMMANDES_SUGGESTION.find(c => c.startsWith(val.toLowerCase()));
+    if(correspond) {
+        suggest.textContent = correspond.substring(val.length);
+    } else {
+        suggest.textContent = "";
+    }
+}
+
+document.getElementById("btn-action-owner").addEventListener("click", () => executerConsole("owner"));
+document.getElementById("input-owner").addEventListener("keydown", (e) => { if(e.key === "Enter") executerConsole("owner"); });
+document.getElementById("btn-action-admin").addEventListener("click", () => executerConsole("admin"));
+document.getElementById("input-admin").addEventListener("keydown", (e) => { if(e.key === "Enter") executerConsole("admin"); });
+
+function executerConsole(type) {
+    let input = document.getElementById(`input-${type}`);
+    let logBox = document.getElementById(`log-${type}`);
+    let cmd = input.value.trim();
+    if(!cmd) return;
+
+    if(type === "owner" && !ownerUnlocked) {
+        if(cmd === PASS_OWNER) {
+            ownerUnlocked = true; input.value = ""; input.type = "text"; input.placeholder = "Tapez help pour la liste des commandes...";
+            logBox.innerHTML = "<div>[🔓 ACCÈS GARANTI] Bienvenue Créateur principal. Console ROOT active.</div>";
+            document.getElementById("owner-rainbow-bar").style.display = "block";
+        } else {
+            logBox.innerHTML += "<div>❌ Code ROOT invalide. Échec de la liaison.</div>"; input.value = "";
+        }
+        return;
+    }
+
+    if(type === "admin" && !adminUnlocked) {
+        if(cmd === PASS_ADMIN) {
+            adminUnlocked = true; input.value = ""; input.type = "text"; input.placeholder = "Tapez help pour la liste des commandes...";
+            logBox.innerHTML = "<div>[🔓 ACCÈS GARANTI] Bienvenue modérateur. Commandes actives.</div>";
+        } else {
+            logBox.innerHTML += "<div>❌ Token invalide. Accès rejeté.</div>"; input.value = "";
+        }
+        return;
+    }
+
+    let pDiv = document.createElement("div"); pDiv.textContent = `> ${cmd}`; logBox.appendChild(pDiv);
+    socket.emit("commandeServeurAdmin", { commandeBrute: cmd, rang: type });
+    input.value = ""; updateSuggestion(type);
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
+/* --- RÉCEPTION DES ACTIONS ENVOYÉES PAR LE SERVEUR --- */
+socket.on("reponseCommandeLog", (data) => {
+    let logBox = document.getElementById(`log-${data.cibleRang}`);
+    if(logBox) {
+        let d = document.createElement("div"); d.style.color = "#26ff63"; d.textContent = `[SERVEUR] ${data.message}`;
+        logBox.appendChild(d); logBox.scrollTop = logBox.scrollHeight;
+    }
+});
+
+socket.on("actionKick", (target) => {
+    if(document.getElementById("player").value === target) {
+        document.getElementById("game-interface").style.display = "none";
+        document.getElementById("kick-screen").style.display = "block";
+    }
+});
+
+socket.on("actionBan", (target) => {
+    if(document.getElementById("player").value === target) {
+        document.getElementById("game-interface").style.display = "none";
+        document.getElementById("ban-screen").style.display = "block";
+    }
+});
+
+socket.on("actionMute", (data) => {
+    if(document.getElementById("player").value === data.cible) isMuted = data.status;
+});
+
+socket.on("actionFreeze", (data) => {
+    if(document.getElementById("player").value === data.cible) {
+        isFrozen = data.status;
+        if(isFrozen) document.getElementById("planet").classList.add("frozen");
+        else document.getElementById("planet").classList.remove("frozen");
+    }
+});
+
+socket.on("actionModifierDonnees", (data) => {
+    if(document.getElementById("player").value === data.cible || data.cible === "all") {
+        if(data.type === "credits") s.credits = parseInt(data.valeur);
+        if(data.type === "shards") s.shards = parseInt(data.valeur);
+        if(data.type === "rjcoin") s.rjCoins = parseInt(data.valeur);
+        if(data.type === "badge") {
+            let badgeNettoye = data.valeur.toLowerCase().trim();
+            if(!s.ownedTitles.includes(badgeNettoye)) s.ownedTitles.push(badgeNettoye);
+        }
+        ui(); save();
+    }
+});
+
+socket.on("actionEffetVisuel", (data) => {
+    let intf = document.getElementById("game-interface");
+    if(data.type === "seisme") {
+        if(data.status) intf.classList.add("seisme-active"); else intf.classList.remove("seisme-active");
+    }
+    if(data.type === "blur") {
+        if(data.status) intf.classList.add("blur-active"); else intf.classList.remove("blur-active");
+    }
+    if(data.type === "blackout") {
+        if(data.status) intf.classList.add("blackout-active"); else intf.classList.remove("blackout-active");
+    }
+    if(data.type === "unabuse") {
+        intf.classList.remove("seisme-active", "blur-active", "blackout-active");
+    }
+});
+
+socket.on("actionAnnonceGlobale", (texte) => {
+    let alertBox = document.getElementById("global-chat-alert");
+    alertBox.innerHTML = `📢 ANNONCE GLOBALE :<br><span style="font-size:18px;font-weight:normal;">${texte}</span>`;
+    alertBox.style.top = "10px";
+    setTimeout(() => { alertBox.style.top = "-150px"; }, 6000);
+});
+
+socket.on("actionSpawnShop", (status) => {
+    document.getElementById("secret-merchant-btn").style.display = status ? "block" : "none";
+});
+
+/* --- BOUTIQUE ÉPHÉMÈRE ET FONCTIONS SUPÉRIEURES --- */
+function openMerchantShop() { toggleModal('merchant-shop-modal', true); rafraichirBoutiqueEph(); }
+function closeMerchantShop() { toggleModal('merchant-shop-modal', false); }
+
+function rafraichirBoutiqueEph() {
+    let c = document.getElementById("merchant-items-container"); if(!c) return;
+    c.innerHTML = `
+        <div class='quest-item'><span>🍯 Miel Royal (+500 Multiplicateur Clics)</span><button onclick="acheterEph('miel', 25)" style='padding:4px 8px; font-size:11px;'>25 RJ</button></div>
+        <div class='quest-item'><span>⚡ Boost Admin (Gain Global x5 pendant 2 min)</span><button onclick="acheterEph('boost', 50)" style='padding:4px 8px; font-size:11px;'>50 RJ</button></div>
+    `;
+}
+
+function acheterEph(item, cout) {
+    if(s.rjCoins >= cout) {
+        s.rjCoins -= cout;
+        if(item === 'miel') s.rjClicMult += 500;
+        if(item === 'boost') {
+            adminBoostMultiplier = 5;
+            setTimeout(() => { adminBoostMultiplier = 1; alert("⌛ Le Boost Admin x5 est terminé !"); }, 120000);
+        }
+        ui(); save(); closeMerchantShop();
+    } else {
+        alert("🚫 Éclats Royal Jelly insuffisants !");
+    }
 }
 </script>
 </body>
