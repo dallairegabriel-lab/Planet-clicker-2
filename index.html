@@ -477,9 +477,7 @@ function envoyerMessage() {
     }
 }
 
-// --- AJOUT : ÉCOUTEURS D'ÉVÉNEMENTS POUR LA TOUCHE ENTRÉE ---
-
-// Validation du chat avec Entrée
+// --- APPUI SUR ENTRÉE POUR VALIDER ---
 document.getElementById("chat-input").addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         event.preventDefault();
@@ -487,7 +485,6 @@ document.getElementById("chat-input").addEventListener("keydown", function(event
     }
 });
 
-// Connexion Panel Owner avec Entrée
 document.getElementById("input-owner").addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         event.preventDefault();
@@ -495,7 +492,6 @@ document.getElementById("input-owner").addEventListener("keydown", function(even
     }
 });
 
-// Connexion Panel Admin avec Entrée
 document.getElementById("input-admin").addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         event.preventDefault();
@@ -503,7 +499,6 @@ document.getElementById("input-admin").addEventListener("keydown", function(even
     }
 });
 
-// Réception optionnelle de la version du serveur
 socket.on("gameVersion", (version) => {
     console.log("Version du serveur connectée :", version);
 });
