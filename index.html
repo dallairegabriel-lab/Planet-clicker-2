@@ -467,168 +467,46 @@ socket.on("recevoirMessageGlobal", (data) => {
 });
 
 function envoyerMessage() {
-    const input = document.getElementById("chat-input"); const texte = input.value.trim();
+    const input = document.getElementById("chat-input"); 
+    const texte = input.value.trim();
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
     let activePrefix = s.equippedTitle ? `[${s.equippedTitle}] ` : "";
-    if (texte !== "") { socket.emit("envoyerMessageGlobal", { pseudo: activePrefix + pseudo, texte: texte }); input.value = ""; }
+    if (texte !== "") { 
+        socket.emit("envoyerMessageGlobal", { pseudo: activePrefix + pseudo, texte: texte }); 
+        input.value = "";
+    }
 }
 
-socket.on("recevoirAdminAbuse", (data) => {
-    let monPseudo = document.getElementById("player").value.trim().toLowerCase();
-    let cibleL = data.cible.toLowerCase();
-    if (cibleL !== "all" && cibleL !== monPseudo) return;
-    appliquerCommandeLocale(data.baseCmd, data.value, data.texteBrut, data.role);
+// --- AJOUT : ÉCOUTEURS D'ÉVÉNEMENTS POUR LA TOUCHE ENTRÉE ---
+
+// Validation du chat avec Entrée
+document.getElementById("chat-input").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        envoyerMessage();
+    }
 });
 
-function appliquerCommandeLocale(baseCmd, val, texteBrut, role) {
-    if (role === "admin" && ["givebadge", "spawnshop"].includes(baseCmd)) return;
-
-    if (baseCmd === "chat") {
-        let alertBox = document.getElementById("global-chat-alert");
-        alertBox.innerHTML = `📢 <b>MESSAGE DES DIEUX :</b><br><span style="color:#fff;">${texteBrut}</span>`;
-        alertBox.style.top = "20px"; setTimeout(() => { alertBox.style.top = "-150px"; }, 6000);
-        return;
+// Connexion Panel Owner avec Entrée
+document.getElementById("input-owner").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        loginPanel('owner');
     }
-    if (baseCmd === "givebadge" && role === "owner") {
-        if(!s.ownedTitles.includes(texteBrut.toLowerCase())) s.ownedTitles.push(texteBrut.toLowerCase());
-        ui(); return;
-    }
-    if (baseCmd === "spawnshop" && role === "owner") { triggerMerchantAppearance(); return; }
-
-    if (baseCmd === "rjcoin") { s.rjCoins += (val === 0 ? 10 : val); }
-    if (baseCmd === "credits") { s[galaxiesData[currentGalaxy].moneyAttr] += val; }
-    if (baseCmd === "power") { s.power = val; }
-    if (baseCmd === "drones") { s.drones = val; }
-    if (baseCmd === "zone") { s.zone = Math.max(1, val); }
-    if (baseCmd === "prestige") { s.prestige = val; }
-    if (baseCmd === "freeze") { isFrozen = true; document.body.classList.add("frozen"); }
-    if (baseCmd === "unfreeze") { isFrozen = false; document.body.classList.remove("frozen"); }
-    if (baseCmd === "seisme") { document.body.classList.add("seisme-active"); setTimeout(() => document.body.classList.remove("seisme-active"), 4000); }
-    if (baseCmd === "blur") document.body.classList.add("blur-active");
-    if (baseCmd === "blackout") document.body.classList.add("blackout-active");
-    if (baseCmd === "unabuse") { isFrozen = false; document.body.className = (currentGalaxy !== "normale") ? currentGalaxy + "-theme" : ""; }
-    if (baseCmd === "kick" || baseCmd === "ban") { document.getElementById(baseCmd + "-screen").style.display = "block"; deconnexionComplete(); }
-    if (baseCmd === "warn") { alert(`⚠️ COMPTE AVERTI ⚠️\n\nRaison: ${texteBrut}`); }
-    if (baseCmd === "clear") { document.getElementById("chat-box").innerHTML = ""; }
-    ui();
-}
-
-function togglePanel(type) {
-    let p = document.getElementById(type === 'owner' ? "panel-owner" : "panel-admin");
-    p.style.display = (p.style.display === "block") ? "none" : "block";
-    if(p.style.display === "block") document.getElementById(type === 'owner' ? "input-owner" : "input-admin").focus();
-}
-function loginPanel(type) {
-    let val = document.getElementById(type === 'owner' ? "input-owner" : "input-admin").value;
-    if((type === 'owner' && val === PASS_OWNER) || (type === 'admin' && val === PASS_ADMIN)) {
-        let logBox = document.getElementById(type === 'owner' ? "log-owner" : "log-admin");
-        logBox.innerHTML = "<div style='color:#26ff63;'>[🔓 ACCÈS VALIDE] Tapez :help.</div>";
-        let inp = document.getElementById(type === 'owner' ? "input-owner" : "input-admin");
-        inp.value = ""; inp.type = "text"; inp.placeholder = "Entrez une commande... (:help)";
-        let btn = document.getElementById(type === 'owner' ? "btn-action-owner" : "btn-action-admin");
-        btn.textContent = "Exécuter"; btn.setAttribute("onclick", `executerCmdPanel('${type}')`);
-    }
-}
-function executerCmdPanel(type) {
-    let inp = document.getElementById(type === 'owner' ? "input-owner" : "input-admin");
-    let cmd = inp.value.trim(); if(!cmd) return;
-    let logBox = document.getElementById(type === 'owner' ? "log-owner" : "log-admin");
-    logBox.innerHTML += `<div><span style="color:#aaa;">> ${cmd}</span></div>`;
-    let clean = cmd.startsWith(':') ? cmd.substring(1) : cmd;
-    let parts = clean.split(" ");
-    let baseCmd = parts[0].toLowerCase();
-
-    if(baseCmd === "help") {
-        logBox.innerHTML += `<div style="color:#55aaff;font-size:10px;">
-        :chat [texte] | :listplayers | :kick [pseudo] | :ban [pseudo] | :freeze [pseudo] | :unfreeze [pseudo] | :seisme [pseudo] | :blur [pseudo] | :blackout [pseudo] | :unabuse [pseudo] | :credits [pseudo] [nbr] | :rjcoin [pseudo] [nbr]<br>
-        ${type === 'owner' ? '<span style="color:red">:givebadge [pseudo] [titre] | :spawnshop</span>' : ''}
-        </div>`;
-        inp.value = ""; return;
-    }
-    let target = parts[1] ? parts[1] : "all";
-    let valNum = Number(parts[2] || 0);
-    let texteComplet = parts.slice(2).join(" ");
-    if(baseCmd === "chat") { target = "all"; texteComplet = parts.slice(1).join(" "); }
-
-    socket.emit("envoyerAdminAbuse", { commande: cmd, baseCmd: baseCmd, cible: target, value: valNum, texteBrut: texteComplet, role: type });
-    inp.value = ""; logBox.scrollTop = logBox.scrollHeight;
-}
-
-function rafraichirInventaireTitres() {
-    let wrapper = document.getElementById("titles-wrapper-v3"); if (!wrapper) return;
-    wrapper.innerHTML = "";
-    BASE_ACHIEVEMENTS.forEach(ach => {
-        let isUnlocked = ach.check() || s.ownedTitles.includes(ach.name.toLowerCase());
-        let isEquipped = s.equippedTitle === ach.name;
-        let row = document.createElement("div"); row.className = "title-row-v3" + (isEquipped ? " active-v3" : "");
-        if(isUnlocked) {
-            row.innerHTML = `<span>[${ach.name}]</span><button class="btn-equip-v3 ${isEquipped ? 'equipped-v3':''}" onclick="equiperLeTitre('${ach.name}')">${isEquipped ? 'Équipé':'Équiper'}</button>`;
-        } else {
-            row.innerHTML = `<span class="title-locked-v3">[${ach.name}]</span><span style="font-size:8px; color:#666;">(${ach.desc})</span>`;
-        }
-        wrapper.appendChild(row);
-    });
-}
-function equiperLeTitre(name) { s.equippedTitle = name; rafraichirInventaireTitres(); save(); }
-
-/* --- 🖱️ MOTEUR DE GLISSEMENT (DRAG & DROP) POUR LES PANELS --- */
-function rendreGlissable(panelId, headerId) {
-    let panel = document.getElementById(panelId);
-    let header = document.getElementById(headerId);
-    let xDiff = 0, yDiff = 0, xAncien = 0, yAncien = 0;
-    
-    header.onmousedown = lancerGlissement;
-
-    function lancerGlissement(e) {
-        e.preventDefault();
-        xAncien = e.clientX;
-        yAncien = e.clientY;
-        document.onmouseup = arreterGlissement;
-        document.onmousemove = deplacerElement;
-    }
-
-    function deplacerElement(e) {
-        e.preventDefault();
-        xDiff = xAncien - e.clientX;
-        yDiff = yAncien - e.clientY;
-        xAncien = e.clientX;
-        yAncien = e.clientY;
-        panel.style.top = (panel.offsetTop - yDiff) + "px";
-        panel.style.left = (panel.offsetLeft - xDiff) + "px";
-    }
-
-    function arreterGlissement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-    }
-}
-rendreGlissable("panel-owner", "header-owner");
-rendreGlissable("panel-admin", "header-admin");
-
-window.addEventListener("keydown", function(e) {
-    if (document.activeElement.tagName === "INPUT") return;
-    if (e.key === "1") togglePanel('owner');
-    if (e.key === "2") togglePanel('admin');
 });
-function toggleModal(id, open) { document.getElementById(id).style.display = open ? "block" : "none"; }
-function genererQuetes() {
-    let container = document.getElementById("quests-container"); if(container) container.innerHTML = `<div class="quest-item"><div>Miner 25 fois la planète active</div><button onclick="this.parentElement.style.display='none'">Vérifier</button></div>`;
-}
-function triggerMerchantAppearance() {
-    document.getElementById("secret-merchant-btn").style.display = "block";
-    document.getElementById("merchant-items-container").innerHTML = `<div class="merchant-item"><span>👑 Gelée Royale Pure (+5 RJ)</span><button onclick="s.rjCoins+=5; ui(); this.disabled=true;">Réclamer</button></div>`;
-}
-function openMerchantShop() { toggleModal('merchant-shop-modal', true); }
-function closeMerchantShop() { toggleModal('merchant-shop-modal', false); }
-function deconnexionComplete() { location.reload(); }
-function loadPlayerSave() {
-    let name = document.getElementById("player").value.trim(); if(!name) return;
-    try { Object.assign(s, JSON.parse(localStorage.getItem("gmv3save_" + name) || "{}")); } catch(e){}
-    if(droneInterval) clearInterval(droneInterval); droneInterval = setInterval(lancerProductionDrones, 1000);
-    ui();
-}
-function save() { let name = document.getElementById("player").value.trim(); if(name) localStorage.setItem("gmv3save_" + name, JSON.stringify(s)); }
-setInterval(save, 5000);
+
+// Connexion Panel Admin avec Entrée
+document.getElementById("input-admin").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        loginPanel('admin');
+    }
+});
+
+// Réception optionnelle de la version du serveur
+socket.on("gameVersion", (version) => {
+    console.log("Version du serveur connectée :", version);
+});
 </script>
 </body>
 </html>
