@@ -296,7 +296,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 </div>
 
 <div id="panel-owner" class="roblox-panel">
-    <div id="header-owner" class="admin-header"><span>👑 GALAXY MINER - OWNER (EXCLUSIF)</span><button class="close-admin-btn" onclick="togglePanel('owner')">✕</button></div>
+    <div id="header-owner" class="admin-header"><span>👑 OWNER PANEL</span><button class="close-admin-btn" onclick="togglePanel('owner')">✕</button></div>
     <div class="admin-body">
         <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒] Rentrer la clé ROOT.</div></div>
         <div class="suggest-box" id="suggest-owner" style="display: none;"></div>
@@ -309,7 +309,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 </div>
 
 <div id="panel-admin" class="roblox-panel">
-    <div id="header-admin" class="admin-header"><span>🛡️ GALAXY MINER - ADMIN</span><button class="close-admin-btn" onclick="togglePanel('admin')">✕</button></div>
+    <div id="header-admin" class="admin-header"><span>🛡️ ADMIN PANEL</span><button class="close-admin-btn" onclick="togglePanel('admin')">✕</button></div>
     <div class="admin-body">
         <div class="command-log" id="log-admin"><div style="color: #4488ff;">[🔒] Rentrer la clé MOD.</div></div>
         <div class="suggest-box" id="suggest-admin" style="display: none;"></div>
@@ -322,7 +322,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 </div>
 
 <div id="panel-tester" class="roblox-panel">
-    <div id="header-tester" class="admin-header"><span>🧪 GALAXY MINER - TESTER</span><button class="close-admin-btn" onclick="togglePanel('tester')">✕</button></div>
+    <div id="header-tester" class="admin-header"><span>🧪 TESTER PANEL</span><button class="close-admin-btn" onclick="togglePanel('tester')">✕</button></div>
     <div class="admin-body">
         <div class="command-log" id="log-tester"><div style="color: #26ff63;">[🔒] Rentrer la clé TESTER.</div></div>
         <div class="suggest-box" id="suggest-tester" style="display: none;"></div>
@@ -346,24 +346,19 @@ let adminConnected = false;
 let testerConnected = false;
 
 const COMMANDS_BASE_ADMIN = [
-    "help", "players", "announcement", "seisme", "blackout", "clearvisuals",
-    "givecredits", "giverj", "giveshards", "setzone", "setprestige", "kick", "freeze", "unfreeze", "clearchat"
+    "help", "announcement", "seisme", "blackout", "clearvisuals",
+    "givecredits", "giverj", "giveshards", "setzone", "setprestige", "kick", "freeze", "unfreeze", "clearchat", "resetplayer"
 ];
 
 const COMMANDS_LIST_OWNER = [
     ...COMMANDS_BASE_ADMIN,
     "giftdrone", "givehoneycredits", "givecrystalcredits", "giveplasmacredits", 
-    "owner_godmode", "owner_shutdown", "owner_wipe_player", "owner_unban_all",
-    "owner_give_mythic_pet", "owner_max_stats", "owner_add_rj_multiplier",
-    "owner_spawn_mega_comet", "owner_force_prestige", "owner_inf_money",
-    "owner_break_economy", "owner_teleport_all", "owner_steal_money", 
-    "owner_mute_all", "owner_unmute_all", "owner_rainbow_name"
+    "owner_godmode", "owner_wipe_player", "owner_give_mythic_pet", "owner_max_stats", "owner_inf_money",
+    "owner_force_prestige", "owner_steal_money", "owner_mute_all", "owner_unmute_all", "owner_rainbow_name"
 ];
 
 const COMMANDS_TESTER = [
-    "test_boost", "test_egg", "test_pet", "test_prestige", "test_zone", "debug_info", "stats_view", "show_hitbox",
-    "test_reset_money", "test_give_shard", "test_rainbow", "test_matrix", "test_shake", "test_lag", "test_fakeonline",
-    "test_comet", "test_night", "test_day", "test_speed", "test_click"
+    "test_boost", "test_egg", "test_give_shard", "test_reset_money", "test_shake", "test_click"
 ];
 
 const CONFIG_PETS = {
@@ -419,7 +414,7 @@ function gererConnexion() {
         loadPlayerSave(); genererQuetes(); 
         
         demanderLeaderboard();
-        setInterval(demanderLeaderboard, 15000); // Envoie une synchro toutes les 15s au serveur
+        setInterval(demanderLeaderboard, 15000);
 
         setTimeout(() => { socket.emit("envoyerMessageGlobal", { pseudo: user, texte: "<i>vient de se connecter.</i>" }); }, 800);
     }
@@ -657,11 +652,17 @@ window.addEventListener("keydown", (e) => {
     if(e.key === "3") togglePanel('tester');
 });
 
-const socket = io("https://galaxy-miner-server.onrender.com");
+// Connexion Socket (A ajuster vers ton URL Render si en production)
+const socket = io("http://localhost:3000");
+
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
 socket.on("recevoirMessageGlobal", (data) => {
     const cb = document.getElementById("chat-box"); const nv = document.createElement("div");
     nv.innerHTML = `<strong>${data.pseudo} :</strong> ${data.texte}`; cb.appendChild(nv); cb.scrollTop = cb.scrollHeight;
+});
+
+socket.on("commandeClearchatRecue", () => {
+    document.getElementById("chat-box").innerHTML = "<div style='color:#888; font-style:italic;'>[Le chat a été nettoyé par la modération]</div>";
 });
 
 socket.on("mettreAJourLeaderboard", (listeScores) => {
@@ -687,64 +688,80 @@ socket.on("alerteGlobale", (data) => {
     const a = document.getElementById("global-chat-alert"); a.textContent = "📢 " + data.texte; a.style.top = "20px"; setTimeout(() => { a.style.top = "-150px"; }, 6000);
 });
 
-// --- 📢 NOUVEAU : INTERCEPTEUR DES ACTIONS ENVOYÉES À TOUT LE MONDE (`all`) ---
 socket.on("recevoirActionGlobaleAll", (data) => {
-    // On feinte le script en lui faisant croire que la cible est le joueur local
     data.cible = document.getElementById("player").value.trim();
-    // On exécute l'action dans le récepteur individuel
     socket._callbacks['$actionDataJoueur'][0](data); 
 });
 
 socket.on("actionDataJoueur", (data) => {
     let monP = document.getElementById("player").value.trim().toLowerCase(); if (data.cible.toLowerCase() !== monP) return;
+    let nVal = Number(data.valeur);
+
+    // --- 🛡️ EXÉCUTION DE TOUTES LES COMMANDES REÇUES ---
+    if (data.action === "help") {
+        alert("Commandes dispos : givecredits, giverj, giveshards, setzone, setprestige, kick, freeze, unfreeze, seisme, blackout, clearvisuals, resetplayer");
+    }
+    if (data.action === "givecredits") s.credits += nVal;
+    if (data.action === "givehoneycredits") s.honeyCredits += nVal;
+    if (data.action === "givecrystalcredits") s.crystalCredits += nVal;
+    if (data.action === "giveplasmacredits") s.plasmaCredits += nVal;
+    if (data.action === "giftdrone") s.drones += nVal;
+    if (data.action === "giverj") s.rjCoins += nVal;
+    if (data.action === "giveshards") s.shards += nVal;
+    if (data.action === "setzone") s.zone = nVal;
+    if (data.action === "setprestige") s.prestige = nVal;
+    if (data.action === "freeze") { isFrozen = true; document.body.classList.add("frozen"); }
+    if (data.action === "unfreeze") { isFrozen = false; document.body.classList.remove("frozen"); }
     
-    // --- COMMANDES ADMINS & OWNER ---
-    if (data.action === "givecredits") s.credits += Number(data.valeur);
-    if (data.action === "givehoneycredits") s.honeyCredits += Number(data.valeur);
-    if (data.action === "givecrystalcredits") s.crystalCredits += Number(data.valeur);
-    if (data.action === "giveplasmacredits") s.plasmaCredits += Number(data.valeur);
-    if (data.action === "giftdrone") s.drones += Number(data.valeur);
-    if (data.action === "giverj") s.rjCoins += Number(data.valeur);
-    if (data.action === "giveshards") s.shards += Number(data.valeur);
-    if (data.action === "setzone") s.zone = Number(data.valeur);
-    if (data.action === "setprestige") s.prestige = Number(data.valeur);
-    if (data.action === "freeze") isFrozen = true;
-    if (data.action === "unfreeze") isFrozen = false;
-    if (data.action === "kick") { document.getElementById("game-interface").style.display = "none"; alert("Tu as été exclu."); location.reload(); }
+    if (data.action === "seisme") {
+        document.body.classList.add("seisme-active");
+        setTimeout(() => { document.body.classList.remove("seisme-active"); }, 4000);
+    }
+    if (data.action === "blackout") {
+        document.body.classList.add("blackout-active");
+    }
+    if (data.action === "clearvisuals") {
+        document.body.classList.remove("seisme-active", "blackout-active", "frozen");
+        isFrozen = false;
+    }
+    if (data.action === "kick") {
+        document.getElementById("game-interface").style.display = "none";
+        alert(`Tu as été exclu du serveur par ${data.auteur}.`);
+        location.reload();
+    }
+    if (data.action === "resetplayer" || data.action === "owner_wipe_player") {
+        s = JSON.parse(JSON.stringify(defaultState));
+        alert("Tes stats ont été entièrement réinitialisées par l'administration.");
+    }
     
-    if (data.action === "owner_godmode") { adminBoostMultiplier = 999999; }
-    if (data.action === "owner_max_stats") { s.power += 500; s.drones += 500; s.scanner += 500; }
-    if (data.action === "owner_inf_money") { s.credits = 9999999999; s.honeyCredits = 99999999; }
+    // --- COMMANDES EXCLUSIVES OWNER ---
+    if (data.action === "owner_godmode") { adminBoostMultiplier = 10000; }
+    if (data.action === "owner_max_stats") { s.power += 1000; s.drones += 1000; s.scanner += 1000; s.rjClicMult += 10; s.rjDroneMult += 10; }
+    if (data.action === "owner_inf_money") { s.credits = 99999999999; s.honeyCredits = 99999999; s.crystalCredits = 999999; s.plasmaCredits = 99999; }
+    if (data.action === "owner_steal_money") { s.credits = 0; s.honeyCredits = 0; s.crystalCredits = 0; s.plasmaCredits = 0; }
+    if (data.action === "owner_force_prestige") { s.prestige++; }
+    if (data.action === "owner_mute_all") { window.allMuted = true; }
+    if (data.action === "owner_unmute_all") { window.allMuted = false; }
+    if (data.action === "owner_rainbow_name") { document.getElementById("player").style.color = "orange"; document.getElementById("player").style.textShadow = "0 0 10px yellow"; }
     if (data.action === "owner_give_mythic_pet") {
         if(!s.petsPossedes) s.petsPossedes = [];
         s.petsPossedes.push({ id: "phenix", nom: "Phénix Solaire", rare: "MYTHIQUE", typeBoost: "global", valeurBoost: 10.0, emoji: "🦅", uniqueId: "owner_" + Date.now(), equipped: false, prixVente: 75000 });
     }
-    if (data.action === "owner_wipe_player") { s = JSON.parse(JSON.stringify(defaultState)); }
-    if (data.action === "owner_rainbow_name") { document.getElementById("player").style.color = "orange"; document.getElementById("player").style.textShadow = "0 0 10px yellow"; }
-    if (data.action === "owner_mute_all") { window.allMuted = true; }
-    if (data.action === "owner_unmute_all") { window.allMuted = false; }
-    if (data.action === "owner_steal_money") { s.credits = 0; s.honeyCredits = 0; }
-    if (data.action === "owner_force_prestige") { s.prestige++; }
 
-    // --- 🧪 GESTION DES COMMANDES DE TEST ---
+    // --- SECTION🧪 TESTER ---
     if (data.action === "test_shake") {
         document.body.classList.add("seisme-active");
-        setTimeout(() => { document.body.classList.remove("seisme-active"); }, 3000);
+        setTimeout(() => { document.body.classList.remove("seisme-active"); }, 2000);
     }
     if (data.action === "test_egg") {
         s.inventaireOeufsNormal = (s.inventaireOeufsNormal || 0) + 5;
         s.inventaireOeufsAvance = (s.inventaireOeufsAvance || 0) + 5;
         s.inventaireOeufsRare = (s.inventaireOeufsRare || 0) + 5;
     }
-    if (data.action === "test_click") {
-        s.power += 50;
-    }
-    if (data.action === "test_give_shard") {
-        s.shards += 10;
-    }
-    if (data.action === "test_reset_money") {
-        s.credits = 0; s.honeyCredits = 0; s.crystalCredits = 0; s.plasmaCredits = 0;
-    }
+    if (data.action === "test_click") s.power += 25;
+    if (data.action === "test_give_shard") s.shards += 5;
+    if (data.action === "test_boost") adminBoostMultiplier = 5;
+    if (data.action === "test_reset_money") { s.credits = 0; s.honeyCredits = 0; s.crystalCredits = 0; s.plasmaCredits = 0; }
 
     ui(); save();
 });
@@ -754,7 +771,7 @@ function envoyerMessage() {
     if (t === "/appsowner") { togglePanel('owner'); i.value = ""; return; }
     if (t === "/appsadmin") { togglePanel('admin'); i.value = ""; return; }
     if (t === "/appstester") { togglePanel('tester'); i.value = ""; return; }
-    if (window.allMuted && !ownerConnected) { alert("Le chat est coupé par l'Owner."); i.value = ""; return; }
+    if (window.allMuted && !ownerConnected) { alert("Le chat est suspendu."); i.value = ""; return; }
     if (t !== "") { socket.emit("envoyerMessageGlobal", { pseudo: p, texte: t }); i.value = ""; }
 }
 
