@@ -419,7 +419,7 @@ function gererConnexion() {
         loadPlayerSave(); genererQuetes(); 
         
         demanderLeaderboard();
-        setInterval(demanderLeaderboard, 30000);
+        setInterval(demanderLeaderboard, 15000); // Envoie une synchro toutes les 15s au serveur
 
         setTimeout(() => { socket.emit("envoyerMessageGlobal", { pseudo: user, texte: "<i>vient de se connecter.</i>" }); }, 800);
     }
@@ -687,6 +687,14 @@ socket.on("alerteGlobale", (data) => {
     const a = document.getElementById("global-chat-alert"); a.textContent = "📢 " + data.texte; a.style.top = "20px"; setTimeout(() => { a.style.top = "-150px"; }, 6000);
 });
 
+// --- 📢 NOUVEAU : INTERCEPTEUR DES ACTIONS ENVOYÉES À TOUT LE MONDE (`all`) ---
+socket.on("recevoirActionGlobaleAll", (data) => {
+    // On feinte le script en lui faisant croire que la cible est le joueur local
+    data.cible = document.getElementById("player").value.trim();
+    // On exécute l'action dans le récepteur individuel
+    socket._callbacks['$actionDataJoueur'][0](data); 
+});
+
 socket.on("actionDataJoueur", (data) => {
     let monP = document.getElementById("player").value.trim().toLowerCase(); if (data.cible.toLowerCase() !== monP) return;
     
@@ -718,7 +726,7 @@ socket.on("actionDataJoueur", (data) => {
     if (data.action === "owner_steal_money") { s.credits = 0; s.honeyCredits = 0; }
     if (data.action === "owner_force_prestige") { s.prestige++; }
 
-    // --- 🧪 INJECTÉ : GESTION DES COMMANDES DE TEST ---
+    // --- 🧪 GESTION DES COMMANDES DE TEST ---
     if (data.action === "test_shake") {
         document.body.classList.add("seisme-active");
         setTimeout(() => { document.body.classList.remove("seisme-active"); }, 3000);
