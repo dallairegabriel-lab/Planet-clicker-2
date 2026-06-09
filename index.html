@@ -46,9 +46,9 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .modal-close { background: none; color: red; font-size: 18px; padding: 0; margin: 0; }
 .modal-close:hover { background: none; transform: none; }
 
-/* 🛠️ NOUVEAU CONTENEUR BAS DE PAGE POUR LE LEADERBOARD ET LE CHAT */
+/* 🧱 CONTENEUR BAS DE PAGE POUR LE LEADERBOARD ET LE CHAT */
 .bottom-container { display: flex; gap: 20px; max-width: 800px; margin: 25px auto 0 auto; box-sizing: border-box; }
-.bottom-column { flex: 1; min-width: 0; } /* min-width évite les bugs flex */
+.bottom-column { flex: 1; min-width: 0; }
 
 /* Styles spécifiques au tableau des scores */
 .leaderboard-title { font-size: 14px; font-weight: bold; color: #ffaa00; text-align: center; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
@@ -419,7 +419,7 @@ function gererConnexion() {
         loadPlayerSave(); genererQuetes(); 
         
         demanderLeaderboard();
-        setInterval(demanderLeaderboard, 30000); // Actualisation toutes les 30s du leaderboard
+        setInterval(demanderLeaderboard, 30000);
 
         setTimeout(() => { socket.emit("envoyerMessageGlobal", { pseudo: user, texte: "<i>vient de se connecter.</i>" }); }, 800);
     }
@@ -600,7 +600,7 @@ function save() {
     let u = document.getElementById("player").value; 
     if(u) {
         localStorage.setItem("gm_save_" + u, JSON.stringify(s));
-        demanderLeaderboard(); // Envoie au serveur lors des sauvegardes
+        demanderLeaderboard();
     } 
 }
 function loadPlayerSave() { let u = document.getElementById("player").value; let loc = localStorage.getItem("gm_save_" + u); if(loc) { s = JSON.parse(loc); ui(); } }
@@ -689,6 +689,8 @@ socket.on("alerteGlobale", (data) => {
 
 socket.on("actionDataJoueur", (data) => {
     let monP = document.getElementById("player").value.trim().toLowerCase(); if (data.cible.toLowerCase() !== monP) return;
+    
+    // --- COMMANDES ADMINS & OWNER ---
     if (data.action === "givecredits") s.credits += Number(data.valeur);
     if (data.action === "givehoneycredits") s.honeyCredits += Number(data.valeur);
     if (data.action === "givecrystalcredits") s.crystalCredits += Number(data.valeur);
@@ -715,6 +717,27 @@ socket.on("actionDataJoueur", (data) => {
     if (data.action === "owner_unmute_all") { window.allMuted = false; }
     if (data.action === "owner_steal_money") { s.credits = 0; s.honeyCredits = 0; }
     if (data.action === "owner_force_prestige") { s.prestige++; }
+
+    // --- 🧪 INJECTÉ : GESTION DES COMMANDES DE TEST ---
+    if (data.action === "test_shake") {
+        document.body.classList.add("seisme-active");
+        setTimeout(() => { document.body.classList.remove("seisme-active"); }, 3000);
+    }
+    if (data.action === "test_egg") {
+        s.inventaireOeufsNormal = (s.inventaireOeufsNormal || 0) + 5;
+        s.inventaireOeufsAvance = (s.inventaireOeufsAvance || 0) + 5;
+        s.inventaireOeufsRare = (s.inventaireOeufsRare || 0) + 5;
+    }
+    if (data.action === "test_click") {
+        s.power += 50;
+    }
+    if (data.action === "test_give_shard") {
+        s.shards += 10;
+    }
+    if (data.action === "test_reset_money") {
+        s.credits = 0; s.honeyCredits = 0; s.crystalCredits = 0; s.plasmaCredits = 0;
+    }
+
     ui(); save();
 });
 
