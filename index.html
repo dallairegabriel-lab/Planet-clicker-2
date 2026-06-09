@@ -653,7 +653,7 @@ window.addEventListener("keydown", (e) => {
 });
 
 // Connexion Socket (A ajuster vers ton URL Render si en production)
-const socket = io("http://localhost:3000");
+const socket = io("https://galaxy-miner-server.onrender.com");
 
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
 socket.on("recevoirMessageGlobal", (data) => {
