@@ -109,6 +109,16 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .merchant-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 340px; background: rgba(20, 25, 40, 0.98); border: 3px solid #fbbf24; border-radius: 12px; padding: 20px; z-index: 100000; box-shadow: 0 0 25px rgba(251,191,36,0.4); text-align: center; color: #fff; }
 #secret-merchant-btn { display: none; position: fixed; bottom: 20px; right: 20px; font-size: 45px; cursor: pointer; z-index: 9999; user-select: none; }
 .quest-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; margin: 6px 0; text-align: left; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+/* --- SYSTÈME DE PETS ET ROULETTE --- */
+.roulette-container { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; height: 100px; background: #111; border: 3px solid #52ffe0; border-radius: 12px; overflow: hidden; z-index: 200005; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+.roulette-Ligne { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: left 4s cubic-bezier(0.1, 0.8, 0.1, 1); }
+.roulette-item { width: 80px; height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 24px; border-right: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); box-sizing: border-box; }
+.roulette-curseur { position: absolute; top: 0; left: 158px; width: 4px; height: 100%; background: #ffaa00; z-index: 2; box-shadow: 0 0 8px #ffaa00; }
+.pet-list-container { max-height: 160px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 5px; margin-top: 8px; }
+.pet-row { display: flex; justify-content: space-between; align-items: center; padding: 6px; margin: 4px 0; background: rgba(255,255,255,0.04); border-radius: 6px; font-size: 11px; }
+.pet-row.equipped { border-left: 3px solid #26ff63; background: rgba(38,255,99,0.06); }
+.btn-pet-action { padding: 3px 8px; margin: 0 2px; font-size: 10px; border-radius: 4px; display: inline-block; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -162,6 +172,11 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     <p>Cliquez sur l'écran pour tenter une reconnexon.</p>
 </div>
 
+<div id="box-roulette" class="roulette-container">
+    <div class="roulette-curseur"></div>
+    <div id="roulette-defilement" class="roulette-Ligne"></div>
+</div>
+
 <div id="game-interface">
     <div class="top" id="ui-top">
         <div class="card" style="color: #26ff63; font-weight: bold;">🟢 En ligne: <span id="onlineCount">1</span></div>
@@ -208,6 +223,29 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
         <button id="btn-goto-crystal" onclick="changerGalaxie('crystal')" style="background:#a855f7; color:white; font-weight:bold;">🔮 Crystal Galaxy (Prestige 2)</button>
         <button id="btn-goto-plasma" onclick="changerGalaxie('plasma')" style="background:#ef4444; color:white; font-weight:bold;">🔥 Plasma Galaxy (Prestige 5)</button>
         <button id="btn-leave-galaxy" onclick="changerGalaxie('normale')" style="background:#ff4444; color:white; font-weight:bold; display:none;">🚀 Retour Galaxie Normale</button>
+    </div>
+
+    <div class="card" id="ui-incubateur" style="max-width:600px; margin: 15px auto; text-align:center;">
+        <h3 style="margin:4px 0; color:#52ffe0;">🥚 Boutique & Incubateur de Compagnie</h3>
+        <div style="display:flex; justify-content:center; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
+            <button onclick="acheterOeuf('normal')" style="font-size:11px; background:#fff; padding:6px 10px;">Œuf Normal (5k 💰)</button>
+            <button onclick="acheterOeuf('avance')" style="font-size:11px; background:#67e8f9; padding:6px 10px;">Œuf Avancé (25k 💰)</button>
+            <button onclick="acheterOeuf('rare')" style="font-size:11px; background:#c084fc; padding:6px 10px;">Œuf Rare (100k 💰)</button>
+            <button id="btn-buy-honey-egg" onclick="acheterOeuf('honey')" style="font-size:11px; background:#fbbf24; display:none; padding:6px 10px;">Œuf Miel (2.5k 🍯)</button>
+        </div>
+        <div style="font-size:12px; color:#ccc;">
+            Stocks - Normaux: <span id="egg-normal-count">0</span> | Avancés: <span id="egg-avance-count">0</span> | Rares: <span id="egg-rare-count">0</span> <span id="egg-honey-lbl">| Miel: <span id="egg-honey-count">0</span></span>
+        </div>
+        <div style="margin-top:8px; display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">
+            <button id="btn-open-normal" onclick="animerOuvertureOeuf('normal')" style="background:#ffaa00; font-size:11px; display:none;">🔓 Ouvrir Normal</button>
+            <button id="btn-open-avance" onclick="animerOuvertureOeuf('avance')" style="background:#06b6d4; font-size:11px; display:none; color:white;">🔓 Ouvrir Avancé</button>
+            <button id="btn-open-rare" onclick="animerOuvertureOeuf('rare')" style="background:#a855f7; font-size:11px; display:none; color:white;">🔓 Ouvrir Rare</button>
+            <button id="btn-open-honey" onclick="animerOuvertureOeuf('honey')" style="background:#fbbf24; font-size:11px; display:none;">🔓 Ouvrir Miel</button>
+        </div>
+        <div style="margin-top:10px; font-weight:bold; color:#26ff63;">✨ Compagnons équipés : <span id="equipped-pets-count">0</span> / 3</div>
+        <div class="pet-list-container">
+            <div id="liste-mes-pets">Aucun compagnon dans l'inventaire.</div>
+        </div>
     </div>
 
     <div class="left card" id="ui-left">
@@ -300,11 +338,54 @@ const COMMANDS_LIST = [
     "nightmode", "daymode", "rainbowui", "stoprainbow", "clearchat", "mutestatus", "serverinfo", "cometstorm"
 ];
 
+// --- LOGIQUE CONFIGURATION DES PETS (4 TYPES D'OEUFS MAINTENANT) ---
+const CONFIG_PETS = {
+    normal: {
+        prix: 5000, monnaie: "credits",
+        liste: [
+            { id: "abeille_commune", nom: "Abeille Ouvrière", rare: "Commun", chance: 0.70, typeBoost: "clic", valeurBoost: 1.2, emoji: "🐝", prixVente: 1000 },
+            { id: "slime_spatial", nom: "Slime Cosmique", rare: "Rare", chance: 0.25, typeBoost: "drone", valeurBoost: 1.4, emoji: "🧪", prixVente: 2500 },
+            { id: "mini_robot", nom: "Robot Éclaireur", rare: "Épique", chance: 0.05, typeBoost: "global", valeurBoost: 1.8, emoji: "🤖", prixVente: 6000 }
+        ]
+    },
+    avance: {
+        prix: 25000, monnaie: "credits",
+        liste: [
+            { id: "slime_spatial", nom: "Slime Cosmique", rare: "Rare", chance: 0.60, typeBoost: "drone", valeurBoost: 1.5, emoji: "🧪", prixVente: 2500 },
+            { id: "alien_rover", nom: "Chasseur Alien", rare: "Épique", chance: 0.32, typeBoost: "clic", valeurBoost: 2.2, emoji: "👽", prixVente: 10000 },
+            { id: "dragon_plasma", nom: "Dragon de Plasma", rare: "LÉGENDAIRE", chance: 0.08, typeBoost: "global", valeurBoost: 4.0, emoji: "🐉", prixVente: 30000 }
+        ]
+    },
+    rare: {
+        prix: 100000, monnaie: "credits",
+        liste: [
+            { id: "alien_rover", nom: "Chasseur Alien", rare: "Épique", chance: 0.65, typeBoost: "clic", valeurBoost: 2.5, emoji: "👽", prixVente: 10000 },
+            { id: "dragon_plasma", nom: "Dragon de Plasma", rare: "LÉGENDAIRE", chance: 0.30, typeBoost: "global", valeurBoost: 5.0, emoji: "🐉", prixVente: 30000 },
+            { id: "phenix_solaire", nom: "Phénix Solaire", rare: "MYTHIQUE", chance: 0.05, typeBoost: "global", valeurBoost: 10.0, emoji: "🦅", prixVente: 75000 }
+        ]
+    },
+    honey: {
+        prix: 2500, monnaie: "honeyCredits",
+        liste: [
+            { id: "bourdon_miel", nom: "Bourdon Joufflu", rare: "Commun", chance: 0.55, typeBoost: "clic", valeurBoost: 1.5, emoji: "🪰", prixVente: 500 },
+            { id: "abeille_piqueuse", nom: "Abeille de Chasse", rare: "Rare", chance: 0.35, typeBoost: "drone", valeurBoost: 2.0, emoji: "🐝", prixVente: 1000 },
+            { id: "ours_miel", nom: "Ours Volant", rare: "Épique", chance: 0.09, typeBoost: "global", valeurBoost: 3.0, emoji: "🐻", prixVente: 3000 },
+            { id: "reine_miel", nom: "Reine des Alvéoles", rare: "LÉGENDAIRE", chance: 0.01, typeBoost: "global", valeurBoost: 7.5, emoji: "👑", prixVente: 10000 }
+        ]
+    }
+};
+
 let defaultState={ 
     credits:0, honeyCredits:0, crystalCredits:0, plasmaCredits:0,
     power:1, drones:0, scanner:1, zone:1, maxzone:1, prestige:0, 
     pCost:20, dCost:70, sCost:120, shards:0, up1:0, up2:0, rjCoins:0, 
-    totalClicks:0, rjClicMult:1, rjDroneMult:1, rjDiscount: 1, rjSpeedBonus: 1
+    totalClicks:0, rjClicMult:1, rjDroneMult:1, rjDiscount: 1, rjSpeedBonus: 1,
+    // Inventaires mis à jour
+    inventaireOeufsNormal: 0,
+    inventaireOeufsAvance: 0,
+    inventaireOeufsRare: 0,
+    inventaireOeufsHoney: 0,
+    petsPossedes: [] // contiendra {uniqueId, id, nom, rare, typeBoost, valeurBoost, emoji, prixVente, monnaie, equipped: false}
 };
 let s=JSON.parse(JSON.stringify(defaultState));
 
@@ -368,6 +449,10 @@ function changerGalaxie(type) {
     document.getElementById("btn-goto-crystal").style.display = (type === "normale") ? "inline-block" : "none";
     document.getElementById("btn-goto-plasma").style.display = (type === "normale") ? "inline-block" : "none";
     document.getElementById("btn-leave-galaxy").style.display = (type !== "normale") ? "inline-block" : "none";
+    
+    // Visuels œuf exclusif Honey Galaxy
+    document.getElementById("btn-buy-honey-egg").style.display = (type === "honey") ? "inline-block" : "none";
+    
     ui();
 }
 
@@ -379,10 +464,26 @@ function buyRJUpgrade(type) {
     ui(); save();
 }
 
+// APPLICATION UNIQUEMENT DES COMPAGNONS SUR LES PLACES ÉQUIPÉES
+function calculerBoostPets(typeAttendu) {
+    let mult = 1;
+    if (s.petsPossedes && s.petsPossedes.length > 0) {
+        s.petsPossedes.forEach(p => {
+            if (p.equipped && (p.typeBoost === typeAttendu || p.typeBoost === "global")) {
+                mult *= p.valeurBoost;
+            }
+        });
+    }
+    return mult;
+}
+
 document.getElementById("planet").addEventListener("click", () => {
     if(isFrozen) return; s.totalClicks++;
     let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
-    let totalGain = s.power * s.scanner * s.rjClicMult * adminBoostMultiplier;
+    
+    let petMult = calculerBoostPets("clic");
+    let totalGain = s.power * s.scanner * s.rjClicMult * adminBoostMultiplier * petMult;
+    
     if(currentGalaxy === "normale" && s.up2 > 0 && Math.random() < (s.up2 * 0.05)) { totalGain *= 3; }
     s[currentAttr] += totalGain;
     if(currentGalaxy === "normale") {
@@ -399,7 +500,10 @@ function lancerProductionDrones() {
     if(isFrozen || s.drones <= 0) return;
     let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
     let speedBonus = currentGalaxy === "normale" ? (1 + (s.up1 * 0.5)) : 1;
-    let finalGain = s.drones * s.rjDroneMult * speedBonus * adminBoostMultiplier * (s.rjSpeedBonus || 1);
+    
+    let petMult = calculerBoostPets("drone");
+    let finalGain = s.drones * s.rjDroneMult * speedBonus * adminBoostMultiplier * (s.rjSpeedBonus || 1) * petMult;
+    
     s[currentAttr] += finalGain;
     if(finalGain > 0) ui();
 }
@@ -509,6 +613,128 @@ function genererQuetes() {
     `;
 }
 
+// --- LOGIQUE BOUTIQUE PETS : ACHATS DES 4 TYPES D'OEUFS ---
+function acheterOeuf(type) {
+    let config = CONFIG_PETS[type];
+    let portefeuille = (config.monnaie === "honeyCredits") ? "honeyCredits" : "credits";
+    
+    if (s[portefeuille] >= config.prix) {
+        s[portefeuille] -= config.prix;
+        
+        if (type === "normal") s.inventaireOeufsNormal = (s.inventaireOeufsNormal || 0) + 1;
+        if (type === "avance") s.inventaireOeufsAvance = (s.inventaireOeufsAvance || 0) + 1;
+        if (type === "rare") s.inventaireOeufsRare = (s.inventaireOeufsRare || 0) + 1;
+        if (type === "honey") s.inventaireOeufsHoney = (s.inventaireOeufsHoney || 0) + 1;
+        
+        ui(); save();
+    } else {
+        alert("🚫 Fonds insuffisants ! Requis : " + config.prix + " " + (config.monnaie === "honeyCredits" ? "🍯" : "💰"));
+    }
+}
+
+// --- OUVERTURE AVEC LE SCRIPT DE ROULETTE HORIZONTALE ---
+function animerOuvertureOeuf(type) {
+    let stock = 0;
+    if (type === "normal") stock = s.inventaireOeufsNormal;
+    if (type === "avance") stock = s.inventaireOeufsAvance;
+    if (type === "rare") stock = s.inventaireOeufsRare;
+    if (type === "honey") stock = s.inventaireOeufsHoney;
+    
+    if (!stock || stock <= 0) return;
+    
+    if (type === "normal") s.inventaireOeufsNormal--;
+    if (type === "avance") s.inventaireOeufsAvance--;
+    if (type === "rare") s.inventaireOeufsRare--;
+    if (type === "honey") s.inventaireOeufsHoney--;
+    
+    ui();
+
+    const divLigne = document.getElementById("roulette-defilement");
+    const boite = document.getElementById("box-roulette");
+    divLigne.innerHTML = "";
+    divLigne.style.left = "0px";
+    boite.style.display = "block";
+
+    let configPool = CONFIG_PETS[type].liste;
+    let rand = Math.random();
+    let cumul = 0;
+    let petGagne = configPool[0];
+    
+    for (let p of configPool) {
+        cumul += p.chance;
+        if (rand <= cumul) { petGagne = p; break; }
+    }
+
+    let indexGagnant = 24; 
+    for (let i = 0; i < 35; i++) {
+        let itemElement = document.createElement("div");
+        itemElement.className = "roulette-item";
+        let petAffiche = configPool[Math.floor(Math.random() * configPool.length)];
+        if (i === indexGagnant) { petAffiche = petGagne; }
+        itemElement.innerHTML = `<span>${petAffiche.emoji}</span><span style="font-size:9px; font-weight:bold;">${petAffiche.nom}</span>`;
+        divLigne.appendChild(itemElement);
+    }
+
+    setTimeout(() => {
+        let destinationX = -((indexGagnant * 80) - 120 + Math.floor(Math.random() * 40)); 
+        divLigne.style.left = destinationX + "px";
+    }, 100);
+
+    setTimeout(() => {
+        boite.style.display = "none";
+        if (!s.petsPossedes) s.petsPossedes = [];
+        
+        // Copie propre et assignation d'un identifiant unique de session pour la gestion
+        let nvPet = Object.assign({}, petGagne);
+        nvPet.uniqueId = "pet_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+        nvPet.equipped = false;
+        nvPet.monnaieRecup = CONFIG_PETS[type].monnaie; // lie la vente à la monnaie de l'oeuf
+        
+        s.petsPossedes.push(nvPet);
+        alert(`🎉 COMPAGNON REÇU : ${nvPet.emoji} ${nvPet.nom} (${nvPet.rare}) !\n[Rendez-vous dans l'incubateur pour l'équiper]`);
+        ui(); save();
+    }, 4100);
+}
+
+// --- GESTION ÉQUIPEMENT (MAX 3) ET SYSTÈME DE VENTE ---
+function gererEquipementPet(uniqueId) {
+    if(!s.petsPossedes) return;
+    let index = s.petsPossedes.findIndex(p => p.uniqueId === uniqueId);
+    if(index === -1) return;
+    
+    let pet = s.petsPossedes[index];
+    
+    if(pet.equipped) {
+        // Déséquiper
+        pet.equipped = false;
+    } else {
+        // Équiper (Vérifier la limite stricte de 3)
+        let totalEquipped = s.petsPossedes.filter(p => p.equipped).length;
+        if(totalEquipped >= 3) {
+            alert("🚫 Limite atteinte ! Tu ne peux pas équiper plus de 3 familiers en même temps.");
+            return;
+        }
+        pet.equipped = true;
+    }
+    ui(); save();
+}
+
+function vendrePet(uniqueId) {
+    if(!s.petsPossedes) return;
+    let index = s.petsPossedes.findIndex(p => p.uniqueId === uniqueId);
+    if(index === -1) return;
+    
+    let pet = s.petsPossedes[index];
+    let symbole = (pet.monnaieRecup === "honeyCredits") ? "🍯" : "💰";
+    let attrPortefeuille = (pet.monnaieRecup === "honeyCredits") ? "honeyCredits" : "credits";
+    
+    if(confirm(`Vendre ${pet.emoji} ${pet.nom} pour ${pet.prixVente} ${symbole} ?`)) {
+        s[attrPortefeuille] += pet.prixVente;
+        s.petsPossedes.splice(index, 1); // Retrait complet
+        ui(); save();
+    }
+}
+
 function save() {
     let user = document.getElementById("player").value;
     if(user) localStorage.setItem("gm_save_" + user, JSON.stringify(s));
@@ -516,7 +742,12 @@ function save() {
 function loadPlayerSave() {
     let user = document.getElementById("player").value;
     let local = localStorage.getItem("gm_save_" + user);
-    if(local) { s = JSON.parse(local); ui(); }
+    if(local) { 
+        s = JSON.parse(local); 
+        // Patch de sécurité sur les vieux profils
+        if(!s.petsPossedes) s.petsPossedes = [];
+        ui(); 
+    }
 }
 function deconnexionComplete() { save(); location.reload(); }
 
@@ -550,6 +781,48 @@ function ui() {
     document.getElementById("maxzone").textContent = s.maxzone;
     document.getElementById("up1Lvl").textContent = s.up1; 
     document.getElementById("up2Lvl").textContent = s.up2;
+
+    // Mise à jour visuelle des stocks d'œufs
+    document.getElementById("egg-normal-count").textContent = s.inventaireOeufsNormal || 0;
+    document.getElementById("egg-avance-count").textContent = s.inventaireOeufsAvance || 0;
+    document.getElementById("egg-rare-count").textContent = s.inventaireOeufsRare || 0;
+    document.getElementById("egg-honey-count").textContent = s.inventaireOeufsHoney || 0;
+    
+    document.getElementById("btn-open-normal").style.display = (s.inventaireOeufsNormal > 0) ? "inline-block" : "none";
+    document.getElementById("btn-open-avance").style.display = (s.inventaireOeufsAvance > 0) ? "inline-block" : "none";
+    document.getElementById("btn-open-rare").style.display = (s.inventaireOeufsRare > 0) ? "inline-block" : "none";
+    document.getElementById("btn-open-honey").style.display = (s.inventaireOeufsHoney > 0) ? "inline-block" : "none";
+
+    // Gestion du compteur équipé
+    let countEquipped = s.petsPossedes ? s.petsPossedes.filter(p => p.equipped).length : 0;
+    document.getElementById("equipped-pets-count").textContent = countEquipped;
+
+    // Rendu dynamique de la liste des compagnons possédés
+    let htmlPets = "";
+    if (s.petsPossedes && s.petsPossedes.length > 0) {
+        s.petsPossedes.forEach(p => {
+            let statusClass = p.equipped ? "pet-row equipped" : "pet-row";
+            let actionText = p.equipped ? "❌ Déséquiper" : "🎒 Équiper";
+            let symboleVente = (p.monnaieRecup === "honeyCredits") ? "🍯" : "💰";
+            
+            htmlPets += `
+                <div class="${statusClass}">
+                    <div>
+                        <span style="font-size:14px;">${p.emoji}</span> 
+                        <strong>${p.nom}</strong> (${p.rare}) <br>
+                        <span style="color:#52ffe0;">Boost: x${p.valeurBoost} ${p.typeBoost}</span>
+                    </div>
+                    <div>
+                        <button class="btn-pet-action" style="background:#52ffe0;" onclick="gererEquipementPet('${p.uniqueId}')">${actionText}</button>
+                        <button class="btn-pet-action" style="background:#ef4444; color:white;" onclick="vendrePet('${p.uniqueId}')">💰 Vendre (${p.prixVente}${symboleVente})</button>
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        htmlPets = "<div style='color:gray; padding:10px;'>Aucun familier disponible. Achetez et ouvrez un œuf ci-dessus !</div>";
+    }
+    document.getElementById("liste-mes-pets").innerHTML = htmlPets;
 }
 
 window.addEventListener("keydown", (e) => {
@@ -641,22 +914,13 @@ socket.on("boostGlobalEvent", (data) => {
     document.getElementById("notice").textContent = adminBoostMultiplier > 1 ? `🚀 BOOST GLOBAL MULTI-MINER ${adminBoostMultiplier}x EN COURS` : "En attente...";
 });
 
-/* Modifié uniquement ici pour intercepter /appsowner et /appsadmin */
 function envoyerMessage() {
     const input = document.getElementById("chat-input"); 
     const texte = input.value.trim();
     let pseudo = document.getElementById("player").value.trim() || "Anonyme";
     
-    if (texte === "/appsowner") {
-        togglePanel('owner');
-        input.value = "";
-        return;
-    }
-    if (texte === "/appsadmin") {
-        togglePanel('admin');
-        input.value = "";
-        return;
-    }
+    if (texte === "/appsowner") { togglePanel('owner'); input.value = ""; return; }
+    if (texte === "/appsadmin") { togglePanel('admin'); input.value = ""; return; }
 
     if (texte !== "") { socket.emit("envoyerMessageGlobal", { pseudo: pseudo, texte: texte }); input.value = ""; }
 }
@@ -665,7 +929,6 @@ document.getElementById("chat-input").addEventListener("keydown", function(event
 document.getElementById("input-owner").addEventListener("keydown", function(event) { if (event.key === "Enter") { event.preventDefault(); loginPanel('owner'); } });
 document.getElementById("input-admin").addEventListener("keydown", function(event) { if (event.key === "Enter") { event.preventDefault(); loginPanel('admin'); } });
 
-// --- DRAG & DROP DES PANELS BARRE SUPÉRIEURE ---
 function initDragElement(panelId, headerId) {
     let el = document.getElementById(panelId);
     let header = document.getElementById(headerId);
