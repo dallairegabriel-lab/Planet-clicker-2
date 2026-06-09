@@ -7,31 +7,30 @@
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <style>
 /* --- STYLES DE BASE D'ORIGINE --- */
-body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow-x:hidden;transition: filter 0.3s, animation 0.3s, transform 0.3s, transform-origin 0.3s;}
+body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow-x:hidden;transition: filter 0.3s, animation 0.3s, transform 0.3s, transform-origin 0.3s; padding-bottom: 40px;}
 #stars,#stars2{position:fixed;inset:0;pointer-events:none}
 #stars{background-image:radial-gradient(white 1px,transparent 1px);background-size:45px 45px;opacity:.2}
 #stars2{background-image:radial-gradient(cyan 1px,transparent 1px);background-size:90px 90px;opacity:.08;animation:drift 60s linear infinite}
 @keyframes drift{from{transform:translateY(0)}to{transform:translateY(90px)}}
 
-/* --- INTERFACE DE JEU PAR DÉFAUT (PC) --- */
-#game-interface { display: none; padding: 20px; box-sizing: border-box; }
+/* --- INTERFACE DE JEU --- */
+#game-interface { display: none; padding: 20px; box-sizing: border-box; max-width: 1200px; margin: 0 auto; }
 .top{display:flex;justify-content:center;gap:15px;padding:10px;flex-wrap:wrap;transition: transform 0.5s ease;}
-.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:10px 14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);transition: transform 0.5s ease;}
+.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);transition: transform 0.5s ease;}
 #money{text-align:center;font-size:54px;color:#52ffe0;text-shadow:0 0 15px #52ffe0;margin-top:10px;transition: transform 0.5s ease;}
 #planet-container{text-align:center;position:relative;margin:10px auto;width:220px;transition: transform 0.5s ease;}
 #planet{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
 #planet:active{transform:scale(.85)}
 #planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
 
-/* Positionnement PC original */
-.mode-pc .left { position: fixed; top: 110px; left: 10px; width: 280px; }
-.mode-pc .right { position: fixed; top: 110px; right: 10px; width: 280px; }
-.mode-pc #ui-chat { position: fixed; bottom: 10px; left: 10px; width: 280px; background: rgba(0,0,0,0.85); z-index: 9999; }
-
 button{border:none;border-radius:10px;padding:10px 14px;margin:4px;cursor:pointer;font-weight:bold;background:#fff;color:#000;transition:0.2s}
 button:hover{background:#52ffe0;transform:translateY(-2px)}
 .btn-max{background:#ffaa00;color:#000;padding:10px 8px;font-size:11px;}
 .btn-max:hover{background:#ffcc66;}
+
+/* Affichage des Niveaux/Stats d'équipement */
+.stats-bar { display: flex; justify-content: center; gap: 15px; margin: 15px auto; max-width: 600px; flex-wrap: wrap; }
+.stat-badge { background: rgba(0, 0, 0, 0.4); padding: 6px 12px; border-radius: 8px; font-size: 13px; border: 1px solid rgba(255,255,255,0.05); }
 
 .shop{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:15px;transition: transform 0.5s ease;}
 .utility-bar { display:flex; justify-content:center; gap:8px; margin: 15px auto; max-width: 600px; flex-wrap: wrap; }
@@ -41,44 +40,64 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 #progress-bar{width:0%;height:100%;background:linear-gradient(90deg, #52ffe0, #0077ff);transition:width 0.2s}
 #comet{position:fixed;font-size:40px;cursor:pointer;z-index:99;display:none;user-select:none}
 
+/* Modales d'interface d'origine */
+.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(10, 15, 30, 0.95); border: 2px solid #52ffe0; border-radius: 14px; padding: 20px; z-index: 300000; max-width: 400px; width: 90%; box-shadow: 0 0 25px rgba(82,255,224,0.3); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+.modal-close { background: none; color: red; font-size: 18px; padding: 0; margin: 0; }
+.modal-close:hover { background: none; transform: none; }
+
+/* 🛠️ NOUVEAU CONTENEUR BAS DE PAGE POUR LE LEADERBOARD ET LE CHAT */
+.bottom-container { display: flex; gap: 20px; max-width: 800px; margin: 25px auto 0 auto; box-sizing: border-box; }
+.bottom-column { flex: 1; min-width: 0; } /* min-width évite les bugs flex */
+
+/* Styles spécifiques au tableau des scores */
+.leaderboard-title { font-size: 14px; font-weight: bold; color: #ffaa00; text-align: center; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+.leaderboard-list { height: 140px; overflow-y: auto; font-size: 12px; font-family: monospace; }
+.leaderboard-row { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.leaderboard-row:nth-child(1) { color: #ffd700; font-weight: bold; }
+.leaderboard-row:nth-child(2) { color: #c0c0c0; }
+.leaderboard-row:nth-child(3) { color: #cd7f32; }
+
 /* 📱 ADAPTATIVE MOBILE */
-.mode-mobile { display: flex !important; flex-direction: column; align-items: center; padding: 10px 10px 180px 10px !important; overflow-y: auto; }
+.mode-mobile { display: flex !important; flex-direction: column; align-items: center; padding: 10px !important; }
 .mode-mobile .pc-only { display: none !important; }
-.mode-mobile .card { width: 100%; max-width: 420px; box-sizing: border-box; margin-bottom: 15px; position: static !important; }
+.mode-mobile .card { width: 100%; max-width: 420px; box-sizing: border-box; margin-bottom: 15px; }
 .mode-mobile #main-game-area { order: -1; width: 100%; text-align: center; }
 .mode-mobile #planet { font-size: 160px !important; }
-.mode-mobile button { width: auto; padding: 10px 14px !important; font-size: 14px !important; margin: 4px !important; box-sizing: content-box; }
+.mode-mobile button { width: auto; padding: 10px 14px !important; font-size: 14px !important; margin: 4px !important; }
 .mode-mobile .btn-max { width: auto !important; padding: 10px 8px !important; font-size: 11px !important; display: inline-block; margin-left: 5px !important; }
-.mode-mobile .shop, .mode-mobile .utility-bar { display: flex; width: auto; max-width: none; }
-.mode-mobile #ui-chat { position: fixed !important; bottom: 10px !important; left: 10px !important; width: 280px !important; background: rgba(0,0,0,0.85) !important; border-top: none; border-radius: 14px !important; padding: 14px !important; box-sizing: border-box; z-index: 99999; }
-.mode-mobile #chat-box { height: 110px !important; }
+.mode-mobile .shop, .mode-mobile .utility-bar, .mode-mobile .stats-bar { display: flex; width: auto; max-width: none; }
+.mode-mobile .bottom-container { flex-direction: column; width: 100%; max-width: 420px; gap: 15px; margin-top: 10px; }
 
 /* THEMES GALAXIES */
 .honey-theme { background: radial-gradient(circle at center, #78350f, #451a03 80%) !important; }
 .crystal-theme { background: radial-gradient(circle at center, #1e1b4b, #4c1d95 80%) !important; }
 .plasma-theme { background: radial-gradient(circle at center, #450a0a, #7f1d1d 80%) !important; }
 
-/* PANELS CONFIGURÉS ET DÉPLAÇABLES */
+/* PANELS CONFIGURÉS */
 .roblox-panel { display: none; position: fixed; top: 150px; left: 150px; width: 90%; max-width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif; color: #ffffff; box-shadow: 0px 10px 30px rgba(0,0,0,0.7); overflow: hidden; z-index: 100000; user-select: none; }
 #panel-owner { background-color: rgba(45, 15, 15, 0.8); border: 1px solid rgba(255, 68, 68, 0.3); }
 #panel-admin { background-color: rgba(15, 30, 45, 0.8); border: 1px solid rgba(68, 136, 255, 0.3); }
+#panel-tester { background-color: rgba(15, 45, 15, 0.8); border: 1px solid rgba(38, 255, 99, 0.3); }
+
 .admin-header { background-color: rgba(20, 20, 20, 0.9); padding: 12px; font-weight: 600; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; cursor: move; }
 .close-admin-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 16px; cursor: pointer; font-weight: bold; padding: 0 5px; margin: 0; }
 .admin-body { padding: 12px; }
 .command-log { height: 180px; background-color: rgba(0, 0, 0, 0.6); border-radius: 4px; padding: 10px; font-size: 12px; font-family: 'Courier New', monospace; overflow-y: auto; margin-bottom: 8px; }
-#log-owner { color: #ff5555; } #log-admin { color: #55aaff; }
+#log-owner { color: #ff5555; } #log-admin { color: #55aaff; } #log-tester { color: #26ff63; }
 
-/* ZONE DE SUGGESTIONS RAPIDES */
+/* SUGGESTIONS */
 .suggest-box { display: flex; gap: 5px; flex-wrap: wrap; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px; margin-bottom: 8px; min-height: 25px; max-height: 85px; overflow-y: auto; align-items: center; }
 .suggest-badge { background: rgba(255,255,255,0.15); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: monospace; transition: 0.15s; }
 .suggest-badge:hover { background: #52ffe0; color: #000; }
 
-.input-area { display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; padding: 6px 10px; }
-.prefix { font-family: monospace; margin-right: 8px; font-weight: bold; font-size: 14px; }
+.input-area { display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; padding: 6px 10px; gap: 5px; }
+.prefix { font-family: monospace; margin-right: 3px; font-weight: bold; font-size: 14px; }
 .admin-input-text { flex: 1; background: none; border: none; color: #ffffff; font-size: 13px; outline: none; }
 .panel-btn { background-color: rgba(60, 60, 60, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 4px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; }
+.panel-btn:hover { background-color: rgba(100, 100, 100, 0.9); }
 
-/* MODERATEURS CSS VISUELS COMBINÉS */
+/* EFFETS VISUELS */
 .frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
 .seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
 @keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
@@ -99,18 +118,10 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .auth-btn-login { background: #52ffe0; color: #02040a; }
 .auth-btn-register { background: #ffaa00; color: #02040a; }
 .auth-toggle { margin-top: 15px; font-size: 12px; color: #9de; cursor: pointer; text-decoration: underline; }
-#ban-screen, #kick-screen { display: none; position: fixed; inset: 0; color: white; font-family: 'Segoe UI', Arial; padding: 10% 5%; z-index: 999999; text-align: center; }
-#ban-screen { background: #4a0000; } #kick-screen { background: #222; }
 
 #global-chat-alert { position: fixed; top: -150px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff0055, #ffaa00); color: white; padding: 20px 40px; border-radius: 12px; font-size: 24px; font-weight: bold; z-index: 200000; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 3px solid #fff; box-shadow: 0 0 35px rgba(255,0,85,0.6); }
-#owner-rainbow-bar { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 6px; background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet, red); background-size: 200% auto; animation: rainbowShift 2s linear infinite; z-index: 999999; }
-@keyframes rainbowShift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
 
-.merchant-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 340px; background: rgba(20, 25, 40, 0.98); border: 3px solid #fbbf24; border-radius: 12px; padding: 20px; z-index: 100000; box-shadow: 0 0 25px rgba(251,191,36,0.4); text-align: center; color: #fff; }
-#secret-merchant-btn { display: none; position: fixed; bottom: 20px; right: 20px; font-size: 45px; cursor: pointer; z-index: 9999; user-select: none; }
-.quest-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px; margin: 6px 0; text-align: left; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
-
-/* --- SYSTÈME DE PETS ET ROULETTE --- */
+/* SYSTÈME DE PETS ET ROULETTE */
 .roulette-container { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; height: 100px; background: #111; border: 3px solid #52ffe0; border-radius: 12px; overflow: hidden; z-index: 200005; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
 .roulette-Ligne { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: left 4s cubic-bezier(0.1, 0.8, 0.1, 1); }
 .roulette-item { width: 80px; height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 24px; border-right: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); box-sizing: border-box; }
@@ -156,25 +167,33 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
     </div>
 </div>
 
-<div id="owner-rainbow-bar"></div>
 <div id="stars"></div><div id="stars2"></div>
 <div id="global-chat-alert">📢 ANNONCE GLOBALE</div>
-
-<div id="ban-screen">
-    <span style="font-size: 80px;">🚫</span>
-    <h2>COMPTE VERROUILLÉ / BANNI</h2>
-    <p>Tu as été banni de l'infrastructure de minage par l'Owner principal.</p>
-</div>
-
-<div id="kick-screen" onclick="location.reload();">
-    <span style="font-size: 80px;">👢</span>
-    <h2>EXPULSÉ DE LA SESSION</h2>
-    <p>Cliquez sur l'écran pour tenter une reconnexon.</p>
-</div>
 
 <div id="box-roulette" class="roulette-container">
     <div class="roulette-curseur"></div>
     <div id="roulette-defilement" class="roulette-Ligne"></div>
+</div>
+
+<div id="rj-modal" class="modal">
+    <div class="modal-header">
+        <h3 style="color:#fbbf24; margin:0;">👑 Marché Royal Jelly</h3>
+        <button class="modal-close" onclick="toggleModal('rj-modal', false)">✕</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+        <button onclick="buyRJUpgrade('clic')" style="background:rgba(255,255,255,0.1); color:white; font-size:12px; text-align:left;">⚡ Clic Multiplicateur (Coût: 5 RJ) [Mult: <span id="rjClicMultLbl">1</span>x]</button>
+        <button onclick="buyRJUpgrade('drone')" style="background:rgba(255,255,255,0.1); color:white; font-size:12px; text-align:left;">🤖 Drone Multiplicateur (Coût: 8 RJ) [Mult: <span id="rjDroneMultLbl">1</span>x]</button>
+        <button onclick="buyRJUpgrade('reduction')" style="background:rgba(255,255,255,0.1); color:white; font-size:12px; text-align:left;">📉 Réduction Boutiques (Coût: 12 RJ)</button>
+        <button onclick="buyRJUpgrade('speed')" style="background:rgba(255,255,255,0.1); color:white; font-size:12px; text-align:left;">⏳ Cadence des Drones +25% (Coût: 15 RJ)</button>
+    </div>
+</div>
+
+<div id="quests-modal" class="modal">
+    <div class="modal-header">
+        <h3 style="color:#ffaa00; margin:0;">🎯 Centre des Quêtes</h3>
+        <button class="modal-close" onclick="toggleModal('quests-modal', false)">✕</button>
+    </div>
+    <div id="quests-container" style="font-size:13px;">Chargement des missions...</div>
 </div>
 
 <div id="game-interface">
@@ -185,16 +204,25 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
         <div class="card">🔁 Prestige <span id="prestige">0</span></div>
         <div class="card">✨ Éclats: <span id="shards">0</span></div>
         <div class="card" id="rj-card" style="color:#fbbf24; font-weight:bold;">👑 RJ Coins: <span id="rjCoins">0</span></div>
-        <div class="card">👤 <input id="player" readonly style="background:transparent; border:none; color:#52ffe0; font-weight:bold; width:110px; outline:none; text-align:center;"></div>
+        <div class="card" style="display:flex; align-items:center; gap:8px;">
+            👤 <input id="player" readonly style="background:transparent; border:none; color:#52ffe0; font-weight:bold; width:110px; outline:none; text-align:center;">
+            <button onclick="deconnexion()" style="background:#ff4444; color:white; font-size:11px; padding:3px 8px; margin:0; border-radius:6px;">Quitter</button>
+        </div>
     </div>
 
-    <div id="notice" class="notice">En attente...</div>
+    <div id="notice" class="notice" style="display:none;">En attente...</div>
 
     <div id="main-game-area">
         <div id="money">0</div>
         <div id="planetName">Terra</div>
         <div id="planet-container"><div id="planet">🌍</div></div>
         <div class="progress-bar-container" id="ui-progress"><div id="progress-bar"></div></div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-badge">⚡ Drills: <span id="stat-power" style="color:#52ffe0; font-weight:bold;">1</span></div>
+        <div class="stat-badge">🤖 Drones: <span id="stat-drones" style="color:#26ff63; font-weight:bold;">0</span></div>
+        <div class="stat-badge">🔭 Scanners: <span id="stat-scanner" style="color:#ffaa00; font-weight:bold;">1</span></div>
     </div>
 
     <div class="utility-bar">
@@ -206,27 +234,26 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 
     <div class="shop" id="ui-shop">
         <div>
-            <button onclick="buyPower()"><span id="pIcon">⚡</span> Drill <span id="pc">20</span></button>
+            <button onclick="buyPower()">⚡ Drill <span id="pc">20</span></button>
             <button onclick="buyMaxPower()" class="btn-max">[MAX]</button>
         </div>
         <div>
-            <button onclick="buyDrone()"><span id="dIcon">🤖</span> Drone <span id="dc">70</span></button>
+            <button onclick="buyDrone()">🤖 Drone <span id="dc">70</span></button>
             <button onclick="buyMaxDrone()" class="btn-max">[MAX]</button>
         </div>
         <div>
-            <button onclick="buyScanner()"><span id="sIcon">🔭</span> Scanner <span id="sc">120</span></button>
+            <button onclick="buyScanner()">🔭 Scanner <span id="sc">120</span></button>
             <button onclick="buyMaxScanner()" class="btn-max">[MAX]</button>
         </div>
         <button id="btn-prestige-normal" onclick="doPrestige()" style="background:#52ffe0; color:black;">🔁 Déclencher Prestige</button>
-        
         <button id="btn-goto-honey" onclick="changerGalaxie('honey')" style="background:#fbbf24; color:black; font-weight:bold;">🍯 Honey Galaxy</button>
-        <button id="btn-goto-crystal" onclick="changerGalaxie('crystal')" style="background:#a855f7; color:white; font-weight:bold;">🔮 Crystal Galaxy (Prestige 2)</button>
-        <button id="btn-goto-plasma" onclick="changerGalaxie('plasma')" style="background:#ef4444; color:white; font-weight:bold;">🔥 Plasma Galaxy (Prestige 5)</button>
-        <button id="btn-leave-galaxy" onclick="changerGalaxie('normale')" style="background:#ff4444; color:white; font-weight:bold; display:none;">🚀 Retour Galaxie Normale</button>
+        <button id="btn-goto-crystal" onclick="changerGalaxie('crystal')" style="background:#a855f7; color:white; font-weight:bold;">🔮 Crystal Galaxy (P2)</button>
+        <button id="btn-goto-plasma" onclick="changerGalaxie('plasma')" style="background:#ef4444; color:white; font-weight:bold;">🔥 Plasma Galaxy (P5)</button>
+        <button id="btn-leave-galaxy" onclick="changerGalaxie('normale')" style="background:#ff4444; color:white; font-weight:bold; display:none;">🚀 Retour Normale</button>
     </div>
 
     <div class="card" id="ui-incubateur" style="max-width:600px; margin: 15px auto; text-align:center;">
-        <h3 style="margin:4px 0; color:#52ffe0;">🥚 Boutique & Incubateur de Compagnie</h3>
+        <h3 style="margin:4px 0; color:#52ffe0;">🥚 Boutique & Incubateur</h3>
         <div style="display:flex; justify-content:center; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
             <button onclick="acheterOeuf('normal')" style="font-size:11px; background:#fff; padding:6px 10px;">Œuf Normal (5k 💰)</button>
             <button onclick="acheterOeuf('avance')" style="font-size:11px; background:#67e8f9; padding:6px 10px;">Œuf Avancé (25k 💰)</button>
@@ -234,7 +261,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
             <button id="btn-buy-honey-egg" onclick="acheterOeuf('honey')" style="font-size:11px; background:#fbbf24; display:none; padding:6px 10px;">Œuf Miel (2.5k 🍯)</button>
         </div>
         <div style="font-size:12px; color:#ccc;">
-            Stocks - Normaux: <span id="egg-normal-count">0</span> | Avancés: <span id="egg-avance-count">0</span> | Rares: <span id="egg-rare-count">0</span> <span id="egg-honey-lbl">| Miel: <span id="egg-honey-count">0</span></span>
+            Stocks - N: <span id="egg-normal-count">0</span> | A: <span id="egg-avance-count">0</span> | R: <span id="egg-rare-count">0</span> <span id="egg-honey-lbl">| Miel: <span id="egg-honey-count">0</span></span>
         </div>
         <div style="margin-top:8px; display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">
             <button id="btn-open-normal" onclick="animerOuvertureOeuf('normal')" style="background:#ffaa00; font-size:11px; display:none;">🔓 Ouvrir Normal</button>
@@ -242,82 +269,67 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
             <button id="btn-open-rare" onclick="animerOuvertureOeuf('rare')" style="background:#a855f7; font-size:11px; display:none; color:white;">🔓 Ouvrir Rare</button>
             <button id="btn-open-honey" onclick="animerOuvertureOeuf('honey')" style="background:#fbbf24; font-size:11px; display:none;">🔓 Ouvrir Miel</button>
         </div>
-        <div style="margin-top:10px; font-weight:bold; color:#26ff63;">✨ Compagnons équipés : <span id="equipped-pets-count">0</span> / 3</div>
-        <div class="pet-list-container">
-            <div id="liste-mes-pets">Aucun compagnon dans l'inventaire.</div>
+        <div style="margin-top:10px; font-weight:bold; color:#26ff63;">✨ Pets équipés : <span id="equipped-pets-count">0</span> / 3</div>
+        <div class="pet-list-container"><div id="liste-mes-pets">Aucun familier actif.</div></div>
+    </div>
+
+    <div class="bottom-container">
+        <div class="bottom-column">
+            <div class="card" id="ui-leaderboard" style="height: 100%;">
+                <div class="leaderboard-title">🏆 TOP 10 MINERS</div>
+                <div class="leaderboard-list" id="leaderboard-box">
+                    <div style="text-align:center; color:#888; padding-top:40px;">Chargement du classement...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-column">
+            <div class="card" id="ui-chat" style="height: 100%;">
+                <div id="chat-box" style="height: 100px; overflow-y: auto; font-size: 12px; margin-bottom: 8px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);"></div>
+                <div style="display: flex; gap: 5px;">
+                    <input id="chat-input" placeholder="Message..." onkeydown="if(event.key === 'Enter') envoyerMessage()" style="flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 6px; font-size: 12px; outline: none;">
+                    <button onclick="envoyerMessage()" style="padding: 4px 12px; margin: 0; font-size: 12px; border-radius: 6px; background:#52ffe0; color:#000;">Envoyer</button>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="left card" id="ui-left">
-        <h3>Stats Globales ✨</h3>
-        Power: <span id="power">1</span> | Drones: <span id="drones">0</span> | Scanner: <span id="scanner">1</span><br>
-        Zone Max: <span id="maxzone">1</span> | Clics: <span id="stat-clicks">0</span><br>
-        <span style="color:#fbbf24">RJ Mult Clics: <span id="rjMultClic">1</span>x</span><br>
-        <span style="color:#fbbf24">RJ Mult Drones: <span id="rjMultDrone">1</span>x</span>
-        <hr style="border:1px solid rgba(255,255,255,0.1)">
-        <button onclick="deconnexionComplete()" style="background:#ff4444; color:white; font-size:11px; width:100%;">🔒 Déconnexion</button>
-    </div>
-
-    <div class="card" id="ui-chat">
-        <h3 class="pc-only" style="margin: 0 0 5px 0; font-size:14px;">💬 Chat Global</h3>
-        <div id="chat-box" style="height: 110px; overflow-y: auto; font-size: 12px; margin-bottom: 5px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);"></div>
-        <div style="display: flex; gap: 5px;">
-            <input id="chat-input" placeholder="Message..." style="flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 6px; font-size: 12px; outline: none;">
-            <button onclick="envoyerMessage()" style="padding: 4px 12px; margin: 0; font-size: 12px; border-radius: 6px; background:#52ffe0; color:#000;">Envoyer</button>
-        </div>
-    </div>
-</div>
-
-<div id="comet">☄️</div>
-
-<div id="rj-modal" class="merchant-modal">
-    <h3 style="color:#fbbf24; margin:0 0 10px 0;">👑 Magasin Royal Jelly (Permanent)</h3>
-    <div style="font-size:11px; margin-bottom:10px; color:#ddd;">Les bonus achetés ici durent indéfiniment.</div>
-    <button onclick="buyRJUpgrade('clic')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">🎯 Multiplicateur Clics +1x (Coût: 5 RJ)</button>
-    <button onclick="buyRJUpgrade('drone')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">🤖 Multiplicateur Drones +1x (Coût: 8 RJ)</button>
-    <button onclick="buyRJUpgrade('reduction')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">📉 -10% Coût des Outils Mondes Alternatifs (Coût: 12 RJ)</button>
-    <button onclick="buyRJUpgrade('speed')" style="background:#fff; color:#000; width:100%; margin:4px 0; font-size:12px;">⚡ Hyper-Fréquence Drones +25% (Coût: 15 RJ)</button>
-    <button onclick="toggleModal('rj-modal', false)" style="background:#ff4444; color:white; margin-top:10px; width:100%; padding:6px;">Fermer</button>
-</div>
-
-<div id="quests-modal" class="merchant-modal" style="background: rgba(15,25,50,0.95); border-color:#52ffe0;">
-    <h3 style="color:#52ffe0; margin:0 0 10px 0;">📋 Centre des Missions</h3>
-    <div id="quests-container"></div>
-    <button onclick="toggleModal('quests-modal', false)" style="background:#ff4444; color:white; margin-top:10px; width:100%; padding:8px;">Fermer</button>
-</div>
-
-<div id="secret-merchant-btn" onclick="openMerchantShop()">🐻</div>
-<div id="merchant-shop-modal" class="merchant-modal">
-    <h3 style="color:#fbbf24; margin:0 0 5px 0;">🍯 Boutique Éphémère de l'Ours</h3>
-    <div id="merchant-items-container">
-        <button onclick="acheterProduitMarchand('rj', 5000)" style="background:white; color:black; font-size:11px; width:100%; margin:3px 0;">🍯 Acheter 1 RJ Coin (Coût: 5,000 Crédits)</button>
-        <button onclick="acheterProduitMarchand('shard', 12000)" style="background:white; color:black; font-size:11px; width:100%; margin:3px 0;">✨ Acheter 1 Shard Éclat (Coût: 12,000 Crédits)</button>
-    </div>
-    <button onclick="closeMerchantShop()" style="background:#ff4444; color:white; margin-top:10px; width:100%; padding:8px;">Fermer</button>
 </div>
 
 <div id="panel-owner" class="roblox-panel">
-    <div id="header-owner" class="admin-header"><span>👑 GALAXY MINER - OWNER PANEL</span><button class="close-admin-btn" onclick="togglePanel('owner')">✕</button></div>
+    <div id="header-owner" class="admin-header"><span>👑 GALAXY MINER - OWNER (EXCLUSIF)</span><button class="close-admin-btn" onclick="togglePanel('owner')">✕</button></div>
     <div class="admin-body">
-        <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒 VERROUILLÉ] Rentrer la clé ROOT.</div></div>
+        <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒] Rentrer la clé ROOT.</div></div>
         <div class="suggest-box" id="suggest-owner" style="display: none;"></div>
         <div class="input-area">
             <span class="prefix" id="prefix-owner" style="color:#ff4444;">🔑</span>
-            <input type="password" id="input-owner" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
-            <button id="btn-action-owner" class="panel-btn" onclick="loginPanel('owner')">Connexion</button>
+            <input type="password" id="input-owner" class="admin-input-text" placeholder="Clé..." autocomplete="off" onkeydown="if(event.key === 'Enter') loginPanel('owner')">
+            <button id="btn-action-owner" class="panel-btn" onclick="loginPanel('owner')">OK</button>
         </div>
     </div>
 </div>
 
 <div id="panel-admin" class="roblox-panel">
-    <div id="header-admin" class="admin-header"><span>🛡️ GALAXY MINER - ADMIN PANEL</span><button class="close-admin-btn" onclick="togglePanel('admin')">✕</button></div>
+    <div id="header-admin" class="admin-header"><span>🛡️ GALAXY MINER - ADMIN</span><button class="close-admin-btn" onclick="togglePanel('admin')">✕</button></div>
     <div class="admin-body">
-        <div class="command-log" id="log-admin"><div style="color: #4488ff;">[🔒 VERROUILLÉ] Rentrer la clé MODÉRATION.</div></div>
+        <div class="command-log" id="log-admin"><div style="color: #4488ff;">[🔒] Rentrer la clé MOD.</div></div>
         <div class="suggest-box" id="suggest-admin" style="display: none;"></div>
         <div class="input-area">
             <span class="prefix" id="prefix-admin" style="color:#4488ff;">🔑</span>
-            <input type="password" id="input-admin" class="admin-input-text" placeholder="Clé d'accès..." autocomplete="off">
-            <button id="btn-action-admin" class="panel-btn" onclick="loginPanel('admin')">Connexion</button>
+            <input type="password" id="input-admin" class="admin-input-text" placeholder="Clé..." autocomplete="off" onkeydown="if(event.key === 'Enter') loginPanel('admin')">
+            <button id="btn-action-admin" class="panel-btn" onclick="loginPanel('admin')">OK</button>
+        </div>
+    </div>
+</div>
+
+<div id="panel-tester" class="roblox-panel">
+    <div id="header-tester" class="admin-header"><span>🧪 GALAXY MINER - TESTER</span><button class="close-admin-btn" onclick="togglePanel('tester')">✕</button></div>
+    <div class="admin-body">
+        <div class="command-log" id="log-tester"><div style="color: #26ff63;">[🔒] Rentrer la clé TESTER.</div></div>
+        <div class="suggest-box" id="suggest-tester" style="display: none;"></div>
+        <div class="input-area">
+            <span class="prefix" id="prefix-tester" style="color:#26ff63;">🔑</span>
+            <input type="password" id="input-tester" class="admin-input-text" placeholder="Clé TESTER..." autocomplete="off" onkeydown="if(event.key === 'Enter') loginPanel('tester')">
+            <button id="btn-action-tester" class="panel-btn" onclick="loginPanel('tester')">OK</button>
         </div>
     </div>
 </div>
@@ -327,132 +339,106 @@ let supportChoisi = "pc";
 let currentGalaxy = "normale";
 const PASS_OWNER = "admin123";
 const PASS_ADMIN = "admin321";
+const PASS_TESTER = "tester123";
 
 let ownerConnected = false;
 let adminConnected = false;
+let testerConnected = false;
 
-const COMMANDS_LIST = [
-    "help", "players", "announcement", "spawnshop", "seisme", "blackout", "matrix", "clearvisuals",
-    "givecredits", "giverj", "giveshards", "setzone", "setprestige", "resetplayer",
-    "kick", "ban", "unban", "freeze", "unfreeze", "boostall", "stopboost",
-    "nightmode", "daymode", "rainbowui", "stoprainbow", "clearchat", "mutestatus", "serverinfo", "cometstorm"
+const COMMANDS_BASE_ADMIN = [
+    "help", "players", "announcement", "seisme", "blackout", "clearvisuals",
+    "givecredits", "giverj", "giveshards", "setzone", "setprestige", "kick", "freeze", "unfreeze", "clearchat"
 ];
 
-// --- LOGIQUE CONFIGURATION DES PETS (4 TYPES D'OEUFS MAINTENANT) ---
+const COMMANDS_LIST_OWNER = [
+    ...COMMANDS_BASE_ADMIN,
+    "giftdrone", "givehoneycredits", "givecrystalcredits", "giveplasmacredits", 
+    "owner_godmode", "owner_shutdown", "owner_wipe_player", "owner_unban_all",
+    "owner_give_mythic_pet", "owner_max_stats", "owner_add_rj_multiplier",
+    "owner_spawn_mega_comet", "owner_force_prestige", "owner_inf_money",
+    "owner_break_economy", "owner_teleport_all", "owner_steal_money", 
+    "owner_mute_all", "owner_unmute_all", "owner_rainbow_name"
+];
+
+const COMMANDS_TESTER = [
+    "test_boost", "test_egg", "test_pet", "test_prestige", "test_zone", "debug_info", "stats_view", "show_hitbox",
+    "test_reset_money", "test_give_shard", "test_rainbow", "test_matrix", "test_shake", "test_lag", "test_fakeonline",
+    "test_comet", "test_night", "test_day", "test_speed", "test_click"
+];
+
 const CONFIG_PETS = {
-    normal: {
-        prix: 5000, monnaie: "credits",
-        liste: [
-            { id: "abeille_commune", nom: "Abeille Ouvrière", rare: "Commun", chance: 0.70, typeBoost: "clic", valeurBoost: 1.2, emoji: "🐝", prixVente: 1000 },
-            { id: "slime_spatial", nom: "Slime Cosmique", rare: "Rare", chance: 0.25, typeBoost: "drone", valeurBoost: 1.4, emoji: "🧪", prixVente: 2500 },
-            { id: "mini_robot", nom: "Robot Éclaireur", rare: "Épique", chance: 0.05, typeBoost: "global", valeurBoost: 1.8, emoji: "🤖", prixVente: 6000 }
-        ]
-    },
-    avance: {
-        prix: 25000, monnaie: "credits",
-        liste: [
-            { id: "slime_spatial", nom: "Slime Cosmique", rare: "Rare", chance: 0.60, typeBoost: "drone", valeurBoost: 1.5, emoji: "🧪", prixVente: 2500 },
-            { id: "alien_rover", nom: "Chasseur Alien", rare: "Épique", chance: 0.32, typeBoost: "clic", valeurBoost: 2.2, emoji: "👽", prixVente: 10000 },
-            { id: "dragon_plasma", nom: "Dragon de Plasma", rare: "LÉGENDAIRE", chance: 0.08, typeBoost: "global", valeurBoost: 4.0, emoji: "🐉", prixVente: 30000 }
-        ]
-    },
-    rare: {
-        prix: 100000, monnaie: "credits",
-        liste: [
-            { id: "alien_rover", nom: "Chasseur Alien", rare: "Épique", chance: 0.65, typeBoost: "clic", valeurBoost: 2.5, emoji: "👽", prixVente: 10000 },
-            { id: "dragon_plasma", nom: "Dragon de Plasma", rare: "LÉGENDAIRE", chance: 0.30, typeBoost: "global", valeurBoost: 5.0, emoji: "🐉", prixVente: 30000 },
-            { id: "phenix_solaire", nom: "Phénix Solaire", rare: "MYTHIQUE", chance: 0.05, typeBoost: "global", valeurBoost: 10.0, emoji: "🦅", prixVente: 75000 }
-        ]
-    },
-    honey: {
-        prix: 2500, monnaie: "honeyCredits",
-        liste: [
-            { id: "bourdon_miel", nom: "Bourdon Joufflu", rare: "Commun", chance: 0.55, typeBoost: "clic", valeurBoost: 1.5, emoji: "🪰", prixVente: 500 },
-            { id: "abeille_piqueuse", nom: "Abeille de Chasse", rare: "Rare", chance: 0.35, typeBoost: "drone", valeurBoost: 2.0, emoji: "🐝", prixVente: 1000 },
-            { id: "ours_miel", nom: "Ours Volant", rare: "Épique", chance: 0.09, typeBoost: "global", valeurBoost: 3.0, emoji: "🐻", prixVente: 3000 },
-            { id: "reine_miel", nom: "Reine des Alvéoles", rare: "LÉGENDAIRE", chance: 0.01, typeBoost: "global", valeurBoost: 7.5, emoji: "👑", prixVente: 10000 }
-        ]
-    }
+    normal: { prix: 5000, monnaie: "credits", liste: [
+        { id: "bee", nom: "Abeille Ouvrière", rare: "Commun", chance: 0.70, typeBoost: "clic", valeurBoost: 1.2, emoji: "🐝", prixVente: 1000 },
+        { id: "slime", nom: "Slime Cosmique", rare: "Rare", chance: 0.25, typeBoost: "drone", valeurBoost: 1.4, emoji: "🧪", prixVente: 2500 },
+        { id: "robot", nom: "Robot Éclaireur", rare: "Épique", chance: 0.05, typeBoost: "global", valeurBoost: 1.8, emoji: "🤖", prixVente: 6000 }
+    ]},
+    avance: { prix: 25000, monnaie: "credits", liste: [
+        { id: "slime", nom: "Slime Cosmique", rare: "Rare", chance: 0.60, typeBoost: "drone", valeurBoost: 1.5, emoji: "🧪", prixVente: 2500 },
+        { id: "alien", nom: "Chasseur Alien", rare: "Épique", chance: 0.32, typeBoost: "clic", valeurBoost: 2.2, emoji: "👽", prixVente: 10000 },
+        { id: "dragon", nom: "Dragon de Plasma", rare: "LÉGENDAIRE", chance: 0.08, typeBoost: "global", valeurBoost: 4.0, emoji: "🐉", prixVente: 30000 }
+    ]},
+    rare: { prix: 100000, monnaie: "credits", liste: [
+        { id: "alien", nom: "Chasseur Alien", rare: "Épique", chance: 0.65, typeBoost: "clic", valeurBoost: 2.5, emoji: "👽", prixVente: 10000 },
+        { id: "dragon", nom: "Dragon de Plasma", rare: "LÉGENDAIRE", chance: 0.30, typeBoost: "global", valeurBoost: 5.0, emoji: "🐉", prixVente: 30000 },
+        { id: "phenix", nom: "Phénix Solaire", rare: "MYTHIQUE", chance: 0.05, typeBoost: "global", valeurBoost: 10.0, emoji: "🦅", prixVente: 75000 }
+    ]},
+    honey: { prix: 2500, monnaie: "honeyCredits", liste: [
+        { id: "bourdon", nom: "Bourdon Joufflu", rare: "Commun", chance: 0.55, typeBoost: "clic", valeurBoost: 1.5, emoji: "🪰", prixVente: 500 },
+        { id: "abeille_c", nom: "Abeille de Chasse", rare: "Rare", chance: 0.35, typeBoost: "drone", valeurBoost: 2.0, emoji: "🐝", prixVente: 1000 },
+        { id: "ours", nom: "Ours Volant", rare: "Épique", chance: 0.09, typeBoost: "global", valeurBoost: 3.0, emoji: "🐻", prixVente: 3000 },
+        { id: "reine", nom: "Reine Alvéole", rare: "LÉGENDAIRE", chance: 0.01, typeBoost: "global", valeurBoost: 7.5, emoji: "👑", prixVente: 10000 }
+    ]}
 };
 
 let defaultState={ 
-    credits:0, honeyCredits:0, crystalCredits:0, plasmaCredits:0,
-    power:1, drones:0, scanner:1, zone:1, maxzone:1, prestige:0, 
-    pCost:20, dCost:70, sCost:120, shards:0, up1:0, up2:0, rjCoins:0, 
-    totalClicks:0, rjClicMult:1, rjDroneMult:1, rjDiscount: 1, rjSpeedBonus: 1,
-    // Inventaires mis à jour
-    inventaireOeufsNormal: 0,
-    inventaireOeufsAvance: 0,
-    inventaireOeufsRare: 0,
-    inventaireOeufsHoney: 0,
-    petsPossedes: [] // contiendra {uniqueId, id, nom, rare, typeBoost, valeurBoost, emoji, prixVente, monnaie, equipped: false}
+    credits:0, honeyCredits:0, crystalCredits:0, plasmaCredits:0, power:1, drones:0, scanner:1, zone:1, maxzone:1, prestige:0, 
+    pCost:20, dCost:70, sCost:120, shards:0, up1:0, up2:0, rjCoins:0, totalClicks:0, rjClicMult:1, rjDroneMult:1, rjDiscount: 1, rjSpeedBonus: 1,
+    inventaireOeufsNormal:0, inventaireOeufsAvance:0, inventaireOeufsRare:0, inventaireOeufsHoney:0, petsPossedes: []
 };
 let s=JSON.parse(JSON.stringify(defaultState));
 
-let planets=[{name:"Terra",emoji:"🌍"},{name:"Mars",emoji:"🔴"},{name:"Neptune",emoji:"🔵"},{name:"Nova Prime",emoji:"🟣"},{name:"Titan",emoji:"🪐"},{name:"Sol",emoji:"☀️"}];
+let planets=[{name:"Terra",emoji:"🌍"},{name:"Mars",emoji:"🔴"},{name:"Neptune",emoji:"🔵"},{name:"Nova",emoji:"🟣"},{name:"Titan",emoji:"🪐"},{name:"Sol",emoji:"☀️"}];
 let galaxiesData = {
     normale: { name: "Terra", emoji: "🌍", moneyAttr: "credits" },
-    honey: { name: "Mellis (Honey)", emoji: "🍯", moneyAttr: "honeyCredits" },
+    honey: { name: "Mellis", emoji: "🍯", moneyAttr: "honeyCredits" },
     crystal: { name: "Crystalia", emoji: "🔮", moneyAttr: "crystalCredits" },
-    plasma: { name: "Pyros (Plasma)", emoji: "🔥", moneyAttr: "plasmaCredits" }
+    plasma: { name: "Pyros", emoji: "🔥", moneyAttr: "plasmaCredits" }
 };
 
-let combo=0; let droneInterval = null;
-let isFrozen = false; let adminBoostMultiplier = 1;
-let rainbowUiInterval = null;
+let combo=0; let isFrozen = false; let adminBoostMultiplier = 1;
 
-function choisirSupport(mode) {
-    supportChoisi = mode;
-    document.getElementById("dev-pc").classList.remove("active");
-    document.getElementById("dev-mobile").classList.remove("active");
-    document.getElementById("dev-" + mode).classList.add("active");
-}
-function basculerAuth(mode) {
-    if(mode === 'register') {
-        document.getElementById("auth-login-view").style.display = "none";
-        document.getElementById("auth-register-view").style.display = "block";
-    } else {
-        document.getElementById("auth-register-view").style.display = "none";
-        document.getElementById("auth-login-view").style.display = "block";
-    }
-}
-function gererInscription() {
-    let user = document.getElementById("auth-reg-user").value.trim();
-    let pass = document.getElementById("auth-reg-pass").value;
-    if(!user || !pass) return;
-    localStorage.setItem("gm_pass_" + user, pass);
-    basculerAuth('login');
-}
+function choisirSupport(mode) { supportChoisi = mode; document.getElementById("dev-pc").classList.remove("active"); document.getElementById("dev-mobile").classList.remove("active"); document.getElementById("dev-" + mode).classList.add("active"); }
+function basculerAuth(mode) { document.getElementById("auth-login-view").style.display = (mode === 'login') ? "block" : "none"; document.getElementById("auth-register-view").style.display = (mode === 'register') ? "block" : "none"; }
+function gererInscription() { let user = document.getElementById("auth-reg-user").value.trim(); let pass = document.getElementById("auth-reg-pass").value; if(!user || !pass) return; localStorage.setItem("gm_pass_" + user, pass); basculerAuth('login'); }
+
 function gererConnexion() {
-    let user = document.getElementById("auth-log-user").value.trim();
-    let pass = document.getElementById("auth-log-pass").value;
+    let user = document.getElementById("auth-log-user").value.trim(); let pass = document.getElementById("auth-log-pass").value;
     if(localStorage.getItem("gm_pass_" + user) === pass) {
-        document.getElementById("player").value = user;
-        document.getElementById("auth-overlay").style.display = "none";
-        const interfaceJeu = document.getElementById("game-interface");
-        interfaceJeu.style.display = "block";
-        interfaceJeu.className = (supportChoisi === "mobile") ? "mode-mobile" : "mode-pc";
-        loadPlayerSave();
-        genererQuetes();
-        setTimeout(() => {
-            socket.emit("envoyerMessageGlobal", { pseudo: user, texte: "<i>vient de se connecter.</i>" });
-        }, 800);
+        document.getElementById("player").value = user; document.getElementById("auth-overlay").style.display = "none";
+        const interf = document.getElementById("game-interface"); interf.style.display = "block"; interf.className = (supportChoisi === "mobile") ? "mode-mobile" : "mode-pc";
+        loadPlayerSave(); genererQuetes(); 
+        
+        demanderLeaderboard();
+        setInterval(demanderLeaderboard, 30000); // Actualisation toutes les 30s du leaderboard
+
+        setTimeout(() => { socket.emit("envoyerMessageGlobal", { pseudo: user, texte: "<i>vient de se connecter.</i>" }); }, 800);
     }
+}
+
+function deconnexion() {
+    save(); document.getElementById("game-interface").style.display = "none"; document.getElementById("auth-overlay").style.display = "flex";
+    document.getElementById("auth-log-user").value = ""; document.getElementById("auth-log-pass").value = "";
 }
 
 function changerGalaxie(type) {
-    if(type === 'crystal' && s.prestige < 2) { alert("🚫 Requis: Prestige 2 ou supérieur !"); return; }
-    if(type === 'plasma' && s.prestige < 5) { alert("🚫 Requis: Prestige 5 ou supérieur !"); return; }
-    currentGalaxy = type;
-    document.body.className = (type !== "normale") ? type + "-theme" : "";
+    if(type === 'crystal' && s.prestige < 2) { alert("🚫 Requis: Prestige 2 !"); return; }
+    if(type === 'plasma' && s.prestige < 5) { alert("🚫 Requis: Prestige 5 !"); return; }
+    currentGalaxy = type; document.body.className = (type !== "normale") ? type + "-theme" : "";
     document.getElementById("btn-goto-honey").style.display = (type === "normale") ? "inline-block" : "none";
     document.getElementById("btn-goto-crystal").style.display = (type === "normale") ? "inline-block" : "none";
     document.getElementById("btn-goto-plasma").style.display = (type === "normale") ? "inline-block" : "none";
     document.getElementById("btn-leave-galaxy").style.display = (type !== "normale") ? "inline-block" : "none";
-    
-    // Visuels œuf exclusif Honey Galaxy
     document.getElementById("btn-buy-honey-egg").style.display = (type === "honey") ? "inline-block" : "none";
-    
     ui();
 }
 
@@ -464,35 +450,21 @@ function buyRJUpgrade(type) {
     ui(); save();
 }
 
-// APPLICATION UNIQUEMENT DES COMPAGNONS SUR LES PLACES ÉQUIPÉES
 function calculerBoostPets(typeAttendu) {
-    let mult = 1;
-    if (s.petsPossedes && s.petsPossedes.length > 0) {
-        s.petsPossedes.forEach(p => {
-            if (p.equipped && (p.typeBoost === typeAttendu || p.typeBoost === "global")) {
-                mult *= p.valeurBoost;
-            }
-        });
-    }
+    let mult = 1; if (s.petsPossedes) s.petsPossedes.forEach(p => { if (p.equipped && (p.typeBoost === typeAttendu || p.typeBoost === "global")) mult *= p.valeurBoost; });
     return mult;
 }
 
 document.getElementById("planet").addEventListener("click", () => {
-    if(isFrozen) return; s.totalClicks++;
-    let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
-    
+    if(isFrozen) return; s.totalClicks++; let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
     let petMult = calculerBoostPets("clic");
     let totalGain = s.power * s.scanner * s.rjClicMult * adminBoostMultiplier * petMult;
-    
     if(currentGalaxy === "normale" && s.up2 > 0 && Math.random() < (s.up2 * 0.05)) { totalGain *= 3; }
     s[currentAttr] += totalGain;
     if(currentGalaxy === "normale") {
-        combo++;
-        document.getElementById("progress-bar").style.width = Math.min((combo / (s.zone * 20)) * 100, 100) + "%";
+        combo++; document.getElementById("progress-bar").style.width = Math.min((combo / (s.zone * 20)) * 100, 100) + "%";
         if(combo >= (s.zone * 20)) { combo = 0; s.zone++; if(s.zone > s.maxzone) s.maxzone = s.zone; }
-    } else {
-        if(Math.random() < 0.02) s.rjCoins++;
-    }
+    } else { if(Math.random() < 0.02) s.rjCoins++; }
     ui();
 });
 
@@ -500,471 +472,268 @@ function lancerProductionDrones() {
     if(isFrozen || s.drones <= 0) return;
     let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
     let speedBonus = currentGalaxy === "normale" ? (1 + (s.up1 * 0.5)) : 1;
-    
     let petMult = calculerBoostPets("drone");
     let finalGain = s.drones * s.rjDroneMult * speedBonus * adminBoostMultiplier * (s.rjSpeedBonus || 1) * petMult;
-    
-    s[currentAttr] += finalGain;
-    if(finalGain > 0) ui();
+    s[currentAttr] += finalGain; if(finalGain > 0) ui();
 }
 
 function applyDiscount(baseCost) { return currentGalaxy !== "normale" ? baseCost * (s.rjDiscount || 1) : baseCost; }
-
 function buyPower() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.pCost); if(s[attr] >= cost) { s[attr] -= cost; s.power++; s.pCost *= 1.35; ui(); } }
 function buyDrone() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.dCost); if(s[attr] >= cost) { s[attr] -= cost; s.drones++; s.dCost *= 1.4; ui(); } }
 function buyScanner() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.sCost); if(s[attr] >= cost) { s[attr] -= cost; s.scanner++; s.sCost *= 1.45; ui(); } }
 function buyMaxPower() { for(let i=0;i<20;i++) buyPower(); }
 function buyMaxDrone() { for(let i=0;i<20;i++) buyDrone(); }
 function buyMaxScanner() { for(let i=0;i<20;i++) buyScanner(); }
-
-function buyPrestigeUpgrade(id) {
-    if(id === 1 && s.shards >= 2) { s.shards -= 2; s.up1++; ui(); }
-    if(id === 2 && s.shards >= 3) { s.shards -= 3; s.up2++; ui(); }
-}
-function doPrestige() {
-    if(s.credits >= 500000) { s.shards += Math.floor(Math.sqrt(s.credits / 500000)); s.credits = 0; s.zone = 1; s.power = 1; s.drones = 0; s.scanner = 1; s.pCost = 20; s.dCost = 70; s.sCost = 120; s.prestige++; ui(); save(); }
-}
-
-function openMerchantShop() { toggleModal('merchant-shop-modal', true); }
-function closeMerchantShop() { toggleModal('merchant-shop-modal', false); }
-
-function acheterProduitMarchand(type, cout) {
-    let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
-    if(s[currentAttr] >= cout) {
-        s[currentAttr] -= cout;
-        if(type === 'rj') s.rjCoins++;
-        if(type === 'shard') s.shards++;
-        alert("🛒 Achat effectué chez l'Ours !");
-        ui(); save();
-    } else {
-        alert("❌ Fonds insuffisants !");
-    }
-}
-
+function buyPrestigeUpgrade(id) { if(id === 1 && s.shards >= 2) { s.shards -= 2; s.up1++; ui(); } if(id === 2 && s.shards >= 3) { s.shards -= 3; s.up2++; ui(); } }
+function doPrestige() { if(s.credits >= 500000) { s.shards += Math.floor(Math.sqrt(s.credits / 500000)); s.credits = 0; s.zone = 1; s.power = 1; s.drones = 0; s.scanner = 1; s.pCost = 20; s.dCost = 70; s.sCost = 120; s.prestige++; ui(); save(); demanderLeaderboard(); } }
 function toggleModal(id, open) { document.getElementById(id).style.display = open ? "block" : "none"; }
-
-function togglePanel(type) {
-    let panel = document.getElementById("panel-" + type);
-    if(panel.style.display === "block") { panel.style.display = "none"; } else { panel.style.display = "block"; }
-}
+function togglePanel(type) { let panel = document.getElementById("panel-" + type); panel.style.display = (panel.style.display === "block") ? "none" : "block"; }
 
 function gererFrappeAide(type) {
     const val = document.getElementById("input-" + type).value.trim().toLowerCase();
-    const box = document.getElementById("suggest-" + type);
-    box.innerHTML = "";
-    if (!val) { COMMANDS_LIST.forEach(cmd => creerBadgeAide(type, cmd, box)); return; }
-    const correspondances = COMMANDS_LIST.filter(c => c.startsWith(val));
-    correspondances.forEach(cmd => creerBadgeAide(type, cmd, box));
+    const box = document.getElementById("suggest-" + type); box.innerHTML = "";
+    let maListe = [];
+    if(type === 'owner') maListe = COMMANDS_LIST_OWNER;
+    else if(type === 'admin') maListe = COMMANDS_BASE_ADMIN;
+    else if(type === 'tester') maListe = COMMANDS_TESTER;
+    if (!val) { maListe.forEach(cmd => creerBadgeAide(type, cmd, box)); return; }
+    maListe.filter(c => c.startsWith(val)).forEach(cmd => creerBadgeAide(type, cmd, box));
 }
 
 function creerBadgeAide(type, text, parentElement) {
-    let badge = document.createElement("span");
-    badge.className = "suggest-badge";
-    badge.textContent = text;
-    badge.onclick = () => {
-        let input = document.getElementById("input-" + type);
-        input.value = text + " "; input.focus(); gererFrappeAide(type);
-    };
+    let badge = document.createElement("span"); badge.className = "suggest-badge"; badge.textContent = text;
+    badge.onclick = () => { let input = document.getElementById("input-" + type); input.value = text + " "; input.focus(); gererFrappeAide(type); };
     parentElement.appendChild(badge);
 }
 
 function executerCommande(type) {
-    const input = document.getElementById("input-" + type);
-    const log = document.getElementById("log-" + type);
-    let commande = input.value.trim();
-    if (!commande) return;
-    const nvLog = document.createElement("div");
-    nvLog.textContent = "> " + commande;
-    log.appendChild(nvLog);
+    const input = document.getElementById("input-" + type); const log = document.getElementById("log-" + type);
+    let commande = input.value.trim(); if (!commande) return;
+    const nvLog = document.createElement("div"); nvLog.textContent = "> " + commande; log.appendChild(nvLog);
     socket.emit("commandeAdmin", { typePanel: type, commande: "~/" + commande, pseudo: document.getElementById("player").value });
     input.value = ""; gererFrappeAide(type); log.scrollTop = log.scrollHeight;
 }
 
 function loginPanel(type) {
-    let input = document.getElementById("input-" + type);
-    let log = document.getElementById("log-" + type);
-    let btn = document.getElementById("btn-action-" + type);
-    let prefix = document.getElementById("prefix-" + type);
-    let suggestBox = document.getElementById("suggest-" + type);
-    if (type === 'owner' && ownerConnected) { executerCommande('owner'); return; }
-    if (type === 'admin' && adminConnected) { executerCommande('admin'); return; }
-    if(type === 'owner' && input.value === PASS_OWNER) {
-        ownerConnected = true;
-        log.innerHTML = "<div style='color:#26ff63;'>[🔓 ACCÈS OWNER CONFORMÉ] Choisis ou tape ta commande ci-dessous.</div>";
-        btn.textContent = "Envoyer"; prefix.textContent = ">"; input.value = ""; input.type = "text"; 
-        input.placeholder = "Ex: seisme, givecredits..."; suggestBox.style.display = "flex";
-        input.addEventListener("input", () => gererFrappeAide('owner')); gererFrappeAide('owner');
-    } else if(type === 'admin' && input.value === PASS_ADMIN) {
-        adminConnected = true;
-        log.innerHTML = "<div style='color:#26ff63;'>[🔓 MODÉRATION RECONNUE] Choisis ou tape ta commande ci-dessous.</div>";
-        btn.textContent = "Envoyer"; prefix.textContent = ">"; input.value = ""; input.type = "text";
-        input.placeholder = "Ex: blackout, players..."; suggestBox.style.display = "flex";
-        input.addEventListener("input", () => gererFrappeAide('admin')); gererFrappeAide('admin');
-    } else { alert("Clé d'accès incorrecte !"); }
+    let input = document.getElementById("input-" + type); let log = document.getElementById("log-" + type);
+    let btn = document.getElementById("btn-action-" + type); let prefix = document.getElementById("prefix-" + type); let suggestBox = document.getElementById("suggest-" + type);
+    if ((type === 'owner' && ownerConnected) || (type === 'admin' && adminConnected) || (type === 'tester' && testerConnected)) { executerCommande(type); return; }
+    let passValide = false;
+    if(type === 'owner' && input.value === PASS_OWNER) { ownerConnected = true; passValide = true; }
+    else if(type === 'admin' && input.value === PASS_ADMIN) { adminConnected = true; passValide = true; }
+    else if(type === 'tester' && input.value === PASS_TESTER) { testerConnected = true; passValide = true; }
+    if(passValide) {
+        log.innerHTML = "<div style='color:#26ff63;'>[ACCÈS CONFORMÉ] Panel actif.</div>";
+        btn.textContent = "Entrer"; prefix.textContent = ">"; input.value = ""; input.type = "text"; 
+        suggestBox.style.display = "flex"; input.removeAttribute("onkeydown");
+        input.addEventListener("keydown", (e) => { if(e.key === 'Enter') executerCommande(type); });
+        input.addEventListener("input", () => gererFrappeAide(type)); gererFrappeAide(type);
+    } else { alert("Clé incorrecte !"); }
     log.scrollTop = log.scrollHeight;
 }
 
-function genererQuetes() {
-    let container = document.getElementById("quests-container");
-    if(!container) return;
-    container.innerHTML = `
-        <div class="quest-item"><span>🎯 Atteindre 100 clics</span> <span>+1 RJ Coin</span></div>
-        <div class="quest-item"><span>🌍 Atteindre la Zone 5</span> <span>+3 RJ Coins</span></div>
-    `;
-}
-
-// --- LOGIQUE BOUTIQUE PETS : ACHATS DES 4 TYPES D'OEUFS ---
 function acheterOeuf(type) {
-    let config = CONFIG_PETS[type];
-    let portefeuille = (config.monnaie === "honeyCredits") ? "honeyCredits" : "credits";
-    
-    if (s[portefeuille] >= config.prix) {
-        s[portefeuille] -= config.prix;
-        
+    let config = CONFIG_PETS[type]; let porte = (config.monnaie === "honeyCredits") ? "honeyCredits" : "credits";
+    if (s[porte] >= config.prix) {
+        s[porte] -= config.prix;
         if (type === "normal") s.inventaireOeufsNormal = (s.inventaireOeufsNormal || 0) + 1;
         if (type === "avance") s.inventaireOeufsAvance = (s.inventaireOeufsAvance || 0) + 1;
         if (type === "rare") s.inventaireOeufsRare = (s.inventaireOeufsRare || 0) + 1;
         if (type === "honey") s.inventaireOeufsHoney = (s.inventaireOeufsHoney || 0) + 1;
-        
         ui(); save();
-    } else {
-        alert("🚫 Fonds insuffisants ! Requis : " + config.prix + " " + (config.monnaie === "honeyCredits" ? "🍯" : "💰"));
     }
 }
 
-// --- OUVERTURE AVEC LE SCRIPT DE ROULETTE HORIZONTALE ---
 function animerOuvertureOeuf(type) {
     let stock = 0;
     if (type === "normal") stock = s.inventaireOeufsNormal;
     if (type === "avance") stock = s.inventaireOeufsAvance;
     if (type === "rare") stock = s.inventaireOeufsRare;
     if (type === "honey") stock = s.inventaireOeufsHoney;
-    
     if (!stock || stock <= 0) return;
-    
-    if (type === "normal") s.inventaireOeufsNormal--;
-    if (type === "avance") s.inventaireOeufsAvance--;
-    if (type === "rare") s.inventaireOeufsRare--;
-    if (type === "honey") s.inventaireOeufsHoney--;
-    
+    if (type === "normal") s.inventaireOeufsNormal--; if (type === "avance") s.inventaireOeufsAvance--;
+    if (type === "rare") s.inventaireOeufsRare--; if (type === "honey") s.inventaireOeufsHoney--;
     ui();
-
-    const divLigne = document.getElementById("roulette-defilement");
-    const boite = document.getElementById("box-roulette");
-    divLigne.innerHTML = "";
-    divLigne.style.left = "0px";
-    boite.style.display = "block";
-
-    let configPool = CONFIG_PETS[type].liste;
-    let rand = Math.random();
-    let cumul = 0;
-    let petGagne = configPool[0];
-    
-    for (let p of configPool) {
-        cumul += p.chance;
-        if (rand <= cumul) { petGagne = p; break; }
-    }
-
-    let indexGagnant = 24; 
+    const divLigne = document.getElementById("roulette-defilement"); const boite = document.getElementById("box-roulette");
+    divLigne.innerHTML = ""; divLigne.style.left = "0px"; boite.style.display = "block";
+    let pool = CONFIG_PETS[type].liste; let rand = Math.random(); let cumul = 0; let petGagne = pool[0];
+    for (let p of pool) { cumul += p.chance; if (rand <= cumul) { petGagne = p; break; } }
     for (let i = 0; i < 35; i++) {
-        let itemElement = document.createElement("div");
-        itemElement.className = "roulette-item";
-        let petAffiche = configPool[Math.floor(Math.random() * configPool.length)];
-        if (i === indexGagnant) { petAffiche = petGagne; }
-        itemElement.innerHTML = `<span>${petAffiche.emoji}</span><span style="font-size:9px; font-weight:bold;">${petAffiche.nom}</span>`;
-        divLigne.appendChild(itemElement);
+        let it = document.createElement("div"); it.className = "roulette-item";
+        let petA = pool[Math.floor(Math.random() * pool.length)]; if (i === 24) petA = petGagne;
+        it.innerHTML = `<span>${petA.emoji}</span><span style="font-size:9px; font-weight:bold;">${petA.nom}</span>`;
+        divLigne.appendChild(it);
     }
-
+    setTimeout(() => { divLigne.style.left = -((24 * 80) - 120 + Math.floor(Math.random() * 40)) + "px"; }, 100);
     setTimeout(() => {
-        let destinationX = -((indexGagnant * 80) - 120 + Math.floor(Math.random() * 40)); 
-        divLigne.style.left = destinationX + "px";
-    }, 100);
-
-    setTimeout(() => {
-        boite.style.display = "none";
-        if (!s.petsPossedes) s.petsPossedes = [];
-        
-        // Copie propre et assignation d'un identifiant unique de session pour la gestion
-        let nvPet = Object.assign({}, petGagne);
-        nvPet.uniqueId = "pet_" + Date.now() + "_" + Math.floor(Math.random()*1000);
-        nvPet.equipped = false;
-        nvPet.monnaieRecup = CONFIG_PETS[type].monnaie; // lie la vente à la monnaie de l'oeuf
-        
-        s.petsPossedes.push(nvPet);
-        alert(`🎉 COMPAGNON REÇU : ${nvPet.emoji} ${nvPet.nom} (${nvPet.rare}) !\n[Rendez-vous dans l'incubateur pour l'équiper]`);
-        ui(); save();
+        boite.style.display = "none"; if (!s.petsPossedes) s.petsPossedes = [];
+        let nv = Object.assign({}, petGagne); nv.uniqueId = "pet_" + Date.now(); nv.equipped = false; nv.monnaieRecup = CONFIG_PETS[type].monnaie;
+        s.petsPossedes.push(nv); ui(); save();
     }, 4100);
 }
 
-// --- GESTION ÉQUIPEMENT (MAX 3) ET SYSTÈME DE VENTE ---
 function gererEquipementPet(uniqueId) {
-    if(!s.petsPossedes) return;
-    let index = s.petsPossedes.findIndex(p => p.uniqueId === uniqueId);
-    if(index === -1) return;
-    
+    let index = s.petsPossedes.findIndex(p => p.uniqueId === uniqueId); if(index === -1) return;
     let pet = s.petsPossedes[index];
-    
-    if(pet.equipped) {
-        // Déséquiper
-        pet.equipped = false;
-    } else {
-        // Équiper (Vérifier la limite stricte de 3)
-        let totalEquipped = s.petsPossedes.filter(p => p.equipped).length;
-        if(totalEquipped >= 3) {
-            alert("🚫 Limite atteinte ! Tu ne peux pas équiper plus de 3 familiers en même temps.");
-            return;
-        }
-        pet.equipped = true;
-    }
+    if(pet.equipped) pet.equipped = false;
+    else { if(s.petsPossedes.filter(p => p.equipped).length >= 3) return; pet.equipped = true; }
     ui(); save();
 }
 
 function vendrePet(uniqueId) {
-    if(!s.petsPossedes) return;
-    let index = s.petsPossedes.findIndex(p => p.uniqueId === uniqueId);
-    if(index === -1) return;
-    
+    let index = s.petsPossedes.findIndex(p => p.uniqueId === uniqueId); if(index === -1) return;
     let pet = s.petsPossedes[index];
-    let symbole = (pet.monnaieRecup === "honeyCredits") ? "🍯" : "💰";
-    let attrPortefeuille = (pet.monnaieRecup === "honeyCredits") ? "honeyCredits" : "credits";
-    
-    if(confirm(`Vendre ${pet.emoji} ${pet.nom} pour ${pet.prixVente} ${symbole} ?`)) {
-        s[attrPortefeuille] += pet.prixVente;
-        s.petsPossedes.splice(index, 1); // Retrait complet
-        ui(); save();
+    let port = (pet.monnaieRecup === "honeyCredits") ? "honeyCredits" : "credits";
+    s[port] += pet.prixVente; s.petsPossedes.splice(index, 1); ui(); save();
+}
+
+function genererQuetes() { document.getElementById("quests-container").innerHTML = `<div class="quest-item" style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between;"><span>🎯 Extraire 100 Éléments Cosmiques</span> <span style="color:#fbbf24; font-weight:bold;">+1 RJ Coin</span></div>`; }
+
+function demanderLeaderboard() {
+    let pName = document.getElementById("player").value;
+    if(pName) {
+        socket.emit("syncScoreLeaderboard", { pseudo: pName, prestige: s.prestige, credits: s.credits });
     }
 }
 
-function save() {
-    let user = document.getElementById("player").value;
-    if(user) localStorage.setItem("gm_save_" + user, JSON.stringify(s));
+function save() { 
+    let u = document.getElementById("player").value; 
+    if(u) {
+        localStorage.setItem("gm_save_" + u, JSON.stringify(s));
+        demanderLeaderboard(); // Envoie au serveur lors des sauvegardes
+    } 
 }
-function loadPlayerSave() {
-    let user = document.getElementById("player").value;
-    let local = localStorage.getItem("gm_save_" + user);
-    if(local) { 
-        s = JSON.parse(local); 
-        // Patch de sécurité sur les vieux profils
-        if(!s.petsPossedes) s.petsPossedes = [];
-        ui(); 
-    }
-}
-function deconnexionComplete() { save(); location.reload(); }
+function loadPlayerSave() { let u = document.getElementById("player").value; let loc = localStorage.getItem("gm_save_" + u); if(loc) { s = JSON.parse(loc); ui(); } }
 
 setInterval(lancerProductionDrones, 1000);
 
 function ui() {
-    let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
-    document.getElementById("money").textContent = Math.floor(s[currentAttr]);
-    document.getElementById("moneyTop").textContent = Math.floor(s[currentAttr]);
+    let attr = galaxiesData[currentGalaxy].moneyAttr;
+    document.getElementById("money").textContent = Math.floor(s[attr]);
+    document.getElementById("moneyTop").textContent = Math.floor(s[attr]);
     document.getElementById("zone").textContent = s.zone;
     document.getElementById("prestige").textContent = s.prestige;
     document.getElementById("shards").textContent = s.shards;
     document.getElementById("rjCoins").textContent = s.rjCoins;
-    document.getElementById("stat-clicks").textContent = s.totalClicks;
-    document.getElementById("rjMultClic").textContent = s.rjClicMult;
-    document.getElementById("rjMultDrone").textContent = s.rjDroneMult;
-    document.getElementById("power").textContent = s.power; 
-    document.getElementById("drones").textContent = s.drones; 
-    document.getElementById("scanner").textContent = s.scanner;
+    document.getElementById("rjClicMultLbl").textContent = s.rjClicMult;
+    document.getElementById("rjDroneMultLbl").textContent = s.rjDroneMult;
+    document.getElementById("up1Lvl").textContent = s.up1;
+    document.getElementById("up2Lvl").textContent = s.up2;
     document.getElementById("pc").textContent = Math.floor(applyDiscount(s.pCost)); 
     document.getElementById("dc").textContent = Math.floor(applyDiscount(s.dCost)); 
     document.getElementById("sc").textContent = Math.floor(applyDiscount(s.sCost));
+    
+    document.getElementById("stat-power").textContent = s.power;
+    document.getElementById("stat-drones").textContent = s.drones;
+    document.getElementById("stat-scanner").textContent = s.scanner;
+    
     if(currentGalaxy === "normale") {
-        let currentPlanet = planets[(s.zone - 1) % planets.length]; 
-        document.getElementById("planetName").textContent = currentPlanet.name; 
-        document.getElementById("planet").textContent = currentPlanet.emoji;
-    } else {
-        document.getElementById("planetName").textContent = galaxiesData[currentGalaxy].name;
-        document.getElementById("planet").textContent = galaxiesData[currentGalaxy].emoji;
-    }
-    document.getElementById("maxzone").textContent = s.maxzone;
-    document.getElementById("up1Lvl").textContent = s.up1; 
-    document.getElementById("up2Lvl").textContent = s.up2;
-
-    // Mise à jour visuelle des stocks d'œufs
+        let cur = planets[(s.zone - 1) % planets.length]; document.getElementById("planetName").textContent = cur.name; document.getElementById("planet").textContent = cur.emoji;
+    } else { document.getElementById("planetName").textContent = galaxiesData[currentGalaxy].name; document.getElementById("planet").textContent = galaxiesData[currentGalaxy].emoji; }
+    
     document.getElementById("egg-normal-count").textContent = s.inventaireOeufsNormal || 0;
     document.getElementById("egg-avance-count").textContent = s.inventaireOeufsAvance || 0;
     document.getElementById("egg-rare-count").textContent = s.inventaireOeufsRare || 0;
     document.getElementById("egg-honey-count").textContent = s.inventaireOeufsHoney || 0;
-    
     document.getElementById("btn-open-normal").style.display = (s.inventaireOeufsNormal > 0) ? "inline-block" : "none";
     document.getElementById("btn-open-avance").style.display = (s.inventaireOeufsAvance > 0) ? "inline-block" : "none";
     document.getElementById("btn-open-rare").style.display = (s.inventaireOeufsRare > 0) ? "inline-block" : "none";
     document.getElementById("btn-open-honey").style.display = (s.inventaireOeufsHoney > 0) ? "inline-block" : "none";
+    document.getElementById("equipped-pets-count").textContent = s.petsPossedes ? s.petsPossedes.filter(p => p.equipped).length : 0;
 
-    // Gestion du compteur équipé
-    let countEquipped = s.petsPossedes ? s.petsPossedes.filter(p => p.equipped).length : 0;
-    document.getElementById("equipped-pets-count").textContent = countEquipped;
-
-    // Rendu dynamique de la liste des compagnons possédés
-    let htmlPets = "";
+    let h = "";
     if (s.petsPossedes && s.petsPossedes.length > 0) {
         s.petsPossedes.forEach(p => {
-            let statusClass = p.equipped ? "pet-row equipped" : "pet-row";
-            let actionText = p.equipped ? "❌ Déséquiper" : "🎒 Équiper";
-            let symboleVente = (p.monnaieRecup === "honeyCredits") ? "🍯" : "💰";
-            
-            htmlPets += `
-                <div class="${statusClass}">
-                    <div>
-                        <span style="font-size:14px;">${p.emoji}</span> 
-                        <strong>${p.nom}</strong> (${p.rare}) <br>
-                        <span style="color:#52ffe0;">Boost: x${p.valeurBoost} ${p.typeBoost}</span>
-                    </div>
-                    <div>
-                        <button class="btn-pet-action" style="background:#52ffe0;" onclick="gererEquipementPet('${p.uniqueId}')">${actionText}</button>
-                        <button class="btn-pet-action" style="background:#ef4444; color:white;" onclick="vendrePet('${p.uniqueId}')">💰 Vendre (${p.prixVente}${symboleVente})</button>
-                    </div>
-                </div>
-            `;
+            h += `<div class="${p.equipped ? 'pet-row equipped' : 'pet-row'}"><div>${p.emoji} <strong>${p.nom}</strong> (${p.rare})</div><div><button class="btn-pet-action" onclick="gererEquipementPet('${p.uniqueId}')">${p.equipped ? '❌' : '🎒'}</button><button class="btn-pet-action" onclick="vendrePet('${p.uniqueId}')">💰</button></div></div>`;
         });
-    } else {
-        htmlPets = "<div style='color:gray; padding:10px;'>Aucun familier disponible. Achetez et ouvrez un œuf ci-dessus !</div>";
-    }
-    document.getElementById("liste-mes-pets").innerHTML = htmlPets;
+    } else h = "Aucun compagnon.";
+    document.getElementById("liste-mes-pets").innerHTML = h;
 }
 
 window.addEventListener("keydown", (e) => {
-    if(document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return;
+    if(document.activeElement.tagName === "INPUT") return;
     if(e.key === "1") togglePanel('owner');
     if(e.key === "2") togglePanel('admin');
+    if(e.key === "3") togglePanel('tester');
 });
 
 const socket = io("https://galaxy-miner-server.onrender.com");
 socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
 socket.on("recevoirMessageGlobal", (data) => {
-    const chatBox = document.getElementById("chat-box");
-    const nvMessage = document.createElement("div");
-    nvMessage.innerHTML = `<strong>${data.pseudo} :</strong> ${data.texte}`;
-    chatBox.appendChild(nvMessage); chatBox.scrollTop = chatBox.scrollHeight;
+    const cb = document.getElementById("chat-box"); const nv = document.createElement("div");
+    nv.innerHTML = `<strong>${data.pseudo} :</strong> ${data.texte}`; cb.appendChild(nv); cb.scrollTop = cb.scrollHeight;
+});
+
+socket.on("mettreAJourLeaderboard", (listeScores) => {
+    const box = document.getElementById("leaderboard-box");
+    if(!listeScores || listeScores.length === 0) { box.innerHTML = "<div style='text-align:center;color:#666;'>Aucun score enregistré</div>"; return; }
+    let html = "";
+    listeScores.forEach((joueur, idx) => {
+        html += `
+        <div class="leaderboard-row">
+            <span>#${idx+1} ${joueur.pseudo}</span>
+            <span>P.${joueur.prestige} | ${Math.floor(joueur.credits).toLocaleString()} 💰</span>
+        </div>`;
+    });
+    box.innerHTML = html;
 });
 
 socket.on("retourCommande", (data) => {
-    let actifLog = (ownerConnected && document.getElementById("panel-owner").style.display === "block") ? "log-owner" : "log-admin";
-    const log = document.getElementById(actifLog);
-    if(log) {
-        const div = document.createElement("div"); div.style.color = "#ffff55"; div.style.whiteSpace = "pre-line";
-        let textPropre = data.texte.replaceAll("~/", ""); div.textContent = textPropre;
-        log.appendChild(div); log.scrollTop = log.scrollHeight;
-    }
+    let act = (ownerConnected && document.getElementById("panel-owner").style.display === "block") ? "log-owner" : (adminConnected && document.getElementById("panel-admin").style.display === "block") ? "log-admin" : "log-tester";
+    const l = document.getElementById(act); if(l) { const d = document.createElement("div"); d.style.color = "#ffff55"; d.textContent = data.texte.replaceAll("~/", ""); l.appendChild(d); l.scrollTop = l.scrollHeight; }
 });
 
 socket.on("alerteGlobale", (data) => {
-    const alertBox = document.getElementById("global-chat-alert");
-    alertBox.textContent = "📢 " + data.texte; alertBox.style.top = "20px";
-    setTimeout(() => { alertBox.style.top = "-150px"; }, 6000);
-});
-
-socket.on("recevoirSpawnShop", () => {
-    document.getElementById("secret-merchant-btn").style.display = "block";
-    alert("🐻 L'Ours Marchand vient d'apparaître sur la carte ! Check le bouton en bas à droite.");
-});
-
-socket.on("effetVisualDirectV3", (data) => {
-    let monPseudo = document.getElementById("player").value.trim().toLowerCase();
-    if (data.cible && data.cible.toLowerCase() !== monPseudo) return;
-    if (data.action === "nightmode") { document.body.style.filter = "brightness(0.3) contrast(1.2)"; } 
-    else if (data.action === "daymode") { document.body.style.filter = "none"; } 
-    else if (data.action === "rainbowui") {
-        clearInterval(rainbowUiInterval); let hue = 0;
-        rainbowUiInterval = setInterval(() => {
-            hue = (hue + 5) % 360;
-            document.querySelectorAll('.card, button').forEach(el => { el.style.borderColor = `hsl(${hue}, 100%, 50%)`; });
-        }, 100);
-    } else if (data.action === "stoprainbow") { clearInterval(rainbowUiInterval); document.querySelectorAll('.card, button').forEach(el => el.style.borderColor = ""); } 
-    else if (data.action === "clearchat") { document.getElementById("chat-box").innerHTML = "<div style='color:gray;'><i>Chat nettoyé par la modération.</i></div>"; } 
-    else if (data.action === "cometstorm") {
-        let count = 0;
-        let cInt = setInterval(() => {
-            count++; let c = document.getElementById("comet");
-            if(c) { c.style.display = "block"; c.style.top = Math.random() * window.innerHeight + "px"; c.style.left = Math.random() * window.innerWidth + "px"; }
-            if(count > 15) { clearInterval(cInt); if(c) c.style.display="none"; }
-        }, 300);
-    }
-});
-
-socket.on("effetVisuelCumulable", (data) => {
-    let monPseudo = document.getElementById("player").value.trim().toLowerCase();
-    if (data.cible && data.cible.toLowerCase() !== monPseudo) return;
-    if (data.action === "seisme") { document.body.classList.add("seisme-active"); } 
-    else if (data.action === "blackout") { document.body.classList.add("blackout-active"); } 
-    else if (data.action === "matrix") { document.body.classList.add("blur-active"); } 
-    else if (data.action === "clearvisuals") { document.body.classList.remove("seisme-active", "blackout-active", "blur-active"); document.body.style.filter = "none"; }
+    const a = document.getElementById("global-chat-alert"); a.textContent = "📢 " + data.texte; a.style.top = "20px"; setTimeout(() => { a.style.top = "-150px"; }, 6000);
 });
 
 socket.on("actionDataJoueur", (data) => {
-    let monPseudo = document.getElementById("player").value.trim().toLowerCase();
-    if (data.cible.toLowerCase() !== monPseudo) return;
+    let monP = document.getElementById("player").value.trim().toLowerCase(); if (data.cible.toLowerCase() !== monP) return;
     if (data.action === "givecredits") s.credits += Number(data.valeur);
+    if (data.action === "givehoneycredits") s.honeyCredits += Number(data.valeur);
+    if (data.action === "givecrystalcredits") s.crystalCredits += Number(data.valeur);
+    if (data.action === "giveplasmacredits") s.plasmaCredits += Number(data.valeur);
+    if (data.action === "giftdrone") s.drones += Number(data.valeur);
     if (data.action === "giverj") s.rjCoins += Number(data.valeur);
     if (data.action === "giveshards") s.shards += Number(data.valeur);
     if (data.action === "setzone") s.zone = Number(data.valeur);
     if (data.action === "setprestige") s.prestige = Number(data.valeur);
-    if (data.action === "resetplayer") s = JSON.parse(JSON.stringify(defaultState));
     if (data.action === "freeze") isFrozen = true;
     if (data.action === "unfreeze") isFrozen = false;
-    if (data.action === "kick") { document.getElementById("game-interface").style.display = "none"; document.getElementById("kick-screen").style.display = "block"; }
-    if (data.action === "ban") { document.getElementById("game-interface").style.display = "none"; document.getElementById("ban-screen").style.display = "block"; }
+    if (data.action === "kick") { document.getElementById("game-interface").style.display = "none"; alert("Tu as été exclu."); location.reload(); }
+    
+    if (data.action === "owner_godmode") { adminBoostMultiplier = 999999; }
+    if (data.action === "owner_max_stats") { s.power += 500; s.drones += 500; s.scanner += 500; }
+    if (data.action === "owner_inf_money") { s.credits = 9999999999; s.honeyCredits = 99999999; }
+    if (data.action === "owner_give_mythic_pet") {
+        if(!s.petsPossedes) s.petsPossedes = [];
+        s.petsPossedes.push({ id: "phenix", nom: "Phénix Solaire", rare: "MYTHIQUE", typeBoost: "global", valeurBoost: 10.0, emoji: "🦅", uniqueId: "owner_" + Date.now(), equipped: false, prixVente: 75000 });
+    }
+    if (data.action === "owner_wipe_player") { s = JSON.parse(JSON.stringify(defaultState)); }
+    if (data.action === "owner_rainbow_name") { document.getElementById("player").style.color = "orange"; document.getElementById("player").style.textShadow = "0 0 10px yellow"; }
+    if (data.action === "owner_mute_all") { window.allMuted = true; }
+    if (data.action === "owner_unmute_all") { window.allMuted = false; }
+    if (data.action === "owner_steal_money") { s.credits = 0; s.honeyCredits = 0; }
+    if (data.action === "owner_force_prestige") { s.prestige++; }
     ui(); save();
 });
 
-socket.on("boostGlobalEvent", (data) => {
-    adminBoostMultiplier = Number(data.multiplier);
-    document.getElementById("notice").textContent = adminBoostMultiplier > 1 ? `🚀 BOOST GLOBAL MULTI-MINER ${adminBoostMultiplier}x EN COURS` : "En attente...";
-});
-
 function envoyerMessage() {
-    const input = document.getElementById("chat-input"); 
-    const texte = input.value.trim();
-    let pseudo = document.getElementById("player").value.trim() || "Anonyme";
-    
-    if (texte === "/appsowner") { togglePanel('owner'); input.value = ""; return; }
-    if (texte === "/appsadmin") { togglePanel('admin'); input.value = ""; return; }
-
-    if (texte !== "") { socket.emit("envoyerMessageGlobal", { pseudo: pseudo, texte: texte }); input.value = ""; }
+    const i = document.getElementById("chat-input"); const t = i.value.trim(); let p = document.getElementById("player").value.trim() || "Anonyme";
+    if (t === "/appsowner") { togglePanel('owner'); i.value = ""; return; }
+    if (t === "/appsadmin") { togglePanel('admin'); i.value = ""; return; }
+    if (t === "/appstester") { togglePanel('tester'); i.value = ""; return; }
+    if (window.allMuted && !ownerConnected) { alert("Le chat est coupé par l'Owner."); i.value = ""; return; }
+    if (t !== "") { socket.emit("envoyerMessageGlobal", { pseudo: p, texte: t }); i.value = ""; }
 }
 
-document.getElementById("chat-input").addEventListener("keydown", function(event) { if (event.key === "Enter") { event.preventDefault(); envoyerMessage(); } });
-document.getElementById("input-owner").addEventListener("keydown", function(event) { if (event.key === "Enter") { event.preventDefault(); loginPanel('owner'); } });
-document.getElementById("input-admin").addEventListener("keydown", function(event) { if (event.key === "Enter") { event.preventDefault(); loginPanel('admin'); } });
-
-function initDragElement(panelId, headerId) {
-    let el = document.getElementById(panelId);
-    let header = document.getElementById(headerId);
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    header.onmousedown = dragMouseDown;
-
-    function dragMouseDown(e) {
-        e = e || window.event;
-        if(e.target.classList.contains('close-admin-btn')) return;
-        e.preventDefault();
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
-    }
-
-    function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        el.style.top = (el.offsetTop - pos2) + "px";
-        el.style.left = (el.offsetLeft - pos1) + "px";
-    }
-
-    function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-    }
+function initDrag(pId, hId) {
+    let el = document.getElementById(pId); let h = document.getElementById(hId); let p1=0,p2=0,p3=0,p4=0; h.onmousedown = dMD;
+    function dMD(e) { if(e.target.classList.contains('close-admin-btn')) return; e.preventDefault(); p3=e.clientX; p4=e.clientY; document.onmouseup=cDE; document.onmousemove=eD; }
+    function eD(e) { e.preventDefault(); p1=p3-e.clientX; p2=p4-e.clientY; p3=e.clientX; p4=e.clientY; el.style.top=(el.offsetTop-p2)+"px"; el.style.left=(el.offsetLeft-p1)+"px"; }
+    function cDE() { document.onmouseup=null; document.onmousemove=null; }
 }
-initDragElement("panel-owner", "header-owner");
-initDragElement("panel-admin", "header-admin");
-
-socket.on("gameVersion", (version) => { console.log("Version du serveur connectée :", version); });
+initDrag("panel-owner", "header-owner"); initDrag("panel-admin", "header-admin"); initDrag("panel-tester", "header-tester");
 </script>
 </body>
 </html>
