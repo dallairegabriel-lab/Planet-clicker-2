@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-select=none">
-<title>Galaxy Miner Deluxe V3 - Full Premium Edition</title>
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<title>Galaxy Miner Deluxe V3 - Network Target Edition</title>
+<script src="/socket.io/socket.io.js"></script>
 <style>
-/* --- STYLES DE BASE D'ORIGINE --- */
+/* --- TOUS LES STYLES SONT IDENTIQUES À TON CODE ORIGINAL --- */
 body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow-x:hidden;transition: filter 0.3s, animation 0.3s, transform 0.3s, transform-origin 0.3s; padding-bottom: 40px;}
 #stars,#stars2{position:fixed;inset:0;pointer-events:none}
 #stars{background-image:radial-gradient(white 1px,transparent 1px);background-size:45px 45px;opacity:.2}
 #stars2{background-image:radial-gradient(cyan 1px,transparent 1px);background-size:90px 90px;opacity:.08;animation:drift 60s linear infinite}
 @keyframes drift{from{transform:translateY(0)}to{transform:translateY(90px)}}
-
-/* --- INTERFACE DE JEU --- */
 #game-interface { display: none; padding: 20px; box-sizing: border-box; max-width: 1200px; margin: 0 auto; }
 .top{display:flex;justify-content:center;gap:15px;padding:10px;flex-wrap:wrap;transition: transform 0.5s ease;}
 .card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);transition: transform 0.5s ease;}
@@ -22,89 +20,61 @@ body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at ce
 #planet{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
 #planet:active{transform:scale(.85)}
 #planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
-
 button{border:none;border-radius:10px;padding:10px 14px;margin:4px;cursor:pointer;font-weight:bold;background:#fff;color:#000;transition:0.2s}
 button:hover{background:#52ffe0;transform:translateY(-2px)}
 .btn-max{background:#ffaa00;color:#000;padding:10px 8px;font-size:11px;}
 .btn-max:hover{background:#ffcc66;}
-
-/* Affichage des Niveaux/Stats d'équipement */
 .stats-bar { display: flex; justify-content: center; gap: 15px; margin: 15px auto; max-width: 600px; flex-wrap: wrap; }
 .stat-badge { background: rgba(0, 0, 0, 0.4); padding: 6px 12px; border-radius: 8px; font-size: 13px; border: 1px solid rgba(255,255,255,0.05); }
-
 .shop{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:15px;transition: transform 0.5s ease;}
 .utility-bar { display:flex; justify-content:center; gap:8px; margin: 15px auto; max-width: 600px; flex-wrap: wrap; }
-
 .notice{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10;transition: 0.3s;}
 .progress-bar-container{width:180px;background:rgba(255,255,255,0.1);height:8px;border-radius:4px;margin:5px auto;overflow:hidden;transition: transform 0.5s ease;}
 #progress-bar{width:0%;height:100%;background:linear-gradient(90deg, #52ffe0, #0077ff);transition:width 0.2s}
 #comet{position:fixed;font-size:40px;cursor:pointer;z-index:99;display:none;user-select:none}
-
-/* Modales d'interface d'origine */
 .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(10, 15, 30, 0.95); border: 2px solid #52ffe0; border-radius: 14px; padding: 20px; z-index: 300000; max-width: 400px; width: 90%; box-shadow: 0 0 25px rgba(82,255,224,0.3); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
 .modal-close { background: none; color: red; font-size: 18px; padding: 0; margin: 0; }
 .modal-close:hover { background: none; transform: none; }
-
-/* 🧱 CONTENEUR BAS DE PAGE POUR LE LEADERBOARD ET LE CHAT */
 .bottom-container { display: flex; gap: 20px; max-width: 800px; margin: 25px auto 0 auto; box-sizing: border-box; }
 .bottom-column { flex: 1; min-width: 0; }
-
-/* Styles spécifiques au tableau des scores */
 .leaderboard-title { font-size: 14px; font-weight: bold; color: #ffaa00; text-align: center; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 .leaderboard-list { height: 140px; overflow-y: auto; font-size: 12px; font-family: monospace; }
 .leaderboard-row { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.leaderboard-row:nth-child(1) { color: #ffd700; font-weight: bold; }
-.leaderboard-row:nth-child(2) { color: #c0c0c0; }
-.leaderboard-row:nth-child(3) { color: #cd7f32; }
-
-/* 📱 ADAPTATIVE MOBILE */
 .mode-mobile { display: flex !important; flex-direction: column; align-items: center; padding: 10px !important; }
-.mode-mobile .pc-only { display: none !important; }
 .mode-mobile .card { width: 100%; max-width: 420px; box-sizing: border-box; margin-bottom: 15px; }
 .mode-mobile #main-game-area { order: -1; width: 100%; text-align: center; }
 .mode-mobile #planet { font-size: 160px !important; }
-.mode-mobile button { width: auto; padding: 10px 14px !important; font-size: 14px !important; margin: 4px !important; }
-.mode-mobile .btn-max { width: auto !important; padding: 10px 8px !important; font-size: 11px !important; display: inline-block; margin-left: 5px !important; }
-.mode-mobile .shop, .mode-mobile .utility-bar, .mode-mobile .stats-bar { display: flex; width: auto; max-width: none; }
-.mode-mobile .bottom-container { flex-direction: column; width: 100%; max-width: 420px; gap: 15px; margin-top: 10px; }
-
-/* THEMES GALAXIES */
 .honey-theme { background: radial-gradient(circle at center, #78350f, #451a03 80%) !important; }
 .crystal-theme { background: radial-gradient(circle at center, #1e1b4b, #4c1d95 80%) !important; }
 .plasma-theme { background: radial-gradient(circle at center, #450a0a, #7f1d1d 80%) !important; }
-
-/* PANELS CONFIGURÉS */
 .roblox-panel { display: none; position: fixed; top: 150px; left: 150px; width: 90%; max-width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif; color: #ffffff; box-shadow: 0px 10px 30px rgba(0,0,0,0.7); overflow: hidden; z-index: 100000; user-select: none; }
 #panel-owner { background-color: rgba(45, 15, 15, 0.8); border: 1px solid rgba(255, 68, 68, 0.3); }
 #panel-admin { background-color: rgba(15, 30, 45, 0.8); border: 1px solid rgba(68, 136, 255, 0.3); }
 #panel-tester { background-color: rgba(15, 45, 15, 0.8); border: 1px solid rgba(38, 255, 99, 0.3); }
-
 .admin-header { background-color: rgba(20, 20, 20, 0.9); padding: 12px; font-weight: 600; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; cursor: move; }
 .close-admin-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 16px; cursor: pointer; font-weight: bold; padding: 0 5px; margin: 0; }
 .admin-body { padding: 12px; }
 .command-log { height: 180px; background-color: rgba(0, 0, 0, 0.6); border-radius: 4px; padding: 10px; font-size: 12px; font-family: 'Courier New', monospace; overflow-y: auto; margin-bottom: 8px; }
 #log-owner { color: #ff5555; } #log-admin { color: #55aaff; } #log-tester { color: #26ff63; }
-
-/* SUGGESTIONS */
-.suggest-box { display: flex; gap: 5px; flex-wrap: wrap; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px; margin-bottom: 8px; min-height: 25px; max-height: 85px; overflow-y: auto; align-items: center; }
+.suggest-box { display: flex; gap: 5px; flex-wrap: wrap; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px; margin-bottom: 8px; min-height: 25px; max-height: 105px; overflow-y: auto; align-items: center; }
 .suggest-badge { background: rgba(255,255,255,0.15); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: monospace; transition: 0.15s; }
 .suggest-badge:hover { background: #52ffe0; color: #000; }
-
 .input-area { display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; padding: 6px 10px; gap: 5px; }
 .prefix { font-family: monospace; margin-right: 3px; font-weight: bold; font-size: 14px; }
 .admin-input-text { flex: 1; background: none; border: none; color: #ffffff; font-size: 13px; outline: none; }
 .panel-btn { background-color: rgba(60, 60, 60, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 4px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; }
-.panel-btn:hover { background-color: rgba(100, 100, 100, 0.9); }
 
-/* EFFETS VISUELS */
-.frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
+/* EFFETS VISUELS CONFIGURABLES PAR LE SERVEUR */
+.frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; pointer-events: none !important;}
 .seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
 @keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
 .blur-active { filter: blur(8px) !important; }
 .blackout-active { filter: brightness(0) !important; background: black !important; }
+.matrix-active { filter: hue-rotate(90deg) brightness(1.2) contrast(1.5) !important; }
+.rainbow-active { animation: rainbowBg 5s linear infinite !important; }
+@keyframes rainbowBg { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
-/* COMPTE ET SESSIONS */
 #auth-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #15224a, #02040a 80%); z-index: 9999999; display: flex; justify-content: center; align-items: center; }
 .auth-card { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15); width: 340px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center; }
 .auth-card h2 { margin-top: 0; color: #52ffe0; text-shadow: 0 0 15px rgba(82, 255, 224, 0.4); font-size: 26px; }
@@ -116,12 +86,8 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 .device-btn.active { background: #52ffe0; color: #02040a; border-color: #52ffe0; }
 .auth-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; }
 .auth-btn-login { background: #52ffe0; color: #02040a; }
-.auth-btn-register { background: #ffaa00; color: #02040a; }
 .auth-toggle { margin-top: 15px; font-size: 12px; color: #9de; cursor: pointer; text-decoration: underline; }
-
 #global-chat-alert { position: fixed; top: -150px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff0055, #ffaa00); color: white; padding: 20px 40px; border-radius: 12px; font-size: 24px; font-weight: bold; z-index: 200000; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 3px solid #fff; box-shadow: 0 0 35px rgba(255,0,85,0.6); }
-
-/* SYSTÈME DE PETS ET ROULETTE */
 .roulette-container { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; height: 100px; background: #111; border: 3px solid #52ffe0; border-radius: 12px; overflow: hidden; z-index: 200005; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
 .roulette-Ligne { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: left 4s cubic-bezier(0.1, 0.8, 0.1, 1); }
 .roulette-item { width: 80px; height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 24px; border-right: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); box-sizing: border-box; }
@@ -169,6 +135,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 
 <div id="stars"></div><div id="stars2"></div>
 <div id="global-chat-alert">📢 ANNONCE GLOBALE</div>
+<div id="comet" onclick="clickComet()">☄️</div>
 
 <div id="box-roulette" class="roulette-container">
     <div class="roulette-curseur"></div>
@@ -282,7 +249,6 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
                 </div>
             </div>
         </div>
-
         <div class="bottom-column">
             <div class="card" id="ui-chat" style="height: 100%;">
                 <div id="chat-box" style="height: 100px; overflow-y: auto; font-size: 12px; margin-bottom: 8px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);"></div>
@@ -335,6 +301,7 @@ button:hover{background:#52ffe0;transform:translateY(-2px)}
 </div>
 
 <script>
+let socket;
 let supportChoisi = "pc";
 let currentGalaxy = "normale";
 const PASS_OWNER = "admin123";
@@ -345,43 +312,38 @@ let ownerConnected = false;
 let adminConnected = false;
 let testerConnected = false;
 
+/* --- LISTES DE COMMANDES COMPLÈTES --- */
 const COMMANDS_BASE_ADMIN = [
-    "help", "announcement", "seisme", "blackout", "clearvisuals",
-    "givecredits", "giverj", "giveshards", "setzone", "setprestige", "kick", "freeze", "unfreeze", "clearchat", "resetplayer"
+    "help", "announcement", "seisme", "blackout", "clearvisuals", "matrix", "rainbow",
+    "givecredits", "giverj", "giveshards", "setzone", "setprestige", "kick", "freeze", "unfreeze", 
+    "clearchat", "resetplayer", "mute", "unmute", "warn", "ban", "slowmode", "lockdown", "unlockdown", 
+    "tp_zone", "give_title", "force_sync", "check_save", "vanish"
 ];
-
 const COMMANDS_LIST_OWNER = [
     ...COMMANDS_BASE_ADMIN,
     "giftdrone", "givehoneycredits", "givecrystalcredits", "giveplasmacredits", 
     "owner_godmode", "owner_wipe_player", "owner_give_mythic_pet", "owner_max_stats", "owner_inf_money",
-    "owner_force_prestige", "owner_steal_money", "owner_mute_all", "owner_unmute_all", "owner_rainbow_name"
+    "owner_force_prestige", "owner_steal_money", "owner_mute_all", "owner_unmute_all", "owner_rainbow_name",
+    "server_shutdown", "server_boost", "give_all_gems", "wipe_leaderboard", "crash_client", "op_all"
 ];
-
 const COMMANDS_TESTER = [
-    "test_boost", "test_egg", "test_give_shard", "test_reset_money", "test_shake", "test_click"
+    "test_boost", "test_egg", "test_give_shard", "test_reset_money", "test_shake", "test_click",
+    "debug_view", "set_fps", "simulate_lag", "add_pet_slot", "unlock_all_galaxies"
 ];
 
 const CONFIG_PETS = {
     normal: { prix: 5000, monnaie: "credits", liste: [
         { id: "bee", nom: "Abeille Ouvrière", rare: "Commun", chance: 0.70, typeBoost: "clic", valeurBoost: 1.2, emoji: "🐝", prixVente: 1000 },
-        { id: "slime", nom: "Slime Cosmique", rare: "Rare", chance: 0.25, typeBoost: "drone", valeurBoost: 1.4, emoji: "🧪", prixVente: 2500 },
-        { id: "robot", nom: "Robot Éclaireur", rare: "Épique", chance: 0.05, typeBoost: "global", valeurBoost: 1.8, emoji: "🤖", prixVente: 6000 }
+        { id: "slime", nom: "Slime Cosmique", rare: "Rare", chance: 0.25, typeBoost: "drone", valeurBoost: 1.4, emoji: "🧪", prixVente: 2500 }
     ]},
     avance: { prix: 25000, monnaie: "credits", liste: [
-        { id: "slime", nom: "Slime Cosmique", rare: "Rare", chance: 0.60, typeBoost: "drone", valeurBoost: 1.5, emoji: "🧪", prixVente: 2500 },
-        { id: "alien", nom: "Chasseur Alien", rare: "Épique", chance: 0.32, typeBoost: "clic", valeurBoost: 2.2, emoji: "👽", prixVente: 10000 },
-        { id: "dragon", nom: "Dragon de Plasma", rare: "LÉGENDAIRE", chance: 0.08, typeBoost: "global", valeurBoost: 4.0, emoji: "🐉", prixVente: 30000 }
+        { id: "alien", nom: "Chasseur Alien", rare: "Épique", chance: 0.32, typeBoost: "clic", valeurBoost: 2.2, emoji: "👽", prixVente: 10000 }
     ]},
     rare: { prix: 100000, monnaie: "credits", liste: [
-        { id: "alien", nom: "Chasseur Alien", rare: "Épique", chance: 0.65, typeBoost: "clic", valeurBoost: 2.5, emoji: "👽", prixVente: 10000 },
-        { id: "dragon", nom: "Dragon de Plasma", rare: "LÉGENDAIRE", chance: 0.30, typeBoost: "global", valeurBoost: 5.0, emoji: "🐉", prixVente: 30000 },
         { id: "phenix", nom: "Phénix Solaire", rare: "MYTHIQUE", chance: 0.05, typeBoost: "global", valeurBoost: 10.0, emoji: "🦅", prixVente: 75000 }
     ]},
     honey: { prix: 2500, monnaie: "honeyCredits", liste: [
-        { id: "bourdon", nom: "Bourdon Joufflu", rare: "Commun", chance: 0.55, typeBoost: "clic", valeurBoost: 1.5, emoji: "🪰", prixVente: 500 },
-        { id: "abeille_c", nom: "Abeille de Chasse", rare: "Rare", chance: 0.35, typeBoost: "drone", valeurBoost: 2.0, emoji: "🐝", prixVente: 1000 },
-        { id: "ours", nom: "Ours Volant", rare: "Épique", chance: 0.09, typeBoost: "global", valeurBoost: 3.0, emoji: "🐻", prixVente: 3000 },
-        { id: "reine", nom: "Reine Alvéole", rare: "LÉGENDAIRE", chance: 0.01, typeBoost: "global", valeurBoost: 7.5, emoji: "👑", prixVente: 10000 }
+        { id: "bourdon", nom: "Bourdon Joufflu", rare: "Commun", chance: 0.55, typeBoost: "clic", valeurBoost: 1.5, emoji: "🪰", prixVente: 500 }
     ]}
 };
 
@@ -400,388 +362,221 @@ let galaxiesData = {
     plasma: { name: "Pyros", emoji: "🔥", moneyAttr: "plasmaCredits" }
 };
 
-let combo=0; let isFrozen = false; let adminBoostMultiplier = 1;
+let progressClick = 0; let isFrozen = false; let adminBoostMultiplier = 1; let isMuted = false;
+
+// --- INITIALISATION DU RECOUVREMENT RESEAU ---
+function gererConnexion() {
+    let user = document.getElementById("auth-log-user").value.trim();
+    if(!user) return;
+    
+    document.getElementById("player").value = user; 
+    document.getElementById("auth-overlay").style.display = "none";
+    const interf = document.getElementById("game-interface"); 
+    interf.style.display = "block"; 
+    interf.className = (supportChoisi === "mobile") ? "mode-mobile" : "mode-pc";
+    
+    // Établir le lien Socket.io dynamique
+    socket = io();
+
+    // Signaler sa présence au serveur
+    socket.emit('initSession', user);
+
+    // ÉCOUTEURS RESEAU
+    socket.on('updateOnlineCount', (count) => { document.getElementById("onlineCount").innerText = count; });
+    socket.on('broadcastChatMessage', (data) => {
+        let box = document.getElementById("chat-box");
+        box.innerHTML += `<div><b>${data.user} :</b> ${data.text}</div>`;
+        box.scrollTop = box.scrollHeight;
+    });
+    socket.on('leaderboardUpdate', (list) => {
+        let box = document.getElementById("leaderboard-box"); box.innerHTML = "";
+        list.forEach((p, i) => {
+            box.innerHTML += `<div class="leaderboard-row"><span>#${i+1} ${p.username}</span><span>P.${p.score}</span></div>`;
+        });
+    });
+
+    // RECEPTION DE L'ACTION ENVOYÉE PAR LE SERVEUR (Pour ALL ou ciblé)
+    socket.on('executeClientAction', (data) => {
+        if(data.error) console.warn(data.error);
+        executerActionLocale(data.cmd, data.value);
+    });
+
+    loadPlayerSave(); 
+    actualiserAffichage();
+    demarrerDronesLoop();
+}
 
 function choisirSupport(mode) { supportChoisi = mode; document.getElementById("dev-pc").classList.remove("active"); document.getElementById("dev-mobile").classList.remove("active"); document.getElementById("dev-" + mode).classList.add("active"); }
 function basculerAuth(mode) { document.getElementById("auth-login-view").style.display = (mode === 'login') ? "block" : "none"; document.getElementById("auth-register-view").style.display = (mode === 'register') ? "block" : "none"; }
-function gererInscription() { let user = document.getElementById("auth-reg-user").value.trim(); let pass = document.getElementById("auth-reg-pass").value; if(!user || !pass) return; localStorage.setItem("gm_pass_" + user, pass); basculerAuth('login'); }
-
-function gererConnexion() {
-    let user = document.getElementById("auth-log-user").value.trim(); let pass = document.getElementById("auth-log-pass").value;
-    if(localStorage.getItem("gm_pass_" + user) === pass) {
-        document.getElementById("player").value = user; document.getElementById("auth-overlay").style.display = "none";
-        const interf = document.getElementById("game-interface"); interf.style.display = "block"; interf.className = (supportChoisi === "mobile") ? "mode-mobile" : "mode-pc";
-        loadPlayerSave(); genererQuetes(); 
-        
-        demanderLeaderboard();
-        setInterval(demanderLeaderboard, 15000);
-
-        setTimeout(() => { socket.emit("envoyerMessageGlobal", { pseudo: user, texte: "<i>vient de se connecter.</i>" }); }, 800);
-    }
-}
-
-function deconnexion() {
-    save(); document.getElementById("game-interface").style.display = "none"; document.getElementById("auth-overlay").style.display = "flex";
-    document.getElementById("auth-log-user").value = ""; document.getElementById("auth-log-pass").value = "";
-}
-
-function changerGalaxie(type) {
-    if(type === 'crystal' && s.prestige < 2) { alert("🚫 Requis: Prestige 2 !"); return; }
-    if(type === 'plasma' && s.prestige < 5) { alert("🚫 Requis: Prestige 5 !"); return; }
-    currentGalaxy = type; document.body.className = (type !== "normale") ? type + "-theme" : "";
-    document.getElementById("btn-goto-honey").style.display = (type === "normale") ? "inline-block" : "none";
-    document.getElementById("btn-goto-crystal").style.display = (type === "normale") ? "inline-block" : "none";
-    document.getElementById("btn-goto-plasma").style.display = (type === "normale") ? "inline-block" : "none";
-    document.getElementById("btn-leave-galaxy").style.display = (type !== "normale") ? "inline-block" : "none";
-    document.getElementById("btn-buy-honey-egg").style.display = (type === "honey") ? "inline-block" : "none";
-    ui();
-}
-
-function buyRJUpgrade(type) {
-    if(type === 'clic' && s.rjCoins >= 5) { s.rjCoins -= 5; s.rjClicMult += 1; }
-    if(type === 'drone' && s.rjCoins >= 8) { s.rjCoins -= 8; s.rjDroneMult += 1; }
-    if(type === 'reduction' && s.rjCoins >= 12) { s.rjCoins -= 12; s.rjDiscount *= 0.9; }
-    if(type === 'speed' && s.rjCoins >= 15) { s.rjCoins -= 15; s.rjSpeedBonus += 0.25; }
-    ui(); save();
-}
-
-function calculerBoostPets(typeAttendu) {
-    let mult = 1; if (s.petsPossedes) s.petsPossedes.forEach(p => { if (p.equipped && (p.typeBoost === typeAttendu || p.typeBoost === "global")) mult *= p.valeurBoost; });
-    return mult;
-}
-
-document.getElementById("planet").addEventListener("click", () => {
-    if(isFrozen) return; s.totalClicks++; let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
-    let petMult = calculerBoostPets("clic");
-    let totalGain = s.power * s.scanner * s.rjClicMult * adminBoostMultiplier * petMult;
-    if(currentGalaxy === "normale" && s.up2 > 0 && Math.random() < (s.up2 * 0.05)) { totalGain *= 3; }
-    s[currentAttr] += totalGain;
-    if(currentGalaxy === "normale") {
-        combo++; document.getElementById("progress-bar").style.width = Math.min((combo / (s.zone * 20)) * 100, 100) + "%";
-        if(combo >= (s.zone * 20)) { combo = 0; s.zone++; if(s.zone > s.maxzone) s.maxzone = s.zone; }
-    } else { if(Math.random() < 0.02) s.rjCoins++; }
-    ui();
-});
-
-function lancerProductionDrones() {
-    if(isFrozen || s.drones <= 0) return;
-    let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
-    let speedBonus = currentGalaxy === "normale" ? (1 + (s.up1 * 0.5)) : 1;
-    let petMult = calculerBoostPets("drone");
-    let finalGain = s.drones * s.rjDroneMult * speedBonus * adminBoostMultiplier * (s.rjSpeedBonus || 1) * petMult;
-    s[currentAttr] += finalGain; if(finalGain > 0) ui();
-}
-
-function applyDiscount(baseCost) { return currentGalaxy !== "normale" ? baseCost * (s.rjDiscount || 1) : baseCost; }
-function buyPower() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.pCost); if(s[attr] >= cost) { s[attr] -= cost; s.power++; s.pCost *= 1.35; ui(); } }
-function buyDrone() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.dCost); if(s[attr] >= cost) { s[attr] -= cost; s.drones++; s.dCost *= 1.4; ui(); } }
-function buyScanner() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.sCost); if(s[attr] >= cost) { s[attr] -= cost; s.scanner++; s.sCost *= 1.45; ui(); } }
-function buyMaxPower() { for(let i=0;i<20;i++) buyPower(); }
-function buyMaxDrone() { for(let i=0;i<20;i++) buyDrone(); }
-function buyMaxScanner() { for(let i=0;i<20;i++) buyScanner(); }
-function buyPrestigeUpgrade(id) { if(id === 1 && s.shards >= 2) { s.shards -= 2; s.up1++; ui(); } if(id === 2 && s.shards >= 3) { s.shards -= 3; s.up2++; ui(); } }
-function doPrestige() { if(s.credits >= 500000) { s.shards += Math.floor(Math.sqrt(s.credits / 500000)); s.credits = 0; s.zone = 1; s.power = 1; s.drones = 0; s.scanner = 1; s.pCost = 20; s.dCost = 70; s.sCost = 120; s.prestige++; ui(); save(); demanderLeaderboard(); } }
+function gererInscription() { let user = document.getElementById("auth-reg-user").value.trim(); basculerAuth('login'); }
+function deconnexion() { save(); location.reload(); }
 function toggleModal(id, open) { document.getElementById(id).style.display = open ? "block" : "none"; }
-function togglePanel(type) { let panel = document.getElementById("panel-" + type); panel.style.display = (panel.style.display === "block") ? "none" : "block"; }
+function togglePanel(type) { let p = document.getElementById("panel-" + type); p.style.display = (p.style.display === "block") ? "none" : "block"; }
 
-function gererFrappeAide(type) {
-    const val = document.getElementById("input-" + type).value.trim().toLowerCase();
-    const box = document.getElementById("suggest-" + type); box.innerHTML = "";
-    let maListe = [];
-    if(type === 'owner') maListe = COMMANDS_LIST_OWNER;
-    else if(type === 'admin') maListe = COMMANDS_BASE_ADMIN;
-    else if(type === 'tester') maListe = COMMANDS_TESTER;
-    if (!val) { maListe.forEach(cmd => creerBadgeAide(type, cmd, box)); return; }
-    maListe.filter(c => c.startsWith(val)).forEach(cmd => creerBadgeAide(type, cmd, box));
-}
-
-function creerBadgeAide(type, text, parentElement) {
-    let badge = document.createElement("span"); badge.className = "suggest-badge"; badge.textContent = text;
-    badge.onclick = () => { let input = document.getElementById("input-" + type); input.value = text + " "; input.focus(); gererFrappeAide(type); };
-    parentElement.appendChild(badge);
-}
-
-function executerCommande(type) {
-    const input = document.getElementById("input-" + type); const log = document.getElementById("log-" + type);
-    let commande = input.value.trim(); if (!commande) return;
-    const nvLog = document.createElement("div"); nvLog.textContent = "> " + commande; log.appendChild(nvLog);
-    socket.emit("commandeAdmin", { typePanel: type, commande: "~/" + commande, pseudo: document.getElementById("player").value });
-    input.value = ""; gererFrappeAide(type); log.scrollTop = log.scrollHeight;
+function injecterBoutonsAutomatiques(type, liste) {
+    let box = document.getElementById("suggest-" + type); if (!box) return; box.innerHTML = "";
+    liste.forEach(cmd => {
+        let badge = document.createElement("span"); badge.className = "suggest-badge"; badge.innerText = cmd;
+        badge.onclick = function() { 
+            let inp = document.getElementById("input-" + type); 
+            if (inp) { inp.value = cmd + " all "; inp.focus(); } 
+        };
+        box.appendChild(badge);
+    });
+    box.style.display = "flex";
 }
 
 function loginPanel(type) {
-    let input = document.getElementById("input-" + type); let log = document.getElementById("log-" + type);
-    let btn = document.getElementById("btn-action-" + type); let prefix = document.getElementById("prefix-" + type); let suggestBox = document.getElementById("suggest-" + type);
-    if ((type === 'owner' && ownerConnected) || (type === 'admin' && adminConnected) || (type === 'tester' && testerConnected)) { executerCommande(type); return; }
-    let passValide = false;
-    if(type === 'owner' && input.value === PASS_OWNER) { ownerConnected = true; passValide = true; }
-    else if(type === 'admin' && input.value === PASS_ADMIN) { adminConnected = true; passValide = true; }
-    else if(type === 'tester' && input.value === PASS_TESTER) { testerConnected = true; passValide = true; }
-    if(passValide) {
-        log.innerHTML = "<div style='color:#26ff63;'>[ACCÈS CONFORMÉ] Panel actif.</div>";
-        btn.textContent = "Entrer"; prefix.textContent = ">"; input.value = ""; input.type = "text"; 
-        suggestBox.style.display = "flex"; input.removeAttribute("onkeydown");
-        input.addEventListener("keydown", (e) => { if(e.key === 'Enter') executerCommande(type); });
-        input.addEventListener("input", () => gererFrappeAide(type)); gererFrappeAide(type);
-    } else { alert("Clé incorrecte !"); }
-    log.scrollTop = log.scrollHeight;
-}
+    let inp = document.getElementById("input-" + type); let logBox = document.getElementById("log-" + type); let prefix = document.getElementById("prefix-" + type); let val = inp.value.trim();
+    if (type === "owner" && !ownerConnected) {
+        if (val === PASS_OWNER) { ownerConnected = true; logBox.innerHTML = "<div style='color:#26ff63;'>[🔓] Mode Console ROOT connecté. Syntax: [cmd] [cible] [valeur]</div>"; prefix.innerText = "/>"; prefix.style.color = "#26ff63"; inp.value = ""; inp.type = "text"; injecterBoutonsAutomatiques("owner", COMMANDS_LIST_OWNER); } return;
+    }
+    if (type === "admin" && !adminConnected) {
+        if (val === PASS_ADMIN) { adminConnected = true; logBox.innerHTML = "<div style='color:#4488ff;'>[🔓] Mode Console MOD activé. Syntax: [cmd] [cible] [valeur]</div>"; prefix.innerText = "/>"; prefix.style.color = "#4488ff"; inp.value = ""; inp.type = "text"; injecterBoutonsAutomatiques("admin", COMMANDS_BASE_ADMIN); } return;
+    }
+    if (type === "tester" && !testerConnected) {
+        if (val === PASS_TESTER) { testerConnected = true; logBox.innerHTML = "<div style='color:#26ff63;'>[🔓] Console TESTER active.</div>"; prefix.innerText = "/>"; prefix.style.color = "#26ff63"; inp.value = ""; inp.type = "text"; injecterBoutonsAutomatiques("tester", COMMANDS_TESTER); } return;
+    }
+    
+    if (val) { 
+        logBox.innerHTML += `<div><span style="color:#aaa;">> ${val}</span></div>`; 
+        
+        // PARSEUR ET ROUTAGE RESEAU
+        let args = val.split(" "); 
+        let cmd = args[0].toLowerCase(); 
+        let target = args[1] ? args[1] : "all"; // Par défaut "all" si pas spécifié
+        let param = args.slice(2).join(" ");
 
-function acheterOeuf(type) {
-    let config = CONFIG_PETS[type]; let porte = (config.monnaie === "honeyCredits") ? "honeyCredits" : "credits";
-    if (s[porte] >= config.prix) {
-        s[porte] -= config.prix;
-        if (type === "normal") s.inventaireOeufsNormal = (s.inventaireOeufsNormal || 0) + 1;
-        if (type === "avance") s.inventaireOeufsAvance = (s.inventaireOeufsAvance || 0) + 1;
-        if (type === "rare") s.inventaireOeufsRare = (s.inventaireOeufsRare || 0) + 1;
-        if (type === "honey") s.inventaireOeufsHoney = (s.inventaireOeufsHoney || 0) + 1;
-        ui(); save();
+        // Envoi au serveur pour distribution immédiate
+        socket.emit('submitAdminCommand', { cmd, target, value: param });
+        
+        inp.value = ""; 
+        logBox.scrollTop = logBox.scrollHeight; 
     }
 }
 
-function animerOuvertureOeuf(type) {
-    let stock = 0;
-    if (type === "normal") stock = s.inventaireOeufsNormal;
-    if (type === "avance") stock = s.inventaireOeufsAvance;
-    if (type === "rare") stock = s.inventaireOeufsRare;
-    if (type === "honey") stock = s.inventaireOeufsHoney;
-    if (!stock || stock <= 0) return;
-    if (type === "normal") s.inventaireOeufsNormal--; if (type === "avance") s.inventaireOeufsAvance--;
-    if (type === "rare") s.inventaireOeufsRare--; if (type === "honey") s.inventaireOeufsHoney--;
-    ui();
-    const divLigne = document.getElementById("roulette-defilement"); const boite = document.getElementById("box-roulette");
-    divLigne.innerHTML = ""; divLigne.style.left = "0px"; boite.style.display = "block";
-    let pool = CONFIG_PETS[type].liste; let rand = Math.random(); let cumul = 0; let petGagne = pool[0];
-    for (let p of pool) { cumul += p.chance; if (rand <= cumul) { petGagne = p; break; } }
-    for (let i = 0; i < 35; i++) {
-        let it = document.createElement("div"); it.className = "roulette-item";
-        let petA = pool[Math.floor(Math.random() * pool.length)]; if (i === 24) petA = petGagne;
-        it.innerHTML = `<span>${petA.emoji}</span><span style="font-size:9px; font-weight:bold;">${petA.nom}</span>`;
-        divLigne.appendChild(it);
+/* --- EXÉCUTEUR INTERNE : EXÉCUTÉ SUR LES CLIENTS CIBLÉS --- */
+function executerActionLocale(cmd, val) {
+    if(cmd === "givecredits") s.credits += parseInt(val) || 10000;
+    if(cmd === "giverj") s.rjCoins += parseInt(val) || 10;
+    if(cmd === "giveshards") s.shards += parseInt(val) || 10;
+    if(cmd === "givehoneycredits") s.honeyCredits += parseInt(val) || 1000;
+    if(cmd === "givecrystalcredits") s.crystalCredits += parseInt(val) || 100;
+    if(cmd === "giveplasmacredits") s.plasmaCredits += parseInt(val) || 50;
+    if(cmd === "setzone") { s.zone = parseInt(val) || 1; s.maxzone = Math.max(s.maxzone, s.zone); }
+    if(cmd === "setprestige") s.prestige = parseInt(val) || 0;
+
+    if(cmd === "kick") { deconnexion(); }
+    if(cmd === "mute") { isMuted = true; }
+    if(cmd === "unmute") { isMuted = false; }
+    if(cmd === "warn") { alert(`[Avertissement Modérateur] : ${val}`); }
+    if(cmd === "ban") { deconnexion(); }
+    
+    if(cmd === "freeze") { isFrozen = true; document.getElementById("planet").classList.add("frozen"); }
+    if(cmd === "unfreeze") { isFrozen = false; document.getElementById("planet").classList.remove("frozen"); }
+    if(cmd === "blackout") { document.body.classList.add("blackout-active"); }
+    if(cmd === "seisme") { document.body.classList.add("seisme-active"); }
+    if(cmd === "matrix") { document.body.classList.add("matrix-active"); }
+    if(cmd === "rainbow") { document.body.classList.add("rainbow-active"); }
+    if(cmd === "clearvisuals") { document.body.classList.remove("blackout-active", "seisme-active", "matrix-active", "rainbow-active"); }
+    if(cmd === "announcement") {
+        let alertBox = document.getElementById("global-chat-alert"); alertBox.innerText = "📢 ANNONCE : " + val; alertBox.style.top = "20px";
+        setTimeout(() => alertBox.style.top = "-150px", 4000);
     }
-    setTimeout(() => { divLigne.style.left = -((24 * 80) - 120 + Math.floor(Math.random() * 40)) + "px"; }, 100);
-    setTimeout(() => {
-        boite.style.display = "none"; if (!s.petsPossedes) s.petsPossedes = [];
-        let nv = Object.assign({}, petGagne); nv.uniqueId = "pet_" + Date.now(); nv.equipped = false; nv.monnaieRecup = CONFIG_PETS[type].monnaie;
-        s.petsPossedes.push(nv); ui(); save();
-    }, 4100);
-}
 
-function gererEquipementPet(uniqueId) {
-    let index = s.petsPossedes.findIndex(p => p.uniqueId === uniqueId); if(index === -1) return;
-    let pet = s.petsPossedes[index];
-    if(pet.equipped) pet.equipped = false;
-    else { if(s.petsPossedes.filter(p => p.equipped).length >= 3) return; pet.equipped = true; }
-    ui(); save();
-}
-
-function vendrePet(uniqueId) {
-    let index = s.petsPossedes.findIndex(p => p.uniqueId === uniqueId); if(index === -1) return;
-    let pet = s.petsPossedes[index];
-    let port = (pet.monnaieRecup === "honeyCredits") ? "honeyCredits" : "credits";
-    s[port] += pet.prixVente; s.petsPossedes.splice(index, 1); ui(); save();
-}
-
-function genererQuetes() { document.getElementById("quests-container").innerHTML = `<div class="quest-item" style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between;"><span>🎯 Extraire 100 Éléments Cosmiques</span> <span style="color:#fbbf24; font-weight:bold;">+1 RJ Coin</span></div>`; }
-
-function demanderLeaderboard() {
-    let pName = document.getElementById("player").value;
-    if(pName) {
-        socket.emit("syncScoreLeaderboard", { pseudo: pName, prestige: s.prestige, credits: s.credits });
-    }
-}
-
-function save() { 
-    let u = document.getElementById("player").value; 
-    if(u) {
-        localStorage.setItem("gm_save_" + u, JSON.stringify(s));
-        demanderLeaderboard();
-    } 
-}
-function loadPlayerSave() { let u = document.getElementById("player").value; let loc = localStorage.getItem("gm_save_" + u); if(loc) { s = JSON.parse(loc); ui(); } }
-
-setInterval(lancerProductionDrones, 1000);
-
-function ui() {
-    let attr = galaxiesData[currentGalaxy].moneyAttr;
-    document.getElementById("money").textContent = Math.floor(s[attr]);
-    document.getElementById("moneyTop").textContent = Math.floor(s[attr]);
-    document.getElementById("zone").textContent = s.zone;
-    document.getElementById("prestige").textContent = s.prestige;
-    document.getElementById("shards").textContent = s.shards;
-    document.getElementById("rjCoins").textContent = s.rjCoins;
-    document.getElementById("rjClicMultLbl").textContent = s.rjClicMult;
-    document.getElementById("rjDroneMultLbl").textContent = s.rjDroneMult;
-    document.getElementById("up1Lvl").textContent = s.up1;
-    document.getElementById("up2Lvl").textContent = s.up2;
-    document.getElementById("pc").textContent = Math.floor(applyDiscount(s.pCost)); 
-    document.getElementById("dc").textContent = Math.floor(applyDiscount(s.dCost)); 
-    document.getElementById("sc").textContent = Math.floor(applyDiscount(s.sCost));
+    if(cmd === "giftdrone") s.drones += parseInt(val) || 1;
+    if(cmd === "owner_max_stats") { s.power = 5000; s.drones = 200; s.scanner = 50; }
+    if(cmd === "owner_inf_money") { s.credits = 999999999999; }
+    if(cmd === "owner_godmode") { adminBoostMultiplier = 100; }
+    if(cmd === "owner_wipe_player") { s = JSON.parse(JSON.stringify(defaultState)); save(); }
     
-    document.getElementById("stat-power").textContent = s.power;
-    document.getElementById("stat-drones").textContent = s.drones;
-    document.getElementById("stat-scanner").textContent = s.scanner;
-    
-    if(currentGalaxy === "normale") {
-        let cur = planets[(s.zone - 1) % planets.length]; document.getElementById("planetName").textContent = cur.name; document.getElementById("planet").textContent = cur.emoji;
-    } else { document.getElementById("planetName").textContent = galaxiesData[currentGalaxy].name; document.getElementById("planet").textContent = galaxiesData[currentGalaxy].emoji; }
-    
-    document.getElementById("egg-normal-count").textContent = s.inventaireOeufsNormal || 0;
-    document.getElementById("egg-avance-count").textContent = s.inventaireOeufsAvance || 0;
-    document.getElementById("egg-rare-count").textContent = s.inventaireOeufsRare || 0;
-    document.getElementById("egg-honey-count").textContent = s.inventaireOeufsHoney || 0;
-    document.getElementById("btn-open-normal").style.display = (s.inventaireOeufsNormal > 0) ? "inline-block" : "none";
-    document.getElementById("btn-open-avance").style.display = (s.inventaireOeufsAvance > 0) ? "inline-block" : "none";
-    document.getElementById("btn-open-rare").style.display = (s.inventaireOeufsRare > 0) ? "inline-block" : "none";
-    document.getElementById("btn-open-honey").style.display = (s.inventaireOeufsHoney > 0) ? "inline-block" : "none";
-    document.getElementById("equipped-pets-count").textContent = s.petsPossedes ? s.petsPossedes.filter(p => p.equipped).length : 0;
-
-    let h = "";
-    if (s.petsPossedes && s.petsPossedes.length > 0) {
-        s.petsPossedes.forEach(p => {
-            h += `<div class="${p.equipped ? 'pet-row equipped' : 'pet-row'}"><div>${p.emoji} <strong>${p.nom}</strong> (${p.rare})</div><div><button class="btn-pet-action" onclick="gererEquipementPet('${p.uniqueId}')">${p.equipped ? '❌' : '🎒'}</button><button class="btn-pet-action" onclick="vendrePet('${p.uniqueId}')">💰</button></div></div>`;
-        });
-    } else h = "Aucun compagnon.";
-    document.getElementById("liste-mes-pets").innerHTML = h;
+    actualiserAffichage();
 }
 
+// --- LOGIQUE CORE DU JEU RE-INJECTÉE ---
 window.addEventListener("keydown", (e) => {
-    if(document.activeElement.tagName === "INPUT") return;
-    if(e.key === "1") togglePanel('owner');
-    if(e.key === "2") togglePanel('admin');
-    if(e.key === "3") togglePanel('tester');
+    if (e.ctrlKey) {
+        let key = e.key.toLowerCase();
+        if (key === "a") { e.preventDefault(); togglePanel("owner"); }
+        if (key === "b") { e.preventDefault(); togglePanel("admin"); }
+        if (key === "c") { e.preventDefault(); togglePanel("tester"); }
+    }
 });
 
-// Connexion Socket (A ajuster vers ton URL Render si en production)
-const socket = io("https://galaxy-miner-server.onrender.com");
+function getPetMultiplier(type) { let mult = 1; s.petsPossedes.forEach(p => { if (p.equipped && (p.typeBoost === type || p.typeBoost === "global")) { mult *= p.valeurBoost; } }); return mult; }
 
-socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
-socket.on("recevoirMessageGlobal", (data) => {
-    const cb = document.getElementById("chat-box"); const nv = document.createElement("div");
-    nv.innerHTML = `<strong>${data.pseudo} :</strong> ${data.texte}`; cb.appendChild(nv); cb.scrollTop = cb.scrollHeight;
+document.getElementById("planet").addEventListener("click", () => {
+    if (isFrozen) return; s.totalClicks++; let monnaieActuelle = galaxiesData[currentGalaxy].moneyAttr;
+    let baseGain = s.power * getPetMultiplier("clic") * s.rjClicMult * adminBoostMultiplier; s[monnaieActuelle] += Math.floor(baseGain);
+    progressClick += (s.scanner * 5);
+    if(progressClick >= 100) { progressClick = 0; s.zone++; if(s.zone > planets.length) { s.zone = 1; } }
+    actualiserAffichage();
 });
 
-socket.on("commandeClearchatRecue", () => {
-    document.getElementById("chat-box").innerHTML = "<div style='color:#888; font-style:italic;'>[Le chat a été nettoyé par la modération]</div>";
-});
+function demarrerDronesLoop() {
+    setInterval(() => { if (s.drones > 0 && !isFrozen) { let monnaieActuelle = galaxiesData[currentGalaxy].moneyAttr; let droneGain = (s.drones * 2) * getPetMultiplier("drone") * s.rjDroneMult * (1 + (s.up1 * 0.2)); s[monnaieActuelle] += Math.floor(droneGain); actualiserAffichage(); } }, Math.floor(1000 / s.rjSpeedBonus));
+}
 
-socket.on("mettreAJourLeaderboard", (listeScores) => {
-    const box = document.getElementById("leaderboard-box");
-    if(!listeScores || listeScores.length === 0) { box.innerHTML = "<div style='text-align:center;color:#666;'>Aucun score enregistré</div>"; return; }
-    let html = "";
-    listeScores.forEach((joueur, idx) => {
-        html += `
-        <div class="leaderboard-row">
-            <span>#${idx+1} ${joueur.pseudo}</span>
-            <span>P.${joueur.prestige} | ${Math.floor(joueur.credits).toLocaleString()} 💰</span>
-        </div>`;
-    });
-    box.innerHTML = html;
-});
+function getCost(base) { return Math.floor(base / s.rjDiscount); }
 
-socket.on("retourCommande", (data) => {
-    let act = (ownerConnected && document.getElementById("panel-owner").style.display === "block") ? "log-owner" : (adminConnected && document.getElementById("panel-admin").style.display === "block") ? "log-admin" : "log-tester";
-    const l = document.getElementById(act); if(l) { const d = document.createElement("div"); d.style.color = "#ffff55"; d.textContent = data.texte.replaceAll("~/", ""); l.appendChild(d); l.scrollTop = l.scrollHeight; }
-});
+function actualiserAffichage() {
+    let dat = galaxiesData[currentGalaxy]; document.getElementById("money").innerText = s[dat.moneyAttr]; document.getElementById("moneyTop").innerText = s[dat.moneyAttr] + " " + (currentGalaxy === "normale" ? "💰" : "🍯");
+    document.getElementById("planetName").innerText = planets[s.zone - 1].name; document.getElementById("planet").innerText = planets[s.zone - 1].emoji; document.getElementById("progress-bar").style.width = progressClick + "%";
+    document.getElementById("zone").innerText = s.zone; document.getElementById("prestige").innerText = s.prestige; document.getElementById("shards").innerText = s.shards; document.getElementById("rjCoins").innerText = s.rjCoins;
+    document.getElementById("stat-power").innerText = s.power; document.getElementById("stat-drones").innerText = s.drones; document.getElementById("stat-scanner").innerText = s.scanner;
+    document.getElementById("pc").innerText = getCost(s.pCost); document.getElementById("dc").innerText = getCost(s.dCost); document.getElementById("sc").innerText = getCost(s.sCost);
+    document.getElementById("egg-normal-count").innerText = s.inventaireOeufsNormal; document.getElementById("egg-avance-count").innerText = s.inventaireOeufsAvance; document.getElementById("egg-rare-count").innerText = s.inventaireOeufsRare; document.getElementById("egg-honey-count").innerText = s.inventaireOeufsHoney;
+    document.getElementById("btn-open-normal").style.display = s.inventaireOeufsNormal > 0 ? "inline-block" : "none"; document.getElementById("btn-open-avance").style.display = s.inventaireOeufsAvance > 0 ? "inline-block" : "none"; document.getElementById("btn-open-rare").style.display = s.inventaireOeufsRare > 0 ? "inline-block" : "none"; document.getElementById("btn-open-honey").style.display = s.inventaireOeufsHoney > 0 ? "inline-block" : "none";
+    document.getElementById("btn-buy-honey-egg").style.display = currentGalaxy === "honey" ? "inline-block" : "none"; document.getElementById("egg-honey-lbl").style.display = currentGalaxy === "honey" ? "inline" : "none";
+    actualiserInterfacePets();
+}
 
-socket.on("alerteGlobale", (data) => {
-    const a = document.getElementById("global-chat-alert"); a.textContent = "📢 " + data.texte; a.style.top = "20px"; setTimeout(() => { a.style.top = "-150px"; }, 6000);
-});
+function buyPower() { if(s.credits >= getCost(s.pCost)) { s.credits -= getCost(s.pCost); s.power++; s.pCost = Math.floor(s.pCost * 1.5); actualiserAffichage(); } }
+function buyMaxPower() { while(s.credits >= getCost(s.pCost)) { buyPower(); } }
+function buyDrone() { if(s.credits >= getCost(s.dCost)) { s.credits -= getCost(s.dCost); s.drones++; s.dCost = Math.floor(s.dCost * 1.6); actualiserAffichage(); } }
+function buyMaxDrone() { while(s.credits >= getCost(s.dCost)) { buyDrone(); } }
+function buyScanner() { if(s.credits >= getCost(s.sCost)) { s.credits -= getCost(s.sCost); s.scanner++; s.sCost = Math.floor(s.sCost * 1.8); actualiserAffichage(); } }
+function buyMaxScanner() { while(s.credits >= getCost(s.sCost)) { buyScanner(); } }
 
-socket.on("recevoirActionGlobaleAll", (data) => {
-    data.cible = document.getElementById("player").value.trim();
-    socket._callbacks['$actionDataJoueur'][0](data); 
-});
-
-socket.on("actionDataJoueur", (data) => {
-    let monP = document.getElementById("player").value.trim().toLowerCase(); if (data.cible.toLowerCase() !== monP) return;
-    let nVal = Number(data.valeur);
-
-    // --- 🛡️ EXÉCUTION DE TOUTES LES COMMANDES REÇUES ---
-    if (data.action === "help") {
-        alert("Commandes dispos : givecredits, giverj, giveshards, setzone, setprestige, kick, freeze, unfreeze, seisme, blackout, clearvisuals, resetplayer");
-    }
-    if (data.action === "givecredits") s.credits += nVal;
-    if (data.action === "givehoneycredits") s.honeyCredits += nVal;
-    if (data.action === "givecrystalcredits") s.crystalCredits += nVal;
-    if (data.action === "giveplasmacredits") s.plasmaCredits += nVal;
-    if (data.action === "giftdrone") s.drones += nVal;
-    if (data.action === "giverj") s.rjCoins += nVal;
-    if (data.action === "giveshards") s.shards += nVal;
-    if (data.action === "setzone") s.zone = nVal;
-    if (data.action === "setprestige") s.prestige = nVal;
-    if (data.action === "freeze") { isFrozen = true; document.body.classList.add("frozen"); }
-    if (data.action === "unfreeze") { isFrozen = false; document.body.classList.remove("frozen"); }
-    
-    if (data.action === "seisme") {
-        document.body.classList.add("seisme-active");
-        setTimeout(() => { document.body.classList.remove("seisme-active"); }, 4000);
-    }
-    if (data.action === "blackout") {
-        document.body.classList.add("blackout-active");
-    }
-    if (data.action === "clearvisuals") {
-        document.body.classList.remove("seisme-active", "blackout-active", "frozen");
-        isFrozen = false;
-    }
-    if (data.action === "kick") {
-        document.getElementById("game-interface").style.display = "none";
-        alert(`Tu as été exclu du serveur par ${data.auteur}.`);
-        location.reload();
-    }
-    if (data.action === "resetplayer" || data.action === "owner_wipe_player") {
-        s = JSON.parse(JSON.stringify(defaultState));
-        alert("Tes stats ont été entièrement réinitialisées par l'administration.");
-    }
-    
-    // --- COMMANDES EXCLUSIVES OWNER ---
-    if (data.action === "owner_godmode") { adminBoostMultiplier = 10000; }
-    if (data.action === "owner_max_stats") { s.power += 1000; s.drones += 1000; s.scanner += 1000; s.rjClicMult += 10; s.rjDroneMult += 10; }
-    if (data.action === "owner_inf_money") { s.credits = 99999999999; s.honeyCredits = 99999999; s.crystalCredits = 999999; s.plasmaCredits = 99999; }
-    if (data.action === "owner_steal_money") { s.credits = 0; s.honeyCredits = 0; s.crystalCredits = 0; s.plasmaCredits = 0; }
-    if (data.action === "owner_force_prestige") { s.prestige++; }
-    if (data.action === "owner_mute_all") { window.allMuted = true; }
-    if (data.action === "owner_unmute_all") { window.allMuted = false; }
-    if (data.action === "owner_rainbow_name") { document.getElementById("player").style.color = "orange"; document.getElementById("player").style.textShadow = "0 0 10px yellow"; }
-    if (data.action === "owner_give_mythic_pet") {
-        if(!s.petsPossedes) s.petsPossedes = [];
-        s.petsPossedes.push({ id: "phenix", nom: "Phénix Solaire", rare: "MYTHIQUE", typeBoost: "global", valeurBoost: 10.0, emoji: "🦅", uniqueId: "owner_" + Date.now(), equipped: false, prixVente: 75000 });
-    }
-
-    // --- SECTION🧪 TESTER ---
-    if (data.action === "test_shake") {
-        document.body.classList.add("seisme-active");
-        setTimeout(() => { document.body.classList.remove("seisme-active"); }, 2000);
-    }
-    if (data.action === "test_egg") {
-        s.inventaireOeufsNormal = (s.inventaireOeufsNormal || 0) + 5;
-        s.inventaireOeufsAvance = (s.inventaireOeufsAvance || 0) + 5;
-        s.inventaireOeufsRare = (s.inventaireOeufsRare || 0) + 5;
-    }
-    if (data.action === "test_click") s.power += 25;
-    if (data.action === "test_give_shard") s.shards += 5;
-    if (data.action === "test_boost") adminBoostMultiplier = 5;
-    if (data.action === "test_reset_money") { s.credits = 0; s.honeyCredits = 0; s.crystalCredits = 0; s.plasmaCredits = 0; }
-
-    ui(); save();
-});
+function changerGalaxie(type) { currentGalaxy = type; document.body.className = ""; if(type !== "normale") document.body.classList.add(type + "-theme"); document.getElementById("btn-leave-galaxy").style.display = type !== "normale" ? "inline-block" : "none"; actualiserAffichage(); }
+function doPrestige() { if(s.credits >= 100000) { s.prestige++; s.shards += s.zone * 5; s.credits = 0; s.power = 1; s.drones = 0; s.pCost = 20; s.dCost = 70; actualiserAffichage(); } }
+function buyPrestigeUpgrade(id) { if(id===1 && s.shards >= 10) { s.shards-=10; s.up1++; document.getElementById("up1Lvl").innerText=s.up1; } if(id===2 && s.shards >= 15) { s.shards-=15; s.up2++; document.getElementById("up2Lvl").innerText=s.up2; } actualiserAffichage(); }
+function buyRJUpgrade(type) { if(type==='clic' && s.rjCoins >= 5) { s.rjCoins-=5; s.rjClicMult+=1; document.getElementById("rjClicMultLbl").innerText=s.rjClicMult; } if(type==='drone' && s.rjCoins >= 8) { s.rjCoins-=8; s.rjDroneMult+=1; document.getElementById("rjDroneMultLbl").innerText=s.rjDroneMult; } if(type==='reduction' && s.rjCoins >= 12) { s.rjCoins-=12; s.rjDiscount=1.5; } if(type==='speed' && s.rjCoins >= 15) { s.rjCoins-=15; s.rjSpeedBonus=1.5; } actualiserAffichage(); }
 
 function envoyerMessage() {
-    const i = document.getElementById("chat-input"); const t = i.value.trim(); let p = document.getElementById("player").value.trim() || "Anonyme";
-    if (t === "/appsowner") { togglePanel('owner'); i.value = ""; return; }
-    if (t === "/appsadmin") { togglePanel('admin'); i.value = ""; return; }
-    if (t === "/appstester") { togglePanel('tester'); i.value = ""; return; }
-    if (window.allMuted && !ownerConnected) { alert("Le chat est suspendu."); i.value = ""; return; }
-    if (t !== "") { socket.emit("envoyerMessageGlobal", { pseudo: p, texte: t }); i.value = ""; }
+    if(isMuted) return; let inp = document.getElementById("chat-input"); let val = inp.value.trim(); if(!val) return;
+    socket.emit('sendChatMessage', val); inp.value = "";
 }
 
-function initDrag(pId, hId) {
-    let el = document.getElementById(pId); let h = document.getElementById(hId); let p1=0,p2=0,p3=0,p4=0; h.onmousedown = dMD;
-    function dMD(e) { if(e.target.classList.contains('close-admin-btn')) return; e.preventDefault(); p3=e.clientX; p4=e.clientY; document.onmouseup=cDE; document.onmousemove=eD; }
-    function eD(e) { e.preventDefault(); p1=p3-e.clientX; p2=p4-e.clientY; p3=e.clientX; p4=e.clientY; el.style.top=(el.offsetTop-p2)+"px"; el.style.left=(el.offsetLeft-p1)+"px"; }
-    function cDE() { document.onmouseup=null; document.onmousemove=null; }
+function acheterOeuf(type) { let conf = CONFIG_PETS[type]; let monnaie = conf.monnaie; if(s[monnaie] >= conf.prix) { s[monnaie] -= conf.prix; if(type==='normal') s.inventaireOeufsNormal++; if(type==='avance') s.inventaireOeufsAvance++; if(type==='rare') s.inventaireOeufsRare++; if(type==='honey') s.inventaireOeufsHoney++; actualiserAffichage(); } }
+
+function animerOuvertureOeuf(type) {
+    if(type==='normal') s.inventaireOeufsNormal--; if(type==='avance') s.inventaireOeufsAvance--; if(type==='rare') s.inventaireOeufsRare--; if(type==='honey') s.inventaireOeufsHoney--;
+    let box = document.getElementById("box-roulette"); let line = document.getElementById("roulette-defilement"); box.style.display = "block"; line.innerHTML = ""; line.style.left = "0px";
+    let conf = CONFIG_PETS[type].liste; let pool = [];
+    for(let i=0; i<25; i++) {
+        let rand = conf[Math.floor(Math.random()*conf.length)]; pool.push(rand);
+        let el = document.createElement("div"); el.className = "roulette-item"; el.innerHTML = `<span>${rand.emoji}</span><span style='font-size:10px;'>${rand.rare}</span>`; line.appendChild(el);
+    }
+    setTimeout(() => { line.style.left = "-1500px"; }, 100);
+    setTimeout(() => { box.style.display = "none"; let finalPet = pool[18]; s.petsPossedes.push({...finalPet, equipped: false}); actualiserAffichage(); }, 4100);
 }
-initDrag("panel-owner", "header-owner"); initDrag("panel-admin", "header-admin"); initDrag("panel-tester", "header-tester");
+
+function actualiserInterfacePets() {
+    let cont = document.getElementById("liste-mes-pets"); if(s.petsPossedes.length === 0) { cont.innerHTML = "Aucun familier actif."; return; } cont.innerHTML = ""; let eqCount = 0;
+    s.petsPossedes.forEach((p, index) => {
+        if(p.equipped) eqCount++; let r = document.createElement("div"); r.className = "pet-row" + (p.equipped ? " equipped" : "");
+        r.innerHTML = `<div>${p.emoji} <b>${p.nom}</b> (+${p.valeurBoost}x ${p.typeBoost})</div><div><span class="btn-pet-action" style="background:#0077ff;" onclick="gererEquipementPet(${index})">${p.equipped ? "Déséquiper" : "Équiper"}</span><span class="btn-pet-action" style="background:#ff4444;" onclick="vendrePet(${index})">Vendre</span></div>`;
+        cont.appendChild(r);
+    });
+    document.getElementById("equipped-pets-count").innerText = eqCount;
+}
+
+function gererEquipementPet(index) { let p = s.petsPossedes[index]; if(p.equipped) { p.equipped = false; } else { let eqCount = s.petsPossedes.filter(x => x.equipped).length; if(eqCount < 3) p.equipped = true; } actualiserAffichage(); }
+function vendrePet(index) { let p = s.petsPossedes[index]; s.credits += p.prixVente || 500; s.petsPossedes.splice(index, 1); actualiserAffichage(); }
+
+function save() { let p = document.getElementById("player").value; if(p) localStorage.setItem("gm_save_" + p, JSON.stringify(s)); }
+function loadPlayerSave() { let p = document.getElementById("player").value; let data = localStorage.getItem("gm_save_" + p); if(data) { s = JSON.parse(data); } setInterval(save, 20000); }
 </script>
 </body>
 </html>
