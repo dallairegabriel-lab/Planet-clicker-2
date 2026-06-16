@@ -238,7 +238,7 @@ const COMMANDS_LIST = [
 ];
 
 // Liaison avec le serveur local Node.js
-const socket = io("http://localhost:3000");
+const socket = io("https://galaxy-miner-server.onrender.com");
 
 socket.on("connect", () => {
     socket.emit("register_user", myUsername);
