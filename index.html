@@ -1,787 +1,593 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-select=none">
-<title>Galaxy Miner Deluxe V3 - Full Premium Edition</title>
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-<style>
-/* --- STYLES DE BASE D'ORIGINE --- */
-body{margin:0;font-family:Segoe UI,Arial;background:radial-gradient(circle at center,#101a3a,#02040a 70%);color:#fff;overflow-x:hidden;transition: filter 0.3s, animation 0.3s, transform 0.3s, transform-origin 0.3s; padding-bottom: 40px;}
-#stars,#stars2{position:fixed;inset:0;pointer-events:none}
-#stars{background-image:radial-gradient(white 1px,transparent 1px);background-size:45px 45px;opacity:.2}
-#stars2{background-image:radial-gradient(cyan 1px,transparent 1px);background-size:90px 90px;opacity:.08;animation:drift 60s linear infinite}
-@keyframes drift{from{transform:translateY(0)}to{transform:translateY(90px)}}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Miner 2: Multijoueur Synchro</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0b0b0d;
+            color: #fff;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
 
-/* --- INTERFACE DE JEU --- */
-#game-interface { display: none; padding: 20px; box-sizing: border-box; max-width: 1200px; margin: 0 auto; }
-.top{display:flex;justify-content:center;gap:15px;padding:10px;flex-wrap:wrap;transition: transform 0.5s ease;}
-.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.1);transition: transform 0.5s ease;}
-#money{text-align:center;font-size:54px;color:#52ffe0;text-shadow:0 0 15px #52ffe0;margin-top:10px;transition: transform 0.5s ease;}
-#planet-container{text-align:center;position:relative;margin:10px auto;width:220px;transition: transform 0.5s ease;}
-#planet{font-size:160px;cursor:pointer;transition:.08s;user-select:none;display:inline-block}
-#planet:active{transform:scale(.85)}
-#planetName{text-align:center;font-size:22px;color:#9de;margin-bottom:2px}
+        /* --- SIDEBAR COMMERCE (GAUCHE) --- */
+        #sidebar {
+            width: 350px;
+            background: #141417;
+            border-right: 3px solid #222226;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            overflow-y: auto;
+            z-index: 10;
+        }
 
-button{border:none;border-radius:10px;padding:10px 14px;margin:4px;cursor:pointer;font-weight:bold;background:#fff;color:#000;transition:0.2s}
-button:hover{background:#52ffe0;transform:translateY(-2px)}
-.btn-max{background:#ffaa00;color:#000;padding:10px 8px;font-size:11px;}
-.btn-max:hover{background:#ffcc66;}
+        .stat-box {
+            background: #1f1f24;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            border-left: 5px solid #00ebc7;
+        }
 
-/* Affichage des Niveaux/Stats d'équipement */
-.stats-bar { display: flex; justify-content: center; gap: 15px; margin: 15px auto; max-width: 600px; flex-wrap: wrap; }
-.stat-badge { background: rgba(0, 0, 0, 0.4); padding: 6px 12px; border-radius: 8px; font-size: 13px; border: 1px solid rgba(255,255,255,0.05); }
+        .shop-section h3 {
+            margin: 15px 0 5px 0;
+            color: #00ebc7;
+            font-size: 13px;
+            border-bottom: 1px solid #222226;
+            padding-bottom: 3px;
+            text-transform: uppercase;
+        }
 
-.shop{display:flex;justify-content:center;align-items:center;gap:4px;flex-wrap:wrap;margin-top:15px;transition: transform 0.5s ease;}
-.utility-bar { display:flex; justify-content:center; gap:8px; margin: 15px auto; max-width: 600px; flex-wrap: wrap; }
+        .btn-upgrade {
+            width: 100%;
+            background: #ff5470;
+            border: none;
+            padding: 10px;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: 0.2s;
+            display: flex;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+        .btn-upgrade:hover { filter: brightness(1.1); }
+        .btn-upgrade:disabled { background: #444; cursor: not-allowed; opacity: 0.5; }
 
-.notice{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#000a;padding:8px 12px;border-radius:10px;z-index:10;transition: 0.3s;}
-.progress-bar-container{width:180px;background:rgba(255,255,255,0.1);height:8px;border-radius:4px;margin:5px auto;overflow:hidden;transition: transform 0.5s ease;}
-#progress-bar{width:0%;height:100%;background:linear-gradient(90deg, #52ffe0, #0077ff);transition:width 0.2s}
-#comet{position:fixed;font-size:40px;cursor:pointer;z-index:99;display:none;user-select:none}
+        /* --- CHAT MULTIJOUEUR (DROITE) --- */
+        #chat-sidebar {
+            width: 290px;
+            background: #141417;
+            border-left: 3px solid #222226;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+        #chat-header { background: #1f1f24; padding: 15px; font-weight: bold; font-size: 14px; text-align: center; border-bottom: 1px solid #333; color: #00ebc7; }
+        #chat-messages { flex: 1; padding: 10px; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+        .msg { background: #1f1f24; padding: 6px 10px; border-radius: 6px; word-break: break-all; }
+        .msg .username { font-weight: bold; color: #ff5470; }
+        .msg.admin-msg { border-left: 3px solid #00ff00; background: rgba(0,255,0,0.05); }
+        .msg.admin-msg .username { color: #00ff00; }
+        #chat-input-container { padding: 10px; display: flex; gap: 5px; background: #18181c; }
+        #chat-input { flex: 1; background: #222; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; }
 
-/* Modales d'interface d'origine */
-.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(10, 15, 30, 0.95); border: 2px solid #52ffe0; border-radius: 14px; padding: 20px; z-index: 300000; max-width: 400px; width: 90%; box-shadow: 0 0 25px rgba(82,255,224,0.3); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
-.modal-close { background: none; color: red; font-size: 18px; padding: 0; margin: 0; }
-.modal-close:hover { background: none; transform: none; }
+        /* --- ZONE CENTRALE DE JEU --- */
+        #main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #070708;
+            position: relative;
+            transition: transform 0.5s, filter 0.5s;
+        }
+        #planet-header { background: rgba(20, 20, 23, 0.8); padding: 15px; text-align: center; font-size: 22px; font-weight: bold; border-bottom: 2px solid #222226; color: #eab308; }
+        #weather-banner { background: #3b82f6; color: white; text-align: center; padding: 8px; font-weight: bold; font-size: 14px; display: none; text-transform: uppercase; letter-spacing: 2px; }
+        #global-broadcast-banner { background: #ff0055; color: white; text-align: center; padding: 10px; font-weight: bold; font-size: 16px; display: none; }
+        #grid-container { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+        #mine-grid { display: grid; grid-template-columns: repeat(6, 85px); grid-template-rows: repeat(6, 85px); gap: 8px; background: #18181c; padding: 15px; border-radius: 12px; position: relative; transition: all 0.3s; }
 
-/* 🧱 CONTENEUR BAS DE PAGE POUR LE LEADERBOARD ET LE CHAT */
-.bottom-container { display: flex; gap: 20px; max-width: 800px; margin: 25px auto 0 auto; box-sizing: border-box; }
-.bottom-column { flex: 1; min-width: 0; }
+        /* --- BLOCS & RARETÉS --- */
+        .block { width: 85px; height: 85px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-radius: 8px; cursor: pointer; box-sizing: border-box; }
+        .block-icon { font-size: 26px; margin-bottom: 4px; }
+        .hp-bar-container { width: 80%; height: 5px; background: rgba(0,0,0,0.6); border-radius: 3px; position: absolute; bottom: 8px; overflow: hidden; }
+        .hp-bar { height: 100%; background: #22c55e; width: 100%; }
 
-/* Styles spécifiques au tableau des scores */
-.leaderboard-title { font-size: 14px; font-weight: bold; color: #ffaa00; text-align: center; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-.leaderboard-list { height: 140px; overflow-y: auto; font-size: 12px; font-family: monospace; }
-.leaderboard-row { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.leaderboard-row:nth-child(1) { color: #ffd700; font-weight: bold; }
-.leaderboard-row:nth-child(2) { color: #c0c0c0; }
-.leaderboard-row:nth-child(3) { color: #cd7f32; }
+        .rarity-commun { border: 2px solid #94a3b8; background: #334155; }
+        .rarity-rare { border: 2px solid #3b82f6; background: #1e3a8a; }
+        .rarity-epique { border: 2px solid #a855f7; background: #581c87; }
+        .rarity-legendaire { border: 2px solid #eab308; background: #713f12; }
+        .rarity-divin { border: 3px dashed #38bdf8; background: #0f172a; box-shadow: 0 0 10px #38bdf8; }
 
-/* 📱 ADAPTATIVE MOBILE */
-.mode-mobile { display: flex !important; flex-direction: column; align-items: center; padding: 10px !important; }
-.mode-mobile .pc-only { display: none !important; }
-.mode-mobile .card { width: 100%; max-width: 420px; box-sizing: border-box; margin-bottom: 15px; }
-.mode-mobile #main-game-area { order: -1; width: 100%; text-align: center; }
-.mode-mobile #planet { font-size: 160px !important; }
-.mode-mobile button { width: auto; padding: 10px 14px !important; font-size: 14px !important; margin: 4px !important; }
-.mode-mobile .btn-max { width: auto !important; padding: 10px 8px !important; font-size: 11px !important; display: inline-block; margin-left: 5px !important; }
-.mode-mobile .shop, .mode-mobile .utility-bar, .mode-mobile .stats-bar { display: flex; width: auto; max-width: none; }
-.mode-mobile .bottom-container { flex-direction: column; width: 100%; max-width: 420px; gap: 15px; margin-top: 10px; }
+        /* MUTATION VISIBLE */
+        .mutated { border: 3px solid #ef4444 !important; box-shadow: inset 0 0 15px rgba(239,68,68,0.6), 0 0 12px #ef4444 !important; animation: pulseMutation 1.5s infinite; }
+        .mutated .block-icon { animation: shakeIcon 0.5s infinite; }
 
-/* THEMES GALAXIES */
-.honey-theme { background: radial-gradient(circle at center, #78350f, #451a03 80%) !important; }
-.crystal-theme { background: radial-gradient(circle at center, #1e1b4b, #4c1d95 80%) !important; }
-.plasma-theme { background: radial-gradient(circle at center, #450a0a, #7f1d1d 80%) !important; }
+        @keyframes pulseMutation { 0%, 100% { border-color: #ef4444; } 50% { border-color: #ffaa00; } }
+        @keyframes shakeIcon { 0% { transform: translate(1px, 1px) rotate(0deg); } 50% { transform: translate(-1px, -1px) rotate(1deg); } 100% { transform: translate(1px, -1px) rotate(0deg); } }
 
-/* PANELS CONFIGURÉS */
-.roblox-panel { display: none; position: fixed; top: 150px; left: 150px; width: 90%; max-width: 500px; backdrop-filter: blur(15px); border-radius: 8px; font-family: 'Segoe UI', Arial, sans-serif; color: #ffffff; box-shadow: 0px 10px 30px rgba(0,0,0,0.7); overflow: hidden; z-index: 100000; user-select: none; }
-#panel-owner { background-color: rgba(45, 15, 15, 0.8); border: 1px solid rgba(255, 68, 68, 0.3); }
-#panel-admin { background-color: rgba(15, 30, 45, 0.8); border: 1px solid rgba(68, 136, 255, 0.3); }
-#panel-tester { background-color: rgba(15, 45, 15, 0.8); border: 1px solid rgba(38, 255, 99, 0.3); }
+        .drone { position: absolute; font-size: 26px; z-index: 100; pointer-events: none; transition: left 0.6s ease-out, top 0.6s ease-out; transform: translate(-50%, -50%); }
 
-.admin-header { background-color: rgba(20, 20, 20, 0.9); padding: 12px; font-weight: 600; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; cursor: move; }
-.close-admin-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 16px; cursor: pointer; font-weight: bold; padding: 0 5px; margin: 0; }
-.admin-body { padding: 12px; }
-.command-log { height: 180px; background-color: rgba(0, 0, 0, 0.6); border-radius: 4px; padding: 10px; font-size: 12px; font-family: 'Courier New', monospace; overflow-y: auto; margin-bottom: 8px; }
-#log-owner { color: #ff5555; } #log-admin { color: #55aaff; } #log-tester { color: #26ff63; }
+        #weather-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 90; display: none; }
+        .plasma-rain { background: linear-gradient(180deg, rgba(168,85,247,0.15) 0%, rgba(0,0,0,0) 100%); }
+        .magnetic-storm { box-shadow: inset 0 0 100px rgba(234,179,8,0.25); }
 
-/* SUGGESTIONS */
-.suggest-box { display: flex; gap: 5px; flex-wrap: wrap; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 4px; margin-bottom: 8px; min-height: 25px; max-height: 85px; overflow-y: auto; align-items: center; }
-.suggest-badge { background: rgba(255,255,255,0.15); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: monospace; transition: 0.15s; }
-.suggest-badge:hover { background: #52ffe0; color: #000; }
+        /* --- CONSOLES TERMINAL --- */
+        .hacker-console {
+            position: fixed;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #040a04;
+            border: 2px solid #00ff00;
+            border-radius: 4px;
+            padding: 20px;
+            width: 460px;
+            box-shadow: 0 0 30px rgba(0,255,0,0.4);
+            z-index: 1000;
+            display: none;
+            font-family: 'Courier New', Courier, monospace;
+            color: #00ff00;
+        }
+        .hacker-console h2 { margin-top: 0; font-size: 15px; text-align: center; border-bottom: 1px solid #00ff00; padding-bottom: 8px; }
+        .console-logs { height: 120px; overflow-y: auto; background: #000; border: 1px solid #00ff00; padding: 6px; font-size: 11px; margin-bottom: 12px; color: #aaffaa; }
+        .hacker-console input { width: 100%; padding: 8px; background: #000; border: 1px solid #00ff00; color: #00ff00; margin-bottom: 8px; box-sizing: border-box; font-family: inherit; }
+        .hacker-console button { width: 100%; padding: 8px; background: #00ff00; color: #000; font-weight: bold; border: none; cursor: pointer; font-family: inherit; margin-bottom: 10px; }
+        
+        .suggest-box { background: #000; border: 1px dashed #00ff00; max-height: 70px; overflow-y: auto; font-size: 11px; padding: 4px; display: none; margin-bottom: 8px; }
+        .suggest-item { padding: 2px; cursor: pointer; color: #00ffbb; }
+        .suggest-item:hover { background: #00ff00; color: #000; }
 
-.input-area { display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 4px; padding: 6px 10px; gap: 5px; }
-.prefix { font-family: monospace; margin-right: 3px; font-weight: bold; font-size: 14px; }
-.admin-input-text { flex: 1; background: none; border: none; color: #ffffff; font-size: 13px; outline: none; }
-.panel-btn { background-color: rgba(60, 60, 60, 0.8); border: 1px solid rgba(255, 255, 255, 0.2); color: white; padding: 4px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; }
-.panel-btn:hover { background-color: rgba(100, 100, 100, 0.9); }
+        .console-actions-area { display: none; }
 
-/* EFFETS VISUELS */
-.frozen { filter: brightness(0.7) sepia(1) hue-rotate(190deg) saturate(3) !important; cursor: not-allowed !important; }
-.seisme-active { animation: screenShakeHard 0.12s infinite linear !important; }
-@keyframes screenShakeHard { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-10px, 8px); } 30% { transform: translate(12px, -12px); } 50% { transform: translate(-8px, 4px); } 70% { transform: translate(10px, 10px); } }
-.blur-active { filter: blur(8px) !important; }
-.blackout-active { filter: brightness(0) !important; background: black !important; }
-
-/* COMPTE ET SESSIONS */
-#auth-overlay { position: fixed; inset: 0; background: radial-gradient(circle at center, #15224a, #02040a 80%); z-index: 9999999; display: flex; justify-content: center; align-items: center; }
-.auth-card { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.15); width: 340px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); text-align: center; }
-.auth-card h2 { margin-top: 0; color: #52ffe0; text-shadow: 0 0 15px rgba(82, 255, 224, 0.4); font-size: 26px; }
-.auth-input-group { margin-bottom: 14px; text-align: left; }
-.auth-input-group label { display: block; font-size: 11px; color: #9de; margin-bottom: 6px; text-transform: uppercase; }
-.auth-input { width: 100%; padding: 12px; box-sizing: border-box; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; color: #fff; font-size: 14px; outline: none; }
-.device-selector { display: flex; gap: 8px; margin-bottom: 15px; }
-.device-btn { flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 12px; }
-.device-btn.active { background: #52ffe0; color: #02040a; border-color: #52ffe0; }
-.auth-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; }
-.auth-btn-login { background: #52ffe0; color: #02040a; }
-.auth-btn-register { background: #ffaa00; color: #02040a; }
-.auth-toggle { margin-top: 15px; font-size: 12px; color: #9de; cursor: pointer; text-decoration: underline; }
-
-#global-chat-alert { position: fixed; top: -150px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ff0055, #ffaa00); color: white; padding: 20px 40px; border-radius: 12px; font-size: 24px; font-weight: bold; z-index: 200000; transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; border: 3px solid #fff; box-shadow: 0 0 35px rgba(255,0,85,0.6); }
-
-/* SYSTÈME DE PETS ET ROULETTE */
-.roulette-container { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; height: 100px; background: #111; border: 3px solid #52ffe0; border-radius: 12px; overflow: hidden; z-index: 200005; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
-.roulette-Ligne { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: left 4s cubic-bezier(0.1, 0.8, 0.1, 1); }
-.roulette-item { width: 80px; height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 24px; border-right: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); box-sizing: border-box; }
-.roulette-curseur { position: absolute; top: 0; left: 158px; width: 4px; height: 100%; background: #ffaa00; z-index: 2; box-shadow: 0 0 8px #ffaa00; }
-.pet-list-container { max-height: 160px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 5px; margin-top: 8px; }
-.pet-row { display: flex; justify-content: space-between; align-items: center; padding: 6px; margin: 4px 0; background: rgba(255,255,255,0.04); border-radius: 6px; font-size: 11px; }
-.pet-row.equipped { border-left: 3px solid #26ff63; background: rgba(38,255,99,0.06); }
-.btn-pet-action { padding: 3px 8px; margin: 0 2px; font-size: 10px; border-radius: 4px; display: inline-block; cursor: pointer; }
-</style>
+        /* FUN MODES */
+        .zero-gravity { animation: floatGrid 4s ease-in-out infinite; }
+        @keyframes floatGrid { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .disco-mode { animation: discoBg 0.2s infinite; }
+        @keyframes discoBg { 0% { background: #ff0055; } 50% { background: #00ffaa; } 100% { background: #0055ff; } }
+    </style>
 </head>
 <body>
 
-<div id="auth-overlay">
-    <div id="auth-login-view" class="auth-card">
-        <h2>🚀 GALAXY MINER</h2>
-        <div class="device-selector">
-            <button id="dev-pc" class="device-btn active" onclick="choisirSupport('pc')">🖥️ MODE PC</button>
-            <button id="dev-mobile" class="device-btn" onclick="choisirSupport('mobile')">📱 MODE MOBILE</button>
-        </div>
-        <div class="auth-input-group">
-            <label>Nom de mineur</label>
-            <input type="text" id="auth-log-user" class="auth-input" placeholder="Ex: MineurCosmique">
-        </div>
-        <div class="auth-input-group">
-            <label>Mot de passe</label>
-            <input type="password" id="auth-log-pass" class="auth-input" placeholder="••••••••">
-        </div>
-        <button onclick="gererConnexion()" class="auth-btn auth-btn-login">Initialiser la Session</button>
-        <div class="auth-toggle" onclick="basculerAuth('register')">Créer un compte</div>
-    </div>
-    <div id="auth-register-view" class="auth-card" style="display: none;">
-        <h2>✨ INSCRIPTION</h2>
-        <div class="auth-input-group">
-            <label>Créer un pseudo</label>
-            <input type="text" id="auth-reg-user" class="auth-input" placeholder="Ex: MineurCosmique">
-        </div>
-        <div class="auth-input-group">
-            <label>Définir le code d'accès</label>
-            <input type="password" id="auth-reg-pass" class="auth-input" placeholder="••••••••">
-        </div>
-        <button onclick="gererInscription()" class="auth-btn auth-btn-register">Générer le Compte</button>
-        <div class="auth-toggle" onclick="basculerAuth('login')">Se connecter</div>
-    </div>
-</div>
-
-<div id="stars"></div><div id="stars2"></div>
-<div id="global-chat-alert">📢 ANNONCE GLOBALE</div>
-
-<div id="box-roulette" class="roulette-container">
-    <div class="roulette-curseur"></div>
-    <div id="roulette-defilement" class="roulette-Ligne"></div>
-</div>
-
-<div id="rj-modal" class="modal">
-    <div class="modal-header">
-        <h3 style="color:#fbbf24; margin:0;">👑 Marché Royal Jelly</h3>
-        <button class="modal-close" onclick="toggleModal('rj-modal', false)">✕</button>
-    </div>
-    <div style="display:flex; flex-direction:column; gap:8px;">
-        <button onclick="buyRJUpgrade('clic')" style="background:rgba(255,255,255,0.1); color:white; font-size:12px; text-align:left;">⚡ Clic Multiplicateur (Coût: 5 RJ) [Mult: <span id="rjClicMultLbl">1</span>x]</button>
-        <button onclick="buyRJUpgrade('drone')" style="background:rgba(255,255,255,0.1); color:white; font-size:12px; text-align:left;">🤖 Drone Multiplicateur (Coût: 8 RJ) [Mult: <span id="rjDroneMultLbl">1</span>x]</button>
-        <button onclick="buyRJUpgrade('reduction')" style="background:rgba(255,255,255,0.1); color:white; font-size:12px; text-align:left;">📉 Réduction Boutiques (Coût: 12 RJ)</button>
-        <button onclick="buyRJUpgrade('speed')" style="background:rgba(255,255,255,0.1); color:white; font-size:12px; text-align:left;">⏳ Cadence des Drones +25% (Coût: 15 RJ)</button>
-    </div>
-</div>
-
-<div id="quests-modal" class="modal">
-    <div class="modal-header">
-        <h3 style="color:#ffaa00; margin:0;">🎯 Centre des Quêtes</h3>
-        <button class="modal-close" onclick="toggleModal('quests-modal', false)">✕</button>
-    </div>
-    <div id="quests-container" style="font-size:13px;">Chargement des missions...</div>
-</div>
-
-<div id="game-interface">
-    <div class="top" id="ui-top">
-        <div class="card" style="color: #26ff63; font-weight: bold;">🟢 En ligne: <span id="onlineCount">1</span></div>
-        <div class="card">💰 <span id="moneyTop">0</span></div>
-        <div class="card">🌍 Zone <span id="zone">1</span></div>
-        <div class="card">🔁 Prestige <span id="prestige">0</span></div>
-        <div class="card">✨ Éclats: <span id="shards">0</span></div>
-        <div class="card" id="rj-card" style="color:#fbbf24; font-weight:bold;">👑 RJ Coins: <span id="rjCoins">0</span></div>
-        <div class="card" style="display:flex; align-items:center; gap:8px;">
-            👤 <input id="player" readonly style="background:transparent; border:none; color:#52ffe0; font-weight:bold; width:110px; outline:none; text-align:center;">
-            <button onclick="deconnexion()" style="background:#ff4444; color:white; font-size:11px; padding:3px 8px; margin:0; border-radius:6px;">Quitter</button>
-        </div>
-    </div>
-
-    <div id="notice" class="notice" style="display:none;">En attente...</div>
-
-    <div id="main-game-area">
-        <div id="money">0</div>
-        <div id="planetName">Terra</div>
-        <div id="planet-container"><div id="planet">🌍</div></div>
-        <div class="progress-bar-container" id="ui-progress"><div id="progress-bar"></div></div>
-    </div>
-
-    <div class="stats-bar">
-        <div class="stat-badge">⚡ Drills: <span id="stat-power" style="color:#52ffe0; font-weight:bold;">1</span></div>
-        <div class="stat-badge">🤖 Drones: <span id="stat-drones" style="color:#26ff63; font-weight:bold;">0</span></div>
-        <div class="stat-badge">🔭 Scanners: <span id="stat-scanner" style="color:#ffaa00; font-weight:bold;">1</span></div>
-    </div>
-
-    <div class="utility-bar">
-        <button onclick="toggleModal('rj-modal', true)" style="background:#fbbf24; color:black;">👑 Marché Royal Jelly</button>
-        <button onclick="toggleModal('quests-modal', true)" style="background:#ffaa00; color:black;">📋 Centre des Quêtes</button>
-        <button onclick="buyPrestigeUpgrade(1)" style="background:#a855f7; color:white; font-size:12px;">🚀 Up Drones Shards (Niv: <span id="up1Lvl">0</span>)</button>
-        <button onclick="buyPrestigeUpgrade(2)" style="background:#3b82f6; color:white; font-size:12px;">🎯 Up Crit Shards (Niv: <span id="up2Lvl">0</span>)</button>
-    </div>
-
-    <div class="shop" id="ui-shop">
+    <div id="sidebar">
         <div>
-            <button onclick="buyPower()">⚡ Drill <span id="pc">20</span></button>
-            <button onclick="buyMaxPower()" class="btn-max">[MAX]</button>
-        </div>
-        <div>
-            <button onclick="buyDrone()">🤖 Drone <span id="dc">70</span></button>
-            <button onclick="buyMaxDrone()" class="btn-max">[MAX]</button>
-        </div>
-        <div>
-            <button onclick="buyScanner()">🔭 Scanner <span id="sc">120</span></button>
-            <button onclick="buyMaxScanner()" class="btn-max">[MAX]</button>
-        </div>
-        <button id="btn-prestige-normal" onclick="doPrestige()" style="background:#52ffe0; color:black;">🔁 Déclencher Prestige</button>
-        <button id="btn-goto-honey" onclick="changerGalaxie('honey')" style="background:#fbbf24; color:black; font-weight:bold;">🍯 Honey Galaxy</button>
-        <button id="btn-goto-crystal" onclick="changerGalaxie('crystal')" style="background:#a855f7; color:white; font-weight:bold;">🔮 Crystal Galaxy (P2)</button>
-        <button id="btn-goto-plasma" onclick="changerGalaxie('plasma')" style="background:#ef4444; color:white; font-weight:bold;">🔥 Plasma Galaxy (P5)</button>
-        <button id="btn-leave-galaxy" onclick="changerGalaxie('normale')" style="background:#ff4444; color:white; font-weight:bold; display:none;">🚀 Retour Normale</button>
-    </div>
-
-    <div class="card" id="ui-incubateur" style="max-width:600px; margin: 15px auto; text-align:center;">
-        <h3 style="margin:4px 0; color:#52ffe0;">🥚 Boutique & Incubateur</h3>
-        <div style="display:flex; justify-content:center; gap:6px; margin-bottom:8px; flex-wrap:wrap;">
-            <button onclick="acheterOeuf('normal')" style="font-size:11px; background:#fff; padding:6px 10px;">Œuf Normal (5k 💰)</button>
-            <button onclick="acheterOeuf('avance')" style="font-size:11px; background:#67e8f9; padding:6px 10px;">Œuf Avancé (25k 💰)</button>
-            <button onclick="acheterOeuf('rare')" style="font-size:11px; background:#c084fc; padding:6px 10px;">Œuf Rare (100k 💰)</button>
-            <button id="btn-buy-honey-egg" onclick="acheterOeuf('honey')" style="font-size:11px; background:#fbbf24; display:none; padding:6px 10px;">Œuf Miel (2.5k 🍯)</button>
-        </div>
-        <div style="font-size:12px; color:#ccc;">
-            Stocks - N: <span id="egg-normal-count">0</span> | A: <span id="egg-avance-count">0</span> | R: <span id="egg-rare-count">0</span> <span id="egg-honey-lbl">| Miel: <span id="egg-honey-count">0</span></span>
-        </div>
-        <div style="margin-top:8px; display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">
-            <button id="btn-open-normal" onclick="animerOuvertureOeuf('normal')" style="background:#ffaa00; font-size:11px; display:none;">🔓 Ouvrir Normal</button>
-            <button id="btn-open-avance" onclick="animerOuvertureOeuf('avance')" style="background:#06b6d4; font-size:11px; display:none; color:white;">🔓 Ouvrir Avancé</button>
-            <button id="btn-open-rare" onclick="animerOuvertureOeuf('rare')" style="background:#a855f7; font-size:11px; display:none; color:white;">🔓 Ouvrir Rare</button>
-            <button id="btn-open-honey" onclick="animerOuvertureOeuf('honey')" style="background:#fbbf24; font-size:11px; display:none;">🔓 Ouvrir Miel</button>
-        </div>
-        <div style="margin-top:10px; font-weight:bold; color:#26ff63;">✨ Pets équipés : <span id="equipped-pets-count">0</span> / 3</div>
-        <div class="pet-list-container"><div id="liste-mes-pets">Aucun familier actif.</div></div>
-    </div>
-
-    <div class="bottom-container">
-        <div class="bottom-column">
-            <div class="card" id="ui-leaderboard" style="height: 100%;">
-                <div class="leaderboard-title">🏆 TOP 10 MINERS</div>
-                <div class="leaderboard-list" id="leaderboard-box">
-                    <div style="text-align:center; color:#888; padding-top:40px;">Chargement du classement...</div>
-                </div>
+            <div class="stat-box">💰 Pièces : <span id="lbl-coins">0</span></div>
+            <div class="stat-box">⛏️ Puissance : <span id="lbl-power">1</span></div>
+            <div class="stat-box" style="border-color:#a855f7;">📉 Étape : <span id="lbl-depth">0</span> / 1000m</div>
+            
+            <div class="shop-section">
+                <h3>⛏️ Boutique Pioches</h3>
+                <div id="pickaxe-shop-container"></div>
+            </div>
+            <div class="shop-section">
+                <h3>🤖 Hangar Drones</h3>
+                <div id="drone-shop-container"></div>
             </div>
         </div>
+        <div id="current-gear" style="font-size: 11px; color: #888; text-align: center; margin-top: 15px;">Équipement : Main nue ✋</div>
+    </div>
 
-        <div class="bottom-column">
-            <div class="card" id="ui-chat" style="height: 100%;">
-                <div id="chat-box" style="height: 100px; overflow-y: auto; font-size: 12px; margin-bottom: 8px; padding: 5px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);"></div>
-                <div style="display: flex; gap: 5px;">
-                    <input id="chat-input" placeholder="Message..." onkeydown="if(event.key === 'Enter') envoyerMessage()" style="flex: 1; background: #111; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 6px; font-size: 12px; outline: none;">
-                    <button onclick="envoyerMessage()" style="padding: 4px 12px; margin: 0; font-size: 12px; border-radius: 6px; background:#52ffe0; color:#000;">Envoyer</button>
-                </div>
-            </div>
+    <div id="main-content">
+        <div id="global-broadcast-banner">📢 ANNONCE GLOBALE</div>
+        <div id="planet-header">🌍 Lieu : <span id="lbl-planet-name">Terre</span></div>
+        <div id="weather-banner">☀️ Climat Stable</div>
+        <div id="grid-container">
+            <div id="weather-overlay"></div>
+            <div id="mine-grid"></div>
         </div>
     </div>
-</div>
 
-<div id="panel-owner" class="roblox-panel">
-    <div id="header-owner" class="admin-header"><span>👑 OWNER PANEL</span><button class="close-admin-btn" onclick="togglePanel('owner')">✕</button></div>
-    <div class="admin-body">
-        <div class="command-log" id="log-owner"><div style="color: #ffaa00;">[🔒] Rentrer la clé ROOT.</div></div>
-        <div class="suggest-box" id="suggest-owner" style="display: none;"></div>
-        <div class="input-area">
-            <span class="prefix" id="prefix-owner" style="color:#ff4444;">🔑</span>
-            <input type="password" id="input-owner" class="admin-input-text" placeholder="Clé..." autocomplete="off" onkeydown="if(event.key === 'Enter') loginPanel('owner')">
-            <button id="btn-action-owner" class="panel-btn" onclick="loginPanel('owner')">OK</button>
+    <div id="chat-sidebar">
+        <div id="chat-header">💬 CANAL SUB-ESPACE</div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Parler aux mineurs..." maxlength="80">
         </div>
     </div>
-</div>
 
-<div id="panel-admin" class="roblox-panel">
-    <div id="header-admin" class="admin-header"><span>🛡️ ADMIN PANEL</span><button class="close-admin-btn" onclick="togglePanel('admin')">✕</button></div>
-    <div class="admin-body">
-        <div class="command-log" id="log-admin"><div style="color: #4488ff;">[🔒] Rentrer la clé MOD.</div></div>
-        <div class="suggest-box" id="suggest-admin" style="display: none;"></div>
-        <div class="input-area">
-            <span class="prefix" id="prefix-admin" style="color:#4488ff;">🔑</span>
-            <input type="password" id="input-admin" class="admin-input-text" placeholder="Clé..." autocomplete="off" onkeydown="if(event.key === 'Enter') loginPanel('admin')">
-            <button id="btn-action-admin" class="panel-btn" onclick="loginPanel('admin')">OK</button>
+    <div class="hacker-console" id="panel-admin">
+        <h2>[SYS_ADMIN_CONSOLE v5.0]</h2>
+        <div id="admin-auth-zone">
+            <input type="text" id="input-admin-code" placeholder="ENTER ACCESS KEY...">
+            <button onclick="verifyAdmin()">EXECUTE AUTH</button>
+        </div>
+        <div class="console-actions-area" id="controls-admin">
+            <div class="console-logs" id="admin-logs">Authentifié. Entrez une commande ou tapez /help...</div>
+            <input type="text" id="input-admin-cmd" placeholder="Entrez une commande (ex: /givecoins ou /givecoins Mineur_123)..." autocomplete="off">
+            <div class="suggest-box" id="admin-suggest"></div>
+            <button onclick="closeConsoles()" style="background:#ff5470; color:#fff;">FERMER SESSION</button>
         </div>
     </div>
-</div>
 
-<div id="panel-tester" class="roblox-panel">
-    <div id="header-tester" class="admin-header"><span>🧪 TESTER PANEL</span><button class="close-admin-btn" onclick="togglePanel('tester')">✕</button></div>
-    <div class="admin-body">
-        <div class="command-log" id="log-tester"><div style="color: #26ff63;">[🔒] Rentrer la clé TESTER.</div></div>
-        <div class="suggest-box" id="suggest-tester" style="display: none;"></div>
-        <div class="input-area">
-            <span class="prefix" id="prefix-tester" style="color:#26ff63;">🔑</span>
-            <input type="password" id="input-tester" class="admin-input-text" placeholder="Clé TESTER..." autocomplete="off" onkeydown="if(event.key === 'Enter') loginPanel('tester')">
-            <button id="btn-action-tester" class="panel-btn" onclick="loginPanel('tester')">OK</button>
+    <div class="hacker-console" id="panel-owner" style="border-color:#38bdf8; box-shadow: 0 0 30px rgba(56,189,248,0.3);">
+        <h2>[OWNER_ROOT_SYSTEM]</h2>
+        <div id="owner-auth-zone">
+            <input type="password" id="input-owner-pass" placeholder="ENTER ROOT PASSWORD...">
+            <button onclick="verifyOwner()" style="background:#38bdf8; color:#000;">INITIALIZE ROOT</button>
+        </div>
+        <div class="console-actions-area" id="controls-owner">
+            <div class="console-logs" id="owner-logs">Accès Root Actif. Tapez vos requêtes directes ou /help...</div>
+            <input type="text" id="input-owner-cmd" placeholder="Entrez une commande owner..." autocomplete="off">
+            <div class="suggest-box" id="owner-suggest"></div>
+            <button onclick="closeConsoles()" style="background:#ff5470; color:#fff;">FERMER SESSION</button>
         </div>
     </div>
-</div>
 
 <script>
-let supportChoisi = "pc";
-let currentGalaxy = "normale";
-const PASS_OWNER = "admin123";
-const PASS_ADMIN = "admin321";
-const PASS_TESTER = "tester123";
+const myUsername = "Mineur_" + Math.floor(Math.random() * 900 + 100);
+let isAdminAuthenticated = false;
+let isOwnerAuthenticated = false;
+let weatherTimerInterval = null;
 
-let ownerConnected = false;
-let adminConnected = false;
-let testerConnected = false;
-
-const COMMANDS_BASE_ADMIN = [
-    "help", "announcement", "seisme", "blackout", "clearvisuals",
-    "givecredits", "giverj", "giveshards", "setzone", "setprestige", "kick", "freeze", "unfreeze", "clearchat", "resetplayer"
+const COMMANDS_LIST = [
+    "/help", "/givecoins", "/setpower", "/broadcast", "/setweather", 
+    "/spawn", "/zerogravity", "/disco", "/resetgame", "/clear"
 ];
 
-const COMMANDS_LIST_OWNER = [
-    ...COMMANDS_BASE_ADMIN,
-    "giftdrone", "givehoneycredits", "givecrystalcredits", "giveplasmacredits", 
-    "owner_godmode", "owner_wipe_player", "owner_give_mythic_pet", "owner_max_stats", "owner_inf_money",
-    "owner_force_prestige", "owner_steal_money", "owner_mute_all", "owner_unmute_all", "owner_rainbow_name"
+// Liaison avec le serveur local Node.js
+const socket = io("http://localhost:3000");
+
+socket.on("connect", () => {
+    socket.emit("register_user", myUsername);
+});
+
+let coins = 0; let clickPower = 1; let currentPickLevel = 0; let depth = 0;
+const maxTargetDepth = 1000; let currentPlanetIdx = 0; let gridData = []; const GRID_SIZE = 36;
+
+const gridElement = document.getElementById("mine-grid");
+const weatherOverlay = document.getElementById("weather-overlay");
+const weatherBanner = document.getElementById("weather-banner");
+
+const PLANETS = [
+    {
+        name: "Terre 🌍 (Diff x1)", hpMult: 1,
+        minerals: {
+            commun: { name: "Terre", hp: 3, reward: 1, icon: "🟫" }, rare: { name: "Pierre", hp: 8, reward: 4, icon: "🪨" },
+            epique: { name: "Or", hp: 22, reward: 16, icon: "🪙" }, legendaire: { name: "Diamant", hp: 55, reward: 52, icon: "💎" },
+            divin: { name: "Relique", hp: 180, reward: 400, icon: "🔱" }
+        },
+        shopPicks: [
+            { level: 1, name: "Pioche Bois", cost: 10, power: 2 }, { level: 2, name: "Pioche Pierre", cost: 45, power: 4 },
+            { level: 3, name: "Pioche Cuivre", cost: 150, power: 8 }, { level: 4, name: "Pioche Fer", cost: 400, power: 18 },
+            { level: 5, name: "Pioche Or", cost: 1200, power: 45 }
+        ],
+        shopDrones: [
+            { type: "b", name: "Drone Rouillé", cost: 50, damage: 1, speed: 2000 }, { type: "f", name: "Drone Scout", cost: 180, damage: 2, speed: 900 },
+            { type: "b", name: "Drone Récup", cost: 500, damage: 5, speed: 1700 }, { type: "f", name: "Drone Propulsé", cost: 1400, damage: 12, speed: 750 },
+            { type: "h", name: "Drone Foreur", cost: 3500, damage: 32, speed: 2400 }
+        ]
+    },
+    {
+        name: "Mars Cyber ☄️ (Diff x15)", hpMult: 15,
+        minerals: {
+            commun: { name: "Sable Rouge", hp: 4, reward: 6, icon: "🟥" }, rare: { name: "Fer Martien", hp: 12, reward: 22, icon: "🔩" },
+            epique: { name: "Rubis Pur", hp: 30, reward: 80, icon: "🔺" }, legendaire: { name: "Météorite", hp: 70, reward: 240, icon: "☄️" },
+            divin: { name: "Fragment Nova", hp: 250, reward: 1500, icon: "⭐" }
+        },
+        shopPicks: [
+            { level: 6, name: "Foret Laser", cost: 4500, power: 120 }, { level: 7, name: "Foret Plasma", cost: 15000, power: 400 },
+            { level: 8, name: "Sonde Laser M.", cost: 40000, power: 1100 }, { level: 9, name: "Rayon Pulsar", cost: 110000, power: 3400 },
+            { level: 10, name: "Lame Solaire", cost: 300000, power: 9000 }
+        ],
+        shopDrones: [
+            { type: "b", name: "Laser M1", cost: 6000, damage: 90, speed: 1800 }, { type: "f", name: "Cyber Scout", cost: 20000, damage: 280, speed: 700 },
+            { type: "h", name: "Laveur Blindé", cost: 55000, damage: 950, speed: 2800 }, { type: "f", name: "Sonde Éclair", cost: 130000, damage: 2400, speed: 450 },
+            { type: "h", name: "Protot Titan", cost: 350000, damage: 8000, speed: 2200 }
+        ]
+    }
 ];
 
-const COMMANDS_TESTER = [
-    "test_boost", "test_egg", "test_give_shard", "test_reset_money", "test_shake", "test_click"
-];
-
-const CONFIG_PETS = {
-    normal: { prix: 5000, monnaie: "credits", liste: [
-        { id: "bee", nom: "Abeille Ouvrière", rare: "Commun", chance: 0.70, typeBoost: "clic", valeurBoost: 1.2, emoji: "🐝", prixVente: 1000 },
-        { id: "slime", nom: "Slime Cosmique", rare: "Rare", chance: 0.25, typeBoost: "drone", valeurBoost: 1.4, emoji: "🧪", prixVente: 2500 },
-        { id: "robot", nom: "Robot Éclaireur", rare: "Épique", chance: 0.05, typeBoost: "global", valeurBoost: 1.8, emoji: "🤖", prixVente: 6000 }
-    ]},
-    avance: { prix: 25000, monnaie: "credits", liste: [
-        { id: "slime", nom: "Slime Cosmique", rare: "Rare", chance: 0.60, typeBoost: "drone", valeurBoost: 1.5, emoji: "🧪", prixVente: 2500 },
-        { id: "alien", nom: "Chasseur Alien", rare: "Épique", chance: 0.32, typeBoost: "clic", valeurBoost: 2.2, emoji: "👽", prixVente: 10000 },
-        { id: "dragon", nom: "Dragon de Plasma", rare: "LÉGENDAIRE", chance: 0.08, typeBoost: "global", valeurBoost: 4.0, emoji: "🐉", prixVente: 30000 }
-    ]},
-    rare: { prix: 100000, monnaie: "credits", liste: [
-        { id: "alien", nom: "Chasseur Alien", rare: "Épique", chance: 0.65, typeBoost: "clic", valeurBoost: 2.5, emoji: "👽", prixVente: 10000 },
-        { id: "dragon", nom: "Dragon de Plasma", rare: "LÉGENDAIRE", chance: 0.30, typeBoost: "global", valeurBoost: 5.0, emoji: "🐉", prixVente: 30000 },
-        { id: "phenix", nom: "Phénix Solaire", rare: "MYTHIQUE", chance: 0.05, typeBoost: "global", valeurBoost: 10.0, emoji: "🦅", prixVente: 75000 }
-    ]},
-    honey: { prix: 2500, monnaie: "honeyCredits", liste: [
-        { id: "bourdon", nom: "Bourdon Joufflu", rare: "Commun", chance: 0.55, typeBoost: "clic", valeurBoost: 1.5, emoji: "🪰", prixVente: 500 },
-        { id: "abeille_c", nom: "Abeille de Chasse", rare: "Rare", chance: 0.35, typeBoost: "drone", valeurBoost: 2.0, emoji: "🐝", prixVente: 1000 },
-        { id: "ours", nom: "Ours Volant", rare: "Épique", chance: 0.09, typeBoost: "global", valeurBoost: 3.0, emoji: "🐻", prixVente: 3000 },
-        { id: "reine", nom: "Reine Alvéole", rare: "LÉGENDAIRE", chance: 0.01, typeBoost: "global", valeurBoost: 7.5, emoji: "👑", prixVente: 10000 }
-    ]}
-};
-
-let defaultState={ 
-    credits:0, honeyCredits:0, crystalCredits:0, plasmaCredits:0, power:1, drones:0, scanner:1, zone:1, maxzone:1, prestige:0, 
-    pCost:20, dCost:70, sCost:120, shards:0, up1:0, up2:0, rjCoins:0, totalClicks:0, rjClicMult:1, rjDroneMult:1, rjDiscount: 1, rjSpeedBonus: 1,
-    inventaireOeufsNormal:0, inventaireOeufsAvance:0, inventaireOeufsRare:0, inventaireOeufsHoney:0, petsPossedes: []
-};
-let s=JSON.parse(JSON.stringify(defaultState));
-
-let planets=[{name:"Terra",emoji:"🌍"},{name:"Mars",emoji:"🔴"},{name:"Neptune",emoji:"🔵"},{name:"Nova",emoji:"🟣"},{name:"Titan",emoji:"🪐"},{name:"Sol",emoji:"☀️"}];
-let galaxiesData = {
-    normale: { name: "Terra", emoji: "🌍", moneyAttr: "credits" },
-    honey: { name: "Mellis", emoji: "🍯", moneyAttr: "honeyCredits" },
-    crystal: { name: "Crystalia", emoji: "🔮", moneyAttr: "crystalCredits" },
-    plasma: { name: "Pyros", emoji: "🔥", moneyAttr: "plasmaCredits" }
-};
-
-let combo=0; let isFrozen = false; let adminBoostMultiplier = 1;
-
-function choisirSupport(mode) { supportChoisi = mode; document.getElementById("dev-pc").classList.remove("active"); document.getElementById("dev-mobile").classList.remove("active"); document.getElementById("dev-" + mode).classList.add("active"); }
-function basculerAuth(mode) { document.getElementById("auth-login-view").style.display = (mode === 'login') ? "block" : "none"; document.getElementById("auth-register-view").style.display = (mode === 'register') ? "block" : "none"; }
-function gererInscription() { let user = document.getElementById("auth-reg-user").value.trim(); let pass = document.getElementById("auth-reg-pass").value; if(!user || !pass) return; localStorage.setItem("gm_pass_" + user, pass); basculerAuth('login'); }
-
-function gererConnexion() {
-    let user = document.getElementById("auth-log-user").value.trim(); let pass = document.getElementById("auth-log-pass").value;
-    if(localStorage.getItem("gm_pass_" + user) === pass) {
-        document.getElementById("player").value = user; document.getElementById("auth-overlay").style.display = "none";
-        const interf = document.getElementById("game-interface"); interf.style.display = "block"; interf.className = (supportChoisi === "mobile") ? "mode-mobile" : "mode-pc";
-        loadPlayerSave(); genererQuetes(); 
-        
-        demanderLeaderboard();
-        setInterval(demanderLeaderboard, 15000);
-
-        setTimeout(() => { socket.emit("envoyerMessageGlobal", { pseudo: user, texte: "<i>vient de se connecter.</i>" }); }, 800);
+function generateMineral(forceRarity = null) {
+    let planet = PLANETS[currentPlanetIdx] || PLANETS[0];
+    let rarity = forceRarity || "commun";
+    if (!forceRarity) {
+        let rand = Math.random() * 100;
+        if (rand < 55) rarity = "commun";
+        else if (rand < 82) rarity = "rare";
+        else if (rand < 96) rarity = "epique";
+        else rarity = "legendaire";
     }
+    let base = planet.minerals[rarity];
+    let finalHp = base.hp * planet.hpMult;
+    return { ...base, hp: finalHp, maxHp: finalHp, rarity: rarity, isMutated: false };
 }
 
-function deconnexion() {
-    save(); document.getElementById("game-interface").style.display = "none"; document.getElementById("auth-overlay").style.display = "flex";
-    document.getElementById("auth-log-user").value = ""; document.getElementById("auth-log-pass").value = "";
-}
-
-function changerGalaxie(type) {
-    if(type === 'crystal' && s.prestige < 2) { alert("🚫 Requis: Prestige 2 !"); return; }
-    if(type === 'plasma' && s.prestige < 5) { alert("🚫 Requis: Prestige 5 !"); return; }
-    currentGalaxy = type; document.body.className = (type !== "normale") ? type + "-theme" : "";
-    document.getElementById("btn-goto-honey").style.display = (type === "normale") ? "inline-block" : "none";
-    document.getElementById("btn-goto-crystal").style.display = (type === "normale") ? "inline-block" : "none";
-    document.getElementById("btn-goto-plasma").style.display = (type === "normale") ? "inline-block" : "none";
-    document.getElementById("btn-leave-galaxy").style.display = (type !== "normale") ? "inline-block" : "none";
-    document.getElementById("btn-buy-honey-egg").style.display = (type === "honey") ? "inline-block" : "none";
-    ui();
-}
-
-function buyRJUpgrade(type) {
-    if(type === 'clic' && s.rjCoins >= 5) { s.rjCoins -= 5; s.rjClicMult += 1; }
-    if(type === 'drone' && s.rjCoins >= 8) { s.rjCoins -= 8; s.rjDroneMult += 1; }
-    if(type === 'reduction' && s.rjCoins >= 12) { s.rjCoins -= 12; s.rjDiscount *= 0.9; }
-    if(type === 'speed' && s.rjCoins >= 15) { s.rjCoins -= 15; s.rjSpeedBonus += 0.25; }
-    ui(); save();
-}
-
-function calculerBoostPets(typeAttendu) {
-    let mult = 1; if (s.petsPossedes) s.petsPossedes.forEach(p => { if (p.equipped && (p.typeBoost === typeAttendu || p.typeBoost === "global")) mult *= p.valeurBoost; });
-    return mult;
-}
-
-document.getElementById("planet").addEventListener("click", () => {
-    if(isFrozen) return; s.totalClicks++; let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
-    let petMult = calculerBoostPets("clic");
-    let totalGain = s.power * s.scanner * s.rjClicMult * adminBoostMultiplier * petMult;
-    if(currentGalaxy === "normale" && s.up2 > 0 && Math.random() < (s.up2 * 0.05)) { totalGain *= 3; }
-    s[currentAttr] += totalGain;
-    if(currentGalaxy === "normale") {
-        combo++; document.getElementById("progress-bar").style.width = Math.min((combo / (s.zone * 20)) * 100, 100) + "%";
-        if(combo >= (s.zone * 20)) { combo = 0; s.zone++; if(s.zone > s.maxzone) s.maxzone = s.zone; }
-    } else { if(Math.random() < 0.02) s.rjCoins++; }
-    ui();
-});
-
-function lancerProductionDrones() {
-    if(isFrozen || s.drones <= 0) return;
-    let currentAttr = galaxiesData[currentGalaxy].moneyAttr;
-    let speedBonus = currentGalaxy === "normale" ? (1 + (s.up1 * 0.5)) : 1;
-    let petMult = calculerBoostPets("drone");
-    let finalGain = s.drones * s.rjDroneMult * speedBonus * adminBoostMultiplier * (s.rjSpeedBonus || 1) * petMult;
-    s[currentAttr] += finalGain; if(finalGain > 0) ui();
-}
-
-function applyDiscount(baseCost) { return currentGalaxy !== "normale" ? baseCost * (s.rjDiscount || 1) : baseCost; }
-function buyPower() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.pCost); if(s[attr] >= cost) { s[attr] -= cost; s.power++; s.pCost *= 1.35; ui(); } }
-function buyDrone() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.dCost); if(s[attr] >= cost) { s[attr] -= cost; s.drones++; s.dCost *= 1.4; ui(); } }
-function buyScanner() { let attr = galaxiesData[currentGalaxy].moneyAttr; let cost = applyDiscount(s.sCost); if(s[attr] >= cost) { s[attr] -= cost; s.scanner++; s.sCost *= 1.45; ui(); } }
-function buyMaxPower() { for(let i=0;i<20;i++) buyPower(); }
-function buyMaxDrone() { for(let i=0;i<20;i++) buyDrone(); }
-function buyMaxScanner() { for(let i=0;i<20;i++) buyScanner(); }
-function buyPrestigeUpgrade(id) { if(id === 1 && s.shards >= 2) { s.shards -= 2; s.up1++; ui(); } if(id === 2 && s.shards >= 3) { s.shards -= 3; s.up2++; ui(); } }
-function doPrestige() { if(s.credits >= 500000) { s.shards += Math.floor(Math.sqrt(s.credits / 500000)); s.credits = 0; s.zone = 1; s.power = 1; s.drones = 0; s.scanner = 1; s.pCost = 20; s.dCost = 70; s.sCost = 120; s.prestige++; ui(); save(); demanderLeaderboard(); } }
-function toggleModal(id, open) { document.getElementById(id).style.display = open ? "block" : "none"; }
-function togglePanel(type) { let panel = document.getElementById("panel-" + type); panel.style.display = (panel.style.display === "block") ? "none" : "block"; }
-
-function gererFrappeAide(type) {
-    const val = document.getElementById("input-" + type).value.trim().toLowerCase();
-    const box = document.getElementById("suggest-" + type); box.innerHTML = "";
-    let maListe = [];
-    if(type === 'owner') maListe = COMMANDS_LIST_OWNER;
-    else if(type === 'admin') maListe = COMMANDS_BASE_ADMIN;
-    else if(type === 'tester') maListe = COMMANDS_TESTER;
-    if (!val) { maListe.forEach(cmd => creerBadgeAide(type, cmd, box)); return; }
-    maListe.filter(c => c.startsWith(val)).forEach(cmd => creerBadgeAide(type, cmd, box));
-}
-
-function creerBadgeAide(type, text, parentElement) {
-    let badge = document.createElement("span"); badge.className = "suggest-badge"; badge.textContent = text;
-    badge.onclick = () => { let input = document.getElementById("input-" + type); input.value = text + " "; input.focus(); gererFrappeAide(type); };
-    parentElement.appendChild(badge);
-}
-
-function executerCommande(type) {
-    const input = document.getElementById("input-" + type); const log = document.getElementById("log-" + type);
-    let commande = input.value.trim(); if (!commande) return;
-    const nvLog = document.createElement("div"); nvLog.textContent = "> " + commande; log.appendChild(nvLog);
-    socket.emit("commandeAdmin", { typePanel: type, commande: "~/" + commande, pseudo: document.getElementById("player").value });
-    input.value = ""; gererFrappeAide(type); log.scrollTop = log.scrollHeight;
-}
-
-function loginPanel(type) {
-    let input = document.getElementById("input-" + type); let log = document.getElementById("log-" + type);
-    let btn = document.getElementById("btn-action-" + type); let prefix = document.getElementById("prefix-" + type); let suggestBox = document.getElementById("suggest-" + type);
-    if ((type === 'owner' && ownerConnected) || (type === 'admin' && adminConnected) || (type === 'tester' && testerConnected)) { executerCommande(type); return; }
-    let passValide = false;
-    if(type === 'owner' && input.value === PASS_OWNER) { ownerConnected = true; passValide = true; }
-    else if(type === 'admin' && input.value === PASS_ADMIN) { adminConnected = true; passValide = true; }
-    else if(type === 'tester' && input.value === PASS_TESTER) { testerConnected = true; passValide = true; }
-    if(passValide) {
-        log.innerHTML = "<div style='color:#26ff63;'>[ACCÈS CONFORMÉ] Panel actif.</div>";
-        btn.textContent = "Entrer"; prefix.textContent = ">"; input.value = ""; input.type = "text"; 
-        suggestBox.style.display = "flex"; input.removeAttribute("onkeydown");
-        input.addEventListener("keydown", (e) => { if(e.key === 'Enter') executerCommande(type); });
-        input.addEventListener("input", () => gererFrappeAide(type)); gererFrappeAide(type);
-    } else { alert("Clé incorrecte !"); }
-    log.scrollTop = log.scrollHeight;
-}
-
-function acheterOeuf(type) {
-    let config = CONFIG_PETS[type]; let porte = (config.monnaie === "honeyCredits") ? "honeyCredits" : "credits";
-    if (s[porte] >= config.prix) {
-        s[porte] -= config.prix;
-        if (type === "normal") s.inventaireOeufsNormal = (s.inventaireOeufsNormal || 0) + 1;
-        if (type === "avance") s.inventaireOeufsAvance = (s.inventaireOeufsAvance || 0) + 1;
-        if (type === "rare") s.inventaireOeufsRare = (s.inventaireOeufsRare || 0) + 1;
-        if (type === "honey") s.inventaireOeufsHoney = (s.inventaireOeufsHoney || 0) + 1;
-        ui(); save();
+function initGrid() {
+    gridElement.innerHTML = ""; gridData = [];
+    let planet = PLANETS[currentPlanetIdx] || PLANETS[0];
+    document.getElementById("lbl-planet-name").innerText = planet.name;
+    for (let i = 0; i < GRID_SIZE; i++) {
+        let mineral = generateMineral(); gridData.push(mineral); createBlockElement(i, mineral);
     }
+    buildPlanetShops();
 }
 
-function animerOuvertureOeuf(type) {
-    let stock = 0;
-    if (type === "normal") stock = s.inventaireOeufsNormal;
-    if (type === "avance") stock = s.inventaireOeufsAvance;
-    if (type === "rare") stock = s.inventaireOeufsRare;
-    if (type === "honey") stock = s.inventaireOeufsHoney;
-    if (!stock || stock <= 0) return;
-    if (type === "normal") s.inventaireOeufsNormal--; if (type === "avance") s.inventaireOeufsAvance--;
-    if (type === "rare") s.inventaireOeufsRare--; if (type === "honey") s.inventaireOeufsHoney--;
-    ui();
-    const divLigne = document.getElementById("roulette-defilement"); const boite = document.getElementById("box-roulette");
-    divLigne.innerHTML = ""; divLigne.style.left = "0px"; boite.style.display = "block";
-    let pool = CONFIG_PETS[type].liste; let rand = Math.random(); let cumul = 0; let petGagne = pool[0];
-    for (let p of pool) { cumul += p.chance; if (rand <= cumul) { petGagne = p; break; } }
-    for (let i = 0; i < 35; i++) {
-        let it = document.createElement("div"); it.className = "roulette-item";
-        let petA = pool[Math.floor(Math.random() * pool.length)]; if (i === 24) petA = petGagne;
-        it.innerHTML = `<span>${petA.emoji}</span><span style="font-size:9px; font-weight:bold;">${petA.nom}</span>`;
-        divLigne.appendChild(it);
-    }
-    setTimeout(() => { divLigne.style.left = -((24 * 80) - 120 + Math.floor(Math.random() * 40)) + "px"; }, 100);
-    setTimeout(() => {
-        boite.style.display = "none"; if (!s.petsPossedes) s.petsPossedes = [];
-        let nv = Object.assign({}, petGagne); nv.uniqueId = "pet_" + Date.now(); nv.equipped = false; nv.monnaieRecup = CONFIG_PETS[type].monnaie;
-        s.petsPossedes.push(nv); ui(); save();
-    }, 4100);
+function createBlockElement(index, mineral) {
+    let div = document.createElement("div");
+    div.className = `block rarity-${mineral.rarity} ${mineral.isMutated ? 'mutated' : ''}`;
+    div.id = `block-${index}`;
+    div.innerHTML = `<div class="block-icon">${mineral.icon}</div><div class="hp-bar-container"><div class="hp-bar" id="hp-bar-${index}"></div></div>`;
+    div.onclick = () => handleDamage(index, clickPower);
+    gridElement.appendChild(div);
 }
 
-function gererEquipementPet(uniqueId) {
-    let index = s.petsPossedes.findIndex(p => p.uniqueId === uniqueId); if(index === -1) return;
-    let pet = s.petsPossedes[index];
-    if(pet.equipped) pet.equipped = false;
-    else { if(s.petsPossedes.filter(p => p.equipped).length >= 3) return; pet.equipped = true; }
-    ui(); save();
-}
-
-function vendrePet(uniqueId) {
-    let index = s.petsPossedes.findIndex(p => p.uniqueId === uniqueId); if(index === -1) return;
-    let pet = s.petsPossedes[index];
-    let port = (pet.monnaieRecup === "honeyCredits") ? "honeyCredits" : "credits";
-    s[port] += pet.prixVente; s.petsPossedes.splice(index, 1); ui(); save();
-}
-
-function genererQuetes() { document.getElementById("quests-container").innerHTML = `<div class="quest-item" style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between;"><span>🎯 Extraire 100 Éléments Cosmiques</span> <span style="color:#fbbf24; font-weight:bold;">+1 RJ Coin</span></div>`; }
-
-function demanderLeaderboard() {
-    let pName = document.getElementById("player").value;
-    if(pName) {
-        socket.emit("syncScoreLeaderboard", { pseudo: pName, prestige: s.prestige, credits: s.credits });
-    }
-}
-
-function save() { 
-    let u = document.getElementById("player").value; 
-    if(u) {
-        localStorage.setItem("gm_save_" + u, JSON.stringify(s));
-        demanderLeaderboard();
-    } 
-}
-function loadPlayerSave() { let u = document.getElementById("player").value; let loc = localStorage.getItem("gm_save_" + u); if(loc) { s = JSON.parse(loc); ui(); } }
-
-setInterval(lancerProductionDrones, 1000);
-
-function ui() {
-    let attr = galaxiesData[currentGalaxy].moneyAttr;
-    document.getElementById("money").textContent = Math.floor(s[attr]);
-    document.getElementById("moneyTop").textContent = Math.floor(s[attr]);
-    document.getElementById("zone").textContent = s.zone;
-    document.getElementById("prestige").textContent = s.prestige;
-    document.getElementById("shards").textContent = s.shards;
-    document.getElementById("rjCoins").textContent = s.rjCoins;
-    document.getElementById("rjClicMultLbl").textContent = s.rjClicMult;
-    document.getElementById("rjDroneMultLbl").textContent = s.rjDroneMult;
-    document.getElementById("up1Lvl").textContent = s.up1;
-    document.getElementById("up2Lvl").textContent = s.up2;
-    document.getElementById("pc").textContent = Math.floor(applyDiscount(s.pCost)); 
-    document.getElementById("dc").textContent = Math.floor(applyDiscount(s.dCost)); 
-    document.getElementById("sc").textContent = Math.floor(applyDiscount(s.sCost));
-    
-    document.getElementById("stat-power").textContent = s.power;
-    document.getElementById("stat-drones").textContent = s.drones;
-    document.getElementById("stat-scanner").textContent = s.scanner;
-    
-    if(currentGalaxy === "normale") {
-        let cur = planets[(s.zone - 1) % planets.length]; document.getElementById("planetName").textContent = cur.name; document.getElementById("planet").textContent = cur.emoji;
-    } else { document.getElementById("planetName").textContent = galaxiesData[currentGalaxy].name; document.getElementById("planet").textContent = galaxiesData[currentGalaxy].emoji; }
-    
-    document.getElementById("egg-normal-count").textContent = s.inventaireOeufsNormal || 0;
-    document.getElementById("egg-avance-count").textContent = s.inventaireOeufsAvance || 0;
-    document.getElementById("egg-rare-count").textContent = s.inventaireOeufsRare || 0;
-    document.getElementById("egg-honey-count").textContent = s.inventaireOeufsHoney || 0;
-    document.getElementById("btn-open-normal").style.display = (s.inventaireOeufsNormal > 0) ? "inline-block" : "none";
-    document.getElementById("btn-open-avance").style.display = (s.inventaireOeufsAvance > 0) ? "inline-block" : "none";
-    document.getElementById("btn-open-rare").style.display = (s.inventaireOeufsRare > 0) ? "inline-block" : "none";
-    document.getElementById("btn-open-honey").style.display = (s.inventaireOeufsHoney > 0) ? "inline-block" : "none";
-    document.getElementById("equipped-pets-count").textContent = s.petsPossedes ? s.petsPossedes.filter(p => p.equipped).length : 0;
-
-    let h = "";
-    if (s.petsPossedes && s.petsPossedes.length > 0) {
-        s.petsPossedes.forEach(p => {
-            h += `<div class="${p.equipped ? 'pet-row equipped' : 'pet-row'}"><div>${p.emoji} <strong>${p.nom}</strong> (${p.rare})</div><div><button class="btn-pet-action" onclick="gererEquipementPet('${p.uniqueId}')">${p.equipped ? '❌' : '🎒'}</button><button class="btn-pet-action" onclick="vendrePet('${p.uniqueId}')">💰</button></div></div>`;
-        });
-    } else h = "Aucun compagnon.";
-    document.getElementById("liste-mes-pets").innerHTML = h;
-}
-
-window.addEventListener("keydown", (e) => {
-    if(document.activeElement.tagName === "INPUT") return;
-    if(e.key === "1") togglePanel('owner');
-    if(e.key === "2") togglePanel('admin');
-    if(e.key === "3") togglePanel('tester');
-});
-
-// Connexion Socket (A ajuster vers ton URL Render si en production)
-const socket = io("https://galaxy-miner-server.onrender.com");
-
-socket.on("majJoueursEnLigne", (total) => { document.getElementById("onlineCount").textContent = total; });
-socket.on("recevoirMessageGlobal", (data) => {
-    const cb = document.getElementById("chat-box"); const nv = document.createElement("div");
-    nv.innerHTML = `<strong>${data.pseudo} :</strong> ${data.texte}`; cb.appendChild(nv); cb.scrollTop = cb.scrollHeight;
-});
-
-socket.on("commandeClearchatRecue", () => {
-    document.getElementById("chat-box").innerHTML = "<div style='color:#888; font-style:italic;'>[Le chat a été nettoyé par la modération]</div>";
-});
-
-socket.on("mettreAJourLeaderboard", (listeScores) => {
-    const box = document.getElementById("leaderboard-box");
-    if(!listeScores || listeScores.length === 0) { box.innerHTML = "<div style='text-align:center;color:#666;'>Aucun score enregistré</div>"; return; }
-    let html = "";
-    listeScores.forEach((joueur, idx) => {
-        html += `
-        <div class="leaderboard-row">
-            <span>#${idx+1} ${joueur.pseudo}</span>
-            <span>P.${joueur.prestige} | ${Math.floor(joueur.credits).toLocaleString()} 💰</span>
-        </div>`;
+function buildPlanetShops() {
+    let planet = PLANETS[currentPlanetIdx] || PLANETS[0];
+    let pickContainer = document.getElementById("pickaxe-shop-container"); pickContainer.innerHTML = "";
+    planet.shopPicks.forEach(p => {
+        pickContainer.innerHTML += `<button class="btn-upgrade" id="btn-pick-${p.level}" onclick="buyPickaxe(${p.level}, ${p.cost}, ${p.power}, '${p.name}')"><span>${p.name}</span> <span>${p.cost} 💰</span></button>`;
     });
-    box.innerHTML = html;
-});
-
-socket.on("retourCommande", (data) => {
-    let act = (ownerConnected && document.getElementById("panel-owner").style.display === "block") ? "log-owner" : (adminConnected && document.getElementById("panel-admin").style.display === "block") ? "log-admin" : "log-tester";
-    const l = document.getElementById(act); if(l) { const d = document.createElement("div"); d.style.color = "#ffff55"; d.textContent = data.texte.replaceAll("~/", ""); l.appendChild(d); l.scrollTop = l.scrollHeight; }
-});
-
-socket.on("alerteGlobale", (data) => {
-    const a = document.getElementById("global-chat-alert"); a.textContent = "📢 " + data.texte; a.style.top = "20px"; setTimeout(() => { a.style.top = "-150px"; }, 6000);
-});
-
-socket.on("recevoirActionGlobaleAll", (data) => {
-    data.cible = document.getElementById("player").value.trim();
-    socket._callbacks['$actionDataJoueur'][0](data); 
-});
-
-socket.on("actionDataJoueur", (data) => {
-    let monP = document.getElementById("player").value.trim().toLowerCase(); if (data.cible.toLowerCase() !== monP) return;
-    let nVal = Number(data.valeur);
-
-    // --- 🛡️ EXÉCUTION DE TOUTES LES COMMANDES REÇUES ---
-    if (data.action === "help") {
-        alert("Commandes dispos : givecredits, giverj, giveshards, setzone, setprestige, kick, freeze, unfreeze, seisme, blackout, clearvisuals, resetplayer");
-    }
-    if (data.action === "givecredits") s.credits += nVal;
-    if (data.action === "givehoneycredits") s.honeyCredits += nVal;
-    if (data.action === "givecrystalcredits") s.crystalCredits += nVal;
-    if (data.action === "giveplasmacredits") s.plasmaCredits += nVal;
-    if (data.action === "giftdrone") s.drones += nVal;
-    if (data.action === "giverj") s.rjCoins += nVal;
-    if (data.action === "giveshards") s.shards += nVal;
-    if (data.action === "setzone") s.zone = nVal;
-    if (data.action === "setprestige") s.prestige = nVal;
-    if (data.action === "freeze") { isFrozen = true; document.body.classList.add("frozen"); }
-    if (data.action === "unfreeze") { isFrozen = false; document.body.classList.remove("frozen"); }
-    
-    if (data.action === "seisme") {
-        document.body.classList.add("seisme-active");
-        setTimeout(() => { document.body.classList.remove("seisme-active"); }, 4000);
-    }
-    if (data.action === "blackout") {
-        document.body.classList.add("blackout-active");
-    }
-    if (data.action === "clearvisuals") {
-        document.body.classList.remove("seisme-active", "blackout-active", "frozen");
-        isFrozen = false;
-    }
-    if (data.action === "kick") {
-        document.getElementById("game-interface").style.display = "none";
-        alert(`Tu as été exclu du serveur par ${data.auteur}.`);
-        location.reload();
-    }
-    if (data.action === "resetplayer" || data.action === "owner_wipe_player") {
-        s = JSON.parse(JSON.stringify(defaultState));
-        alert("Tes stats ont été entièrement réinitialisées par l'administration.");
-    }
-    
-    // --- COMMANDES EXCLUSIVES OWNER ---
-    if (data.action === "owner_godmode") { adminBoostMultiplier = 10000; }
-    if (data.action === "owner_max_stats") { s.power += 1000; s.drones += 1000; s.scanner += 1000; s.rjClicMult += 10; s.rjDroneMult += 10; }
-    if (data.action === "owner_inf_money") { s.credits = 99999999999; s.honeyCredits = 99999999; s.crystalCredits = 999999; s.plasmaCredits = 99999; }
-    if (data.action === "owner_steal_money") { s.credits = 0; s.honeyCredits = 0; s.crystalCredits = 0; s.plasmaCredits = 0; }
-    if (data.action === "owner_force_prestige") { s.prestige++; }
-    if (data.action === "owner_mute_all") { window.allMuted = true; }
-    if (data.action === "owner_unmute_all") { window.allMuted = false; }
-    if (data.action === "owner_rainbow_name") { document.getElementById("player").style.color = "orange"; document.getElementById("player").style.textShadow = "0 0 10px yellow"; }
-    if (data.action === "owner_give_mythic_pet") {
-        if(!s.petsPossedes) s.petsPossedes = [];
-        s.petsPossedes.push({ id: "phenix", nom: "Phénix Solaire", rare: "MYTHIQUE", typeBoost: "global", valeurBoost: 10.0, emoji: "🦅", uniqueId: "owner_" + Date.now(), equipped: false, prixVente: 75000 });
-    }
-
-    // --- SECTION🧪 TESTER ---
-    if (data.action === "test_shake") {
-        document.body.classList.add("seisme-active");
-        setTimeout(() => { document.body.classList.remove("seisme-active"); }, 2000);
-    }
-    if (data.action === "test_egg") {
-        s.inventaireOeufsNormal = (s.inventaireOeufsNormal || 0) + 5;
-        s.inventaireOeufsAvance = (s.inventaireOeufsAvance || 0) + 5;
-        s.inventaireOeufsRare = (s.inventaireOeufsRare || 0) + 5;
-    }
-    if (data.action === "test_click") s.power += 25;
-    if (data.action === "test_give_shard") s.shards += 5;
-    if (data.action === "test_boost") adminBoostMultiplier = 5;
-    if (data.action === "test_reset_money") { s.credits = 0; s.honeyCredits = 0; s.crystalCredits = 0; s.plasmaCredits = 0; }
-
-    ui(); save();
-});
-
-function envoyerMessage() {
-    const i = document.getElementById("chat-input"); const t = i.value.trim(); let p = document.getElementById("player").value.trim() || "Anonyme";
-    if (t === "/appsowner") { togglePanel('owner'); i.value = ""; return; }
-    if (t === "/appsadmin") { togglePanel('admin'); i.value = ""; return; }
-    if (t === "/appstester") { togglePanel('tester'); i.value = ""; return; }
-    if (window.allMuted && !ownerConnected) { alert("Le chat est suspendu."); i.value = ""; return; }
-    if (t !== "") { socket.emit("envoyerMessageGlobal", { pseudo: p, texte: t }); i.value = ""; }
+    let droneContainer = document.getElementById("drone-shop-container"); droneContainer.innerHTML = "";
+    planet.shopDrones.forEach((d, idx) => {
+        droneContainer.innerHTML += `<button class="btn-upgrade" id="btn-drone-${idx}" onclick="spawnDrone('${d.type}', ${d.cost}, ${d.damage}, ${d.speed})" style="background:#3b82f6;"><span>${d.name}</span> <span>${d.cost} 💰</span></button>`;
+    });
 }
 
-function initDrag(pId, hId) {
-    let el = document.getElementById(pId); let h = document.getElementById(hId); let p1=0,p2=0,p3=0,p4=0; h.onmousedown = dMD;
-    function dMD(e) { if(e.target.classList.contains('close-admin-btn')) return; e.preventDefault(); p3=e.clientX; p4=e.clientY; document.onmouseup=cDE; document.onmousemove=eD; }
-    function eD(e) { e.preventDefault(); p1=p3-e.clientX; p2=p4-e.clientY; p3=e.clientX; p4=e.clientY; el.style.top=(el.offsetTop-p2)+"px"; el.style.left=(el.offsetLeft-p1)+"px"; }
-    function cDE() { document.onmouseup=null; document.onmousemove=null; }
+function handleDamage(index, power) {
+    let block = gridData[index]; if (!block) return;
+    block.hp -= power;
+    let hpBar = document.getElementById(`hp-bar-${index}`);
+    if (block.hp <= 0) {
+        coins += block.isMutated ? (block.reward * 3) : block.reward;
+        depth += 1;
+        if (depth >= maxTargetDepth) { depth = 0; currentPlanetIdx = (currentPlanetIdx + 1) % PLANETS.length; initGrid(); updateUI(); return; }
+        let newMineral = generateMineral(); gridData[index] = newMineral;
+        let bDiv = document.getElementById(`block-${index}`);
+        if(bDiv) {
+            bDiv.className = `block rarity-${newMineral.rarity}`;
+            bDiv.innerHTML = `<div class="block-icon">${newMineral.icon}</div><div class="hp-bar-container"><div class="hp-bar" id="hp-bar-${index}"></div></div>`;
+        }
+    } else if (hpBar) {
+        hpBar.style.width = `${(block.hp / block.maxHp) * 100}%`;
+    }
+    updateUI();
 }
-initDrag("panel-owner", "header-owner"); initDrag("panel-admin", "header-admin"); initDrag("panel-tester", "header-tester");
+
+function buyPickaxe(level, cost, power, name) {
+    if (coins >= cost && level > currentPickLevel) {
+        coins -= cost; clickPower = power; currentPickLevel = level;
+        document.getElementById("current-gear").innerText = `Équipement : ${name} ⛏️`; updateUI();
+    }
+}
+
+function spawnDrone(type, cost, damage, speedInterval) {
+    if (coins < cost) return; coins -= cost;
+    let droneEl = document.createElement("div"); droneEl.className = "drone";
+    droneEl.innerText = (type === 'f') ? "⚡" : (type === 'h') ? "💥" : "🤖";
+    droneEl.style.left = "50%"; droneEl.style.top = "50%"; gridElement.appendChild(droneEl);
+    
+    setInterval(() => {
+        let idx = Math.floor(Math.random() * GRID_SIZE); let target = document.getElementById(`block-${idx}`);
+        if (target) {
+            droneEl.style.left = `${target.offsetLeft + 40}px`; droneEl.style.top = `${target.offsetTop + 40}px`;
+            setTimeout(() => { handleDamage(idx, damage); }, 400);
+        }
+    }, speedInterval);
+    updateUI();
+}
+
+// INTERRUPTEUR CONSOLES
+window.addEventListener("keydown", (e) => {
+    if (e.key === "1") { closeConsoles(); document.getElementById("panel-admin").style.display = "block"; }
+    if (e.key === "2") { closeConsoles(); document.getElementById("panel-owner").style.display = "block"; }
+});
+function closeConsoles() {
+    document.getElementById("panel-admin").style.display = "none";
+    document.getElementById("panel-owner").style.display = "none";
+}
+
+function verifyAdmin() {
+    if(document.getElementById("input-admin-code").value === "admin") {
+        isAdminAuthenticated = true;
+        document.getElementById("admin-auth-zone").style.display = "none";
+        document.getElementById("controls-admin").style.display = "block";
+        document.getElementById("input-admin-cmd").focus();
+    } else { alert("ACCESS DENIED"); }
+}
+function verifyOwner() {
+    if(document.getElementById("input-owner-pass").value === "owner") {
+        isOwnerAuthenticated = true;
+        document.getElementById("owner-auth-zone").style.display = "none";
+        document.getElementById("controls-owner").style.display = "block";
+        document.getElementById("input-owner-cmd").focus();
+    } else { alert("ROOT AUTH FAILED"); }
+}
+
+// RECEPTION DES COMMANDES DEPUIS LE SERVEUR MULTIJOUEUR
+socket.on('execute_client_command', (data) => {
+    const { cmd, value, duration } = data;
+    const currentActiveLogs = isAdminAuthenticated ? document.getElementById("admin-logs") : document.getElementById("owner-logs");
+
+    switch(cmd) {
+        case "/givecoins":
+            coins += parseInt(value);
+            break;
+        case "/setpower":
+            clickPower = parseInt(value);
+            break;
+        case "/broadcast":
+            document.getElementById("global-broadcast-banner").innerText = `📢 ${value}`;
+            document.getElementById("global-broadcast-banner").style.display = "block";
+            break;
+        case "/zerogravity":
+            gridElement.classList.toggle("zero-gravity");
+            break;
+        case "/disco":
+            document.getElementById("main-content").classList.toggle("disco-mode");
+            break;
+        case "/resetgame":
+            coins = 0; clickPower = 1; currentPickLevel = 0; currentPlanetIdx = 0; initGrid();
+            break;
+        case "/setweather":
+            triggerCustomWeather(value, duration);
+            break;
+        case "/spawn":
+            gridData.forEach((b, i) => {
+                let min = generateMineral(value); gridData[i] = min;
+                let bDiv = document.getElementById(`block-${i}`);
+                if(bDiv) {
+                    bDiv.className = `block rarity-${min.rarity}`;
+                    bDiv.innerHTML = `<div class="block-icon">${min.icon}</div><div class="hp-bar-container"><div class="hp-bar" id="hp-bar-${i}"></div></div>`;
+                }
+            });
+            break;
+    }
+    updateUI();
+});
+
+// Reception des confirmations de logs du serveur pour les admins
+socket.on('admin_log_response', (msg) => {
+    let activeLogs = document.getElementById("admin-logs");
+    if(isOwnerAuthenticated) activeLogs = document.getElementById("owner-logs");
+    activeLogs.innerHTML += `<div>${msg}</div>`;
+    activeLogs.scrollTop = activeLogs.scrollHeight;
+});
+
+// LOGIQUE D'ANALYSE DE TAPE DES COMMANDES ET EXPÉDITION AU SERVEUR
+function setupConsoleInput(inputId, logsId, suggestId) {
+    let inputEl = document.getElementById(inputId);
+    let logsEl = document.getElementById(logsId);
+    let suggestEl = document.getElementById(suggestId);
+
+    inputEl.addEventListener("input", () => {
+        let val = inputEl.value.trim().split(" ")[0];
+        let matches = COMMANDS_LIST.filter(c => c.startsWith(val) && val !== "");
+        if(matches.length > 0) {
+            suggestEl.innerHTML = "";
+            matches.forEach(m => {
+                let s = document.createElement("div"); s.className = "suggest-item"; s.innerText = m;
+                s.onclick = () => { inputEl.value = m + " "; suggestEl.style.display = "none"; inputEl.focus(); };
+                suggestEl.appendChild(s);
+            });
+            suggestEl.style.display = "block";
+        } else { suggestEl.style.display = "none"; }
+    });
+
+    inputEl.addEventListener("keydown", (e) => {
+        if(e.key === "Enter") {
+            let fullStr = inputEl.value.trim(); inputEl.value = ""; suggestEl.style.display = "none";
+            if(!fullStr) return;
+            
+            let parts = fullStr.split(" ");
+            let cmd = parts[0];
+
+            if(cmd === "/help") {
+                logsEl.innerHTML += `<div style="color:#00ffbb;">Format : /commande [valeur] [Joueur_Cible]</div>`;
+                logsEl.innerHTML += `<div style="color:#00ffbb;">Exemple ciblé : /givecoins 5000 Mineur_842</div>`;
+                logsEl.innerHTML += `<div style="color:#00ffbb;">Exemple global : /givecoins 5000</div>`;
+                logsEl.innerHTML += `<div style="color:#00ffbb;">Commandes: /givecoins, /setpower, /broadcast, /setweather [plasma|magnetic] [temps], /spawn [rareté], /zerogravity, /disco, /resetgame, /clear</div>`;
+                logsEl.scrollTop = logsEl.scrollHeight;
+                return;
+            }
+            if(cmd === "/clear") { logsEl.innerHTML = ""; return; }
+
+            // Extraction intelligente des paramètres : /cmd [valeur/type] [durée si weather] [Cible]
+            let value = parts[1] || "";
+            let target = "";
+            let duration = 15;
+
+            if (cmd === "/setweather") {
+                duration = parseInt(parts[2]) || 15;
+                target = parts[3] || ""; // Si un joueur est spécifié en 4ème paramètre
+            } else {
+                target = parts[2] || ""; // Pour les autres commandes, le joueur est en 3ème paramètre
+            }
+
+            // Envoyer la commande au serveur pour distribution ciblée ou globale
+            socket.emit('submit_admin_command', { cmd, target, value, duration });
+        }
+    });
+}
+
+setupConsoleInput("input-admin-cmd", "admin-logs", "admin-suggest");
+setupConsoleInput("input-owner-cmd", "owner-logs", "owner-suggest");
+
+// DÉROULEMENT VISUEL DU CLIMAT
+function triggerCustomWeather(type, duration) {
+    clearInterval(weatherTimerInterval);
+    weatherOverlay.style.display = "block";
+    weatherBanner.style.display = "block";
+    let title = "";
+    
+    if(type === "plasma") {
+        weatherBanner.style.background = "#a855f7";
+        weatherOverlay.className = "plasma-rain";
+        title = "🌀 PLUIE DE PLASMA";
+    } else {
+        weatherBanner.style.background = "#eab308";
+        weatherOverlay.className = "magnetic-storm";
+        title = "⚡ DISTORSION MAGNÉTIQUE";
+    }
+
+    gridData.forEach((b, i) => {
+        if(Math.random() > 0.3) {
+            b.isMutated = true;
+            let el = document.getElementById(`block-${i}`);
+            if(el) el.classList.add("mutated");
+        }
+    });
+
+    let timeLeft = duration;
+    weatherBanner.innerText = `${title} (Valeur x3) ! Restant : ${timeLeft}s`;
+
+    weatherTimerInterval = setInterval(() => {
+        timeLeft--;
+        if(timeLeft <= 0) {
+            clearInterval(weatherTimerInterval);
+            weatherOverlay.style.display = "none";
+            weatherBanner.style.display = "none";
+            gridData.forEach((b, i) => {
+                b.isMutated = false;
+                let el = document.getElementById(`block-${i}`);
+                if(el) el.classList.remove("mutated");
+            });
+        } else {
+            weatherBanner.innerText = `${title} (Valeur x3) ! Restant : ${timeLeft}s`;
+        }
+    }, 1000);
+}
+
+// SYSTEM CHAT MULTIJOUEUR DISTRIBUÉ
+const chatInput = document.getElementById("chat-input");
+const chatMessages = document.getElementById("chat-messages");
+
+chatInput.addEventListener("keydown", (e) => {
+    if(e.key === "Enter" && chatInput.value.trim() !== "") {
+        let isPriv = (isAdminAuthenticated || isOwnerAuthenticated);
+        socket.emit("send_msg", { user: myUsername, text: chatInput.value, isAdmin: isPriv });
+        chatInput.value = "";
+    }
+});
+
+socket.on("receive_msg", (data) => {
+    let div = document.createElement("div"); div.className = `msg ${data.isAdmin ? 'admin-msg' : ''}`;
+    div.innerHTML = `<span class="username">${data.user}</span>: ${data.text}`;
+    chatMessages.appendChild(div); chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+
+function updateUI() {
+    document.getElementById("lbl-coins").innerText = Math.floor(coins);
+    document.getElementById("lbl-power").innerText = clickPower;
+    document.getElementById("lbl-depth").innerText = depth;
+    let planet = PLANETS[currentPlanetIdx] || PLANETS[0];
+    planet.shopPicks.forEach(p => { let btn = document.getElementById(`btn-pick-${p.level}`); if(btn) btn.disabled = (p.level <= currentPickLevel || coins < p.cost); });
+    planet.shopDrones.forEach((d, idx) => { let btn = document.getElementById(`btn-drone-${idx}`); if(btn) btn.disabled = (coins < d.cost); });
+}
+
+initGrid(); updateUI();
 </script>
 </body>
 </html>
