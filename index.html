@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxy Miner 2: Ultimate Edition</title>
+    <title>Galaxy Miner 2: Definitive Ultimate Edition</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body {
@@ -29,12 +30,13 @@
         }
         .auth-toggle { margin-top: 15px; font-size: 13px; color: #888; cursor: pointer; text-decoration: underline; }
 
-        /* Alerte globale temporaire (10 secondes) */
+        /* BANNIÈRE COMMANDE /CHAT (10 SECONDES) */
         #global-alert-banner {
-            position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-            background: rgba(234, 179, 8, 0.95); color: #000; padding: 15px 40px;
-            font-weight: bold; font-size: 18px; border-radius: 0 0 12px 12px; z-index: 99999;
-            box-shadow: 0 5px 20px rgba(234,179,8,0.4); transition: top 0.5s ease; text-align: center; display: none;
+            position: fixed; top: -120px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(90deg, #eab308, #ca8a04); color: #000; padding: 18px 50px;
+            font-weight: 900; font-size: 20px; border-radius: 0 0 15px 15px; z-index: 99999;
+            box-shadow: 0 5px 30px rgba(234,179,8,0.5); transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            text-align: center; display: none; border: 2px solid #000; border-top: none;
         }
 
         #game-interface { display: none; width: 100vw; height: 100vh; flex: 1; display: flex; }
@@ -53,11 +55,11 @@
         .btn-upgrade:disabled { background: #444; opacity: 0.5; cursor: not-allowed; }
         .btn-sell {
             width: 100%; background: #22c55e; border: none; padding: 15px; color: white;
-            font-weight: bold; font-size: 16px; border-radius: 10px; cursor: pointer; text-transform: uppercase; margin-bottom: 8px;
+            font-weight: bold; font-size: 16px; border-radius: 10px; cursor: pointer; text-transform: uppercase;
         }
         .btn-logout {
             width: 100%; background: #374151; border: none; padding: 8px; color: #d1d5db;
-            font-weight: bold; font-size: 12px; border-radius: 6px; cursor: pointer; margin-top: 10px;
+            font-weight: bold; font-size: 12px; border-radius: 6px; cursor: pointer; margin-top: 8px;
         }
 
         #chat-sidebar { width: 290px; background: #141417; border-left: 3px solid #222226; display: flex; flex-direction: column; }
@@ -74,6 +76,15 @@
         #depth-tracker { background: #141417; text-align: center; padding: 8px; font-weight: bold; color: #a855f7; border-bottom: 1px solid #222226; }
 
         #grid-container { flex: 1; display: flex; align-items: center; justify-content: center; gap: 30px; position: relative; }
+        
+        #rocket-gauge-container {
+            width: 30px; height: 530px; background: #18181c; border: 2px solid #333;
+            border-radius: 20px; position: relative; display: flex; flex-direction: column;
+            justify-content: space-between; align-items: center; padding: 10px 0; box-sizing: border-box;
+        }
+        #rocket-line { position: absolute; top: 20px; bottom: 20px; width: 4px; background: linear-gradient(180deg, #3b82f6, #a855f7); border-radius: 2px; }
+        #rocket-sprite { position: absolute; left: 50%; top: 0%; transform: translate(-50%, 0); font-size: 24px; transition: top 0.3s ease-out; }
+        
         #mine-grid { display: grid; grid-template-columns: repeat(6, 85px); grid-template-rows: repeat(6, 85px); gap: 8px; background: #18181c; padding: 15px; border-radius: 12px; }
         .block { width: 85px; height: 85px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-radius: 8px; cursor: pointer; }
         .block-icon { font-size: 26px; }
@@ -85,29 +96,34 @@
         .rarity-epique { border: 2px solid #a855f7; background: #581c87; }
         .rarity-legendaire { border: 2px solid #eab308; background: #713f12; }
         .rarity-divin { border: 3px dashed #38bdf8; background: #0f172a; box-shadow: 0 0 12px #38bdf8; }
+        .mutated { border: 3px solid #ef4444 !important; box-shadow: 0 0 12px #ef4444 !important; }
 
-        /* CONSOLE ADMIN */
+        /* CONSOLE ADMIN AVEC FILTRE TARGET */
         .hacker-console {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: #040a04; border: 2px solid #00ff00; border-radius: 4px; padding: 20px;
             width: 480px; box-shadow: 0 0 30px rgba(0,255,0,0.4); z-index: 1000; display: none;
             font-family: 'Courier New', monospace; color: #00ff00;
         }
-        .console-logs { height: 80px; overflow-y: auto; background: #000; border: 1px solid #00ff00; padding: 6px; font-size: 11px; margin-bottom: 8px; }
+        .console-logs { height: 100px; overflow-y: auto; background: #000; border: 1px solid #00ff00; padding: 6px; font-size: 11px; margin-bottom: 8px; }
         .hacker-console input { width: 100%; padding: 8px; background: #000; border: 1px solid #00ff00; color: #00ff00; box-sizing: border-box; margin-bottom: 6px; }
         .suggest-box { background: #000; border: 1px dashed #00ff00; max-height: 100px; overflow-y: auto; font-size: 11px; padding: 4px; display: none; margin-bottom: 6px; }
         .suggest-item { padding: 2px; cursor: pointer; color: #00ffbb; }
         .suggest-item:hover { background: #00ff00; color: #000; }
-        .console-actions-area { display: none; }
         .btn-close-panel { width: 100%; padding: 8px; margin-top: 10px; background: #ff5470; border: none; color: white; font-weight: bold; cursor: pointer; }
 
-        /* EFFETS MALUS COMMANDES */
+        /* EFFETS VISUELS PROGRAMMÉS */
         .zero-gravity { animation: floatGrid 4s ease-in-out infinite; }
         @keyframes floatGrid { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
         .disco-mode { animation: discoBg 0.2s infinite; }
         @keyframes discoBg { 0% { background: #ff0055; } 50% { background: #00ffaa; } 100% { background: #0055ff; } }
+        .earthquake { animation: shakeGrid 0.1s infinite; }
+        @keyframes shakeGrid { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, -1px); } }
         .blindness { filter: blur(15px) brightness(0.1) !important; }
         .upside-down { transform: rotate(180deg) !important; }
+        .glitch-vision { filter: hue-rotate(90deg) contrast(200%) invert(10%); animation: shakeGrid 0.05s infinite; }
+        .rainbow-text { animation: rainbowText 2s infinite linear; }
+        @keyframes rainbowText { 0% { color: red; } 25% { color: yellow; } 50% { color: lime; } 75% { color: cyan; } 100% { color: magenta; } }
         .drone { position: absolute; font-size: 26px; pointer-events: none; transition: all 0.5s ease-out; transform: translate(-50%, -50%); }
     </style>
 </head>
@@ -135,13 +151,13 @@
     <div id="game-interface">
         <div id="sidebar">
             <div>
-                <div class="stat-box">💰 Pièces : <span id="lbl-coins">0</span></div>
+                <div class="stat-box" id="box-coins-ui">💰 Pièces : <span id="lbl-coins">0</span></div>
                 <div class="stat-box" style="border-color:#eab308;">🎒 Sac : <span id="lbl-bag-current">0</span> / <span id="lbl-bag-max">10</span></div>
                 <div class="stat-box" style="border-color:#ef4444;">📦 Valeur : <span id="lbl-bag-value">0</span> 💰</div>
                 <div class="stat-box">⛏️ Puissance : <span id="lbl-power">1</span></div>
                 <div class="stat-box" style="border-color:#a855f7;">📉 Profondeur : <span id="lbl-sidebar-depth">0</span> m</div>
                 
-                <button class="btn-sell" onclick="sellCargo()">Vendre la cargaison 🚀</button>
+                <button class="btn-sell" id="btn-sell-main" onclick="sellCargo()">Vendre la cargaison 🚀</button>
                 <button class="btn-logout" onclick="logoutAccount()">Changer de compte 👤</button>
 
                 <div class="shop-section"><h3>⛏️ Boutique Pioches</h3><div id="pickaxe-shop-container"></div></div>
@@ -154,7 +170,13 @@
         <div id="main-content">
             <div id="planet-header">🌍 Lieu : <span id="lbl-planet-name">Terre</span></div>
             <div id="depth-tracker">📉 Profondeur : <span id="lbl-grid-depth">0</span> / 1000 mètres</div>
-            <div id="grid-container"><div id="mine-grid"></div></div>
+            
+            <div id="grid-container">
+                <div id="rocket-gauge-container">
+                    <div>🌌</div><div id="rocket-line"></div><div id="rocket-sprite">🚀</div><div>🌋</div>
+                </div>
+                <div id="mine-grid"></div>
+            </div>
         </div>
 
         <div id="chat-sidebar">
@@ -167,8 +189,8 @@
             <h2>[PANEL_PRO_CONTROL]</h2>
             <div id="admin-auth-zone"><input type="text" id="input-admin-code" placeholder="CODE ACCESS..."><button onclick="verifyAdmin()">AUTH</button></div>
             <div class="console-actions-area" id="controls-admin">
-                <div class="console-logs" id="admin-logs">Système prêt. Syntaxe : /commande [valeur]</div>
-                <input type="text" id="input-admin-target" placeholder="Cible (Ex: all ou un pseudo précis)" value="all">
+                <div class="console-logs" id="admin-logs">Système d'aide actif (42 commandes dispos).</div>
+                <input type="text" id="input-admin-target" placeholder="Cible : all ou pseudo du joueur" value="all">
                 <input type="text" id="input-admin-cmd" placeholder="Entrez une commande..." autocomplete="off">
                 <div class="suggest-box" id="admin-suggest"></div>
                 <button class="btn-close-panel" onclick="closePanel()">FERMER SESSION</button>
@@ -183,14 +205,18 @@ let currentPickLevel = 0; let currentBagLevel = 0;
 let bagCurrent = 0; let bagMax = 10; let bagValue = 0;
 let currentPickName = "Main nue ✋"; let currentBagName = "Sac Basique";
 let currentPlanetIdx = 0; let gridData = [];
-const GRID_SIZE = 36; let isUnbreakable = false;
+const GRID_SIZE = 36; let isUnbreakable = false; let matrixRainbow = false;
 
 const COMMANDS_LIST = [
     "/givecoins", "/setpower", "/adddepth", "/setplanet", "/zerogravity", 
-    "/disco", "/blindness", "/upsidedown", "/stealcoins", "/instantkill", 
-    "/spawnclone", "/lockshop", "/mutatall", "/extrememult", "/richmode", 
-    "/freeze", "/unfreeze", "/unbreakable", "/godmode", "/clearbag", 
-    "/maxbag", "/resetstats", "/nuke", "/chat", "/broadcast", "/kick", "/warn", "/shutdown"
+    "/disco", "/earthquake", "/blindness", "/upsidedown", "/stealcoins", 
+    "/instantkill", "/spawnclone", "/lockshop", "/mutatall", "/extrememult", 
+    "/richmode", "/freeze", "/unfreeze", "/unbreakable", "/godmode",
+    "/clearbag", "/maxbag", "/resetstats", "/matrixrainbow", "/glitchvision",
+    "/nuke", "/atomize", "/addcoinsall", "/removecoinsall", "/spawndivin",
+    "/spawnlegend", "/infinitesac", "/instasell", "/disablesell", "/enablesell",
+    "/unlockallshops", "/speeddrones", "/killdrones", "/kick", "/warn",
+    "/broadcast", "/chat", "/shutdown"
 ];
 
 function toggleAuthView(showLogin) {
@@ -213,8 +239,7 @@ function handleAuth(type) {
 }
 
 function logoutAccount() {
-    sessionStorage.removeItem("active_session_user");
-    window.location.reload();
+    sessionStorage.removeItem("active_session_user"); window.location.reload();
 }
 
 function connectSocket() {
@@ -223,6 +248,7 @@ function connectSocket() {
     setupSocketListeners();
 }
 
+// RESTAURATION INTEGRALE DES 5 PLANETES ET POURCENTAGES
 const PLANETS = [
     {
         name: "Terre 🌍", hpMult: 1, targetDepth: 1000, maxRequiredPick: 3, maxRequiredBag: 3,
@@ -235,25 +261,76 @@ const PLANETS = [
         shopPicks: [{level:1, name:"Pioche Pierre 🪨", cost:20, power:3}, {level:2, name:"Pioche Fer ⚔️", cost:100, power:10}, {level:3, name:"Pioche Diamant 💎", cost:500, power:35}],
         shopBags: [{level:1, name:"Sac Tissu 👜", cost:25, capacity:30}, {level:2, name:"Grand Sac 🎒", cost:120, capacity:100}, {level:3, name:"Super Sac 📦", cost:600, capacity:400}],
         shopDrones: [{name:"Scout V1 🤖", cost:200, damage:2, speed:1500}, {name:"Collecteur V2 ⚙️", cost:800, damage:5, speed:1200}, {name:"Extracteur V3 ⛏️", cost:2000, damage:12, speed:1000}]
+    },
+    {
+        name: "Mars Cyber ☄️", hpMult: 10, targetDepth: 1000, maxRequiredPick: 5, maxRequiredBag: 5,
+        chances: { commun: 50, rare: 30, epique: 15, legendaire: 5 },
+        minerals: {
+            commun: { name: "Sable Rouge", hp: 4, reward: 8, icon: "🟥" }, rare: { name: "Fer Martien", hp: 12, reward: 25, icon: "🔩" },
+            epique: { name: "Rubis", hp: 35, reward: 90, icon: "🔺" }, legendaire: { name: "Météorite", hp: 80, reward: 300, icon: "☄️" },
+            divin: { name: "Fragment Nova", hp: 300, reward: 2000, icon: "⭐" }
+        },
+        shopPicks: [{level:4, name:"Laser Basique ⚡", cost:2500, power:150}, {level:5, name:"Laser Plasma 🔥", cost:12000, power:600}],
+        shopBags: [{level:4, name:"Coffre Cargo 🛸", cost:3000, capacity:2000}, {level:5, name:"Sac Quantique 🔮", cost:15000, capacity:10000}],
+        shopDrones: [{name:"Cyber Drone 📡", cost:5000, damage:40, speed:1100}, {name:"Rover Mineur 🚜", cost:12000, damage:90, speed:900}, {name:"Sonde Plasma 💥", cost:30000, damage:220, speed:700}]
+    },
+    {
+        name: "Vénus Acide ☣️", hpMult: 80, targetDepth: 1000, maxRequiredPick: 7, maxRequiredBag: 7,
+        chances: { commun: 45, rare: 32, epique: 18, legendaire: 5 },
+        minerals: {
+            commun: { name: "Soufre", hp: 5, reward: 50, icon: "🟨" }, rare: { name: "Cristal Corrosif", hp: 15, reward: 180, icon: "🧪" },
+            epique: { name: "Topaze", hp: 40, reward: 600, icon: "🔸" }, legendaire: { name: "Noyau Toxique", hp: 90, reward: 2500, icon: "☣️" },
+            divin: { name: "Goutte d'Éternité", hp: 400, reward: 15000, icon: "💧" }
+        },
+        shopPicks: [{level:6, name:"Fraiseuse ⚙️", cost:80000, power:4000}, {level:7, name:"Désintégrateur 🌀", cost:400000, power:20000}],
+        shopBags: [{level:6, name:"Cuve Blindée 🛢️", cost:90000, capacity:50000}, {level:7, name:"Trou Noir Portatif 🌌", cost:450000, capacity:250000}],
+        shopDrones: [{name:"Drone Anti-Acide 🧪", cost:75000, damage:800, speed:1000}, {name:"Corrosif V5 🧫", cost:200000, damage:2500, speed:850}, {name:"Broyeur Soufre 🌋", cost:500000, damage:7000, speed:650}]
+    },
+    {
+        name: "Neptune Cryo ❄️", hpMult: 600, targetDepth: 1000, maxRequiredPick: 9, maxRequiredBag: 9,
+        chances: { commun: 40, rare: 35, epique: 20, legendaire: 5 },
+        minerals: {
+            commun: { name: "Glace Sèche", hp: 6, reward: 400, icon: "🟦" }, rare: { name: "Méthane Solide", hp: 18, reward: 1500, icon: "🧊" },
+            epique: { name: "Saphir Cryo", hp: 45, reward: 5000, icon: "🔹" }, legendaire: { name: "Comète Obscure", hp: 100, reward: 22000, icon: "🌌" },
+            divin: { name: "Zéro Absolu", hp: 600, reward: 120000, icon: "❄️" }
+        },
+        shopPicks: [{level:8, name:"Pic Thermique 🌡️", cost:2000000, power:150000}, {level:9, name:"Rayon Fusion 🌟", cost:10000000, power:900000}],
+        shopBags: [{level:8, name:"Sac Cryo 🧊", cost:2500000, capacity:1500000}, {level:9, name:"Matrice Anti-matière 🔬", cost:12000000, capacity:8000000}],
+        shopDrones: [{name:"Blizzard Bot 🥶", cost:1500000, damage:25000, speed:800}, {name:"Drone Thermo-Laser ☀️", cost:4500000, damage:85000, speed:600}, {name:"Cryo-Forgeron 🏔️", cost:10000000, damage:250000, speed:500}]
+    },
+    {
+        name: "Planète Zéro 🛑", hpMult: 5000, targetDepth: 1000, maxRequiredPick: 10, maxRequiredBag: 10,
+        chances: { commun: 30, rare: 40, epique: 25, legendaire: 5 },
+        minerals: {
+            commun: { name: "Matière Noire", hp: 10, reward: 5000, icon: "🖤" }, rare: { name: "Singularité", hp: 25, reward: 20000, icon: "🌀" },
+            epique: { name: "Étoile Morte", hp: 60, reward: 80000, icon: "🕳️" }, legendaire: { name: "Chronos", hp: 150, reward: 400000, icon: "⏳" },
+            divin: { name: "Dieu Ancien", hp: 1000, reward: 3000000, icon: "👁️" }
+        },
+        shopPicks: [{level:10, name:"Manipulateur Gravitationnel 👑", cost:99000000, power:8000000}],
+        shopBags: [{level:10, name:"Infini Sac ♾️", cost:99000000, capacity:99999999}],
+        shopDrones: [{name:"Sonde du Néant 🌌", cost:30000000, damage:1000000, speed:500}, {name:"Drone Singulier 🕳️", cost:75000000, damage:4000000, speed:400}, {name:"Avatar Divin 👁️", cost:200000000, damage:15000000, speed:300}]
     }
 ];
 
-function generateMineral() {
-    let planet = PLANETS[0];
-    let rand = Math.random() * 100; let c = planet.chances;
-    let rarity = "commun";
-    if (rand < c.commun) rarity = "commun";
-    else if (rand < c.commun + c.rare) rarity = "rare";
-    else if (rand < c.commun + c.rare + c.epique) rarity = "epique";
-    else rarity = "legendaire";
+function generateMineral(forceRarity = null) {
+    let planet = PLANETS[currentPlanetIdx] || PLANETS[0];
+    let rarity = forceRarity || "commun";
+    if (!forceRarity) {
+        let rand = Math.random() * 100; let c = planet.chances;
+        if (rand < c.commun) rarity = "commun";
+        else if (rand < c.commun + c.rare) rarity = "rare";
+        else if (rand < c.commun + c.rare + c.epique) rarity = "epique";
+        else rarity = "legendaire";
+    }
     let base = planet.minerals[rarity];
     let finalHp = isUnbreakable ? 999999999 : base.hp * planet.hpMult;
-    return { ...base, hp: finalHp, maxHp: finalHp, rarity: rarity };
+    return { ...base, hp: finalHp, maxHp: finalHp, rarity: rarity, isMutated: false };
 }
 
 function initGrid() {
     const gridElement = document.getElementById("mine-grid"); gridElement.innerHTML = ""; gridData = [];
-    document.getElementById("lbl-planet-name").innerText = PLANETS[0].name;
+    let planet = PLANETS[currentPlanetIdx] || PLANETS[0];
+    document.getElementById("lbl-planet-name").innerText = planet.name;
     for (let i = 0; i < GRID_SIZE; i++) {
         let mineral = generateMineral(); gridData.push(mineral); createBlockElement(i, mineral);
     }
@@ -268,73 +345,133 @@ function createBlockElement(index, mineral) {
 }
 
 function buildPlanetShops() {
-    let planet = PLANETS[0];
+    let planet = PLANETS[currentPlanetIdx] || PLANETS[0];
     let pickContainer = document.getElementById("pickaxe-shop-container"); pickContainer.innerHTML = "";
-    planet.shopPicks.forEach(p => { pickContainer.innerHTML += `<button class="btn-upgrade" onclick="buyPickaxe(${p.level}, ${p.cost}, ${p.power}, '${p.name}')"><span>${p.name}</span> <span>${p.cost} 💰</span></button>`; });
+    planet.shopPicks.forEach(p => { pickContainer.innerHTML += `<button class="btn-upgrade" id="btn-pick-${p.level}" onclick="buyPickaxe(${p.level}, ${p.cost}, ${p.power}, '${p.name}')"><span>${p.name}</span> <span>${p.cost} 💰</span></button>`; });
     let bagContainer = document.getElementById("backpack-shop-container"); bagContainer.innerHTML = "";
-    planet.shopBags.forEach(b => { bagContainer.innerHTML += `<button class="btn-upgrade" onclick="buyBackpack(${b.level}, ${b.cost}, ${b.capacity}, '${b.name}')" style="background:#eab308; color:#000;"><span>${b.name}</span> <span>${b.cost} 💰</span></button>`; });
+    planet.shopBags.forEach(b => { bagContainer.innerHTML += `<button class="btn-upgrade" id="btn-bag-${b.level}" onclick="buyBackpack(${b.level}, ${b.cost}, ${b.capacity}, '${b.name}')" style="background:#eab308; color:#000;"><span>${b.name}</span> <span>${b.cost} 💰</span></button>`; });
+    let droneContainer = document.getElementById("drone-shop-container"); droneContainer.innerHTML = "";
+    planet.shopDrones.forEach((d, idx) => { droneContainer.innerHTML += `<button class="btn-upgrade" id="btn-drone-${idx}" onclick="spawnDrone(${d.cost}, ${d.damage}, ${d.speed}, '${d.name}')" style="background:#3b82f6;"><span>${d.name}</span> <span>${d.cost} 💰</span></button>`; });
 }
 
+// MISE À JOUR SÉCURISÉE SUR PLACE DES MINERAIS SANS SUPPRESSION DE BLOCS CSS
 function handleDamage(index, power) {
-    let block = gridData[index]; if (!block || bagCurrent >= bagMax) return;
-    block.hp -= power; let hpBar = document.getElementById(`hp-bar-${index}`);
+    let block = gridData[index]; 
+    if (!block || bagCurrent >= bagMax) return;
+    
+    block.hp -= power; 
+    let hpBar = document.getElementById(`hp-bar-${index}`);
+    
     if (block.hp <= 0) {
-        bagCurrent += 1; bagValue += block.reward;
-        if (depth < 1000) depth += 1;
-        gridData[index] = generateMineral(); createBlockElement(index, gridData[index]);
-        let old = document.getElementById(`block-${index}`); if(old) old.remove();
-    } else if (hpBar) { hpBar.style.width = `${(block.hp / block.maxHp) * 100}%`; }
+        bagCurrent += 1; 
+        bagValue += block.isMutated ? (block.reward * 3) : block.reward;
+        let planet = PLANETS[currentPlanetIdx]; 
+        if (depth < planet.targetDepth) depth += 1;
+
+        if (depth >= planet.targetDepth && currentPlanetIdx < PLANETS.length - 1) {
+            if (currentPickLevel >= planet.maxRequiredPick && currentBagLevel >= planet.maxRequiredBag) {
+                currentPlanetIdx++; 
+                depth = 0; 
+                alert(`🚀 Vol vers : ${PLANETS[currentPlanetIdx].name} !`); 
+                initGrid();
+                return;
+            }
+        }
+        
+        let newMineral = generateMineral();
+        gridData[index] = newMineral; 
+        
+        let blockElement = document.getElementById(`block-${index}`);
+        if (blockElement) {
+            blockElement.className = `block rarity-${newMineral.rarity}`;
+            let iconElement = blockElement.querySelector('.block-icon');
+            if (iconElement) iconElement.innerText = newMineral.icon;
+            if (hpBar) hpBar.style.width = "100%";
+        }
+    } else if (hpBar) { 
+        hpBar.style.width = `${(block.hp / block.maxHp) * 100}%`; 
+    }
     updateUI();
 }
 
 function sellCargo() { coins += bagValue; bagCurrent = 0; bagValue = 0; updateUI(); }
-function buyPickaxe(level, cost, power, name) { if (coins >= cost) { coins -= cost; clickPower = power; currentPickLevel = level; currentPickName = name; updateUI(); } }
-function buyBackpack(level, cost, capacity, name) { if (coins >= cost) { coins -= cost; bagMax = capacity; currentBagLevel = level; currentBagName = name; updateUI(); } }
+function buyPickaxe(level, cost, power, name) { if (coins >= cost && level > currentPickLevel) { coins -= cost; clickPower = power; currentPickLevel = level; currentPickName = name; updateUI(); } }
+function buyBackpack(level, cost, capacity, name) { if (coins >= cost && level > currentBagLevel) { coins -= cost; bagMax = capacity; currentBagLevel = level; currentBagName = name; updateUI(); } }
+
+let globalActiveDrones = [];
+function spawnDrone(cost, damage, speedInterval, name) {
+    if (coins < cost) return; coins -= cost;
+    let droneEl = document.createElement("div"); droneEl.className = "drone"; droneEl.innerText = "🤖";
+    document.getElementById("mine-grid").appendChild(droneEl);
+    let idInterval = setInterval(() => {
+        let idx = Math.floor(Math.random() * GRID_SIZE); let target = document.getElementById(`block-${idx}`);
+        if (target) {
+            droneEl.style.left = `${target.offsetLeft + 40}px`; droneEl.style.top = `${target.offsetTop + 40}px`;
+            setTimeout(() => { handleDamage(idx, damage); }, 300);
+        }
+    }, speedInterval);
+    globalActiveDrones.push({ el: droneEl, loop: idInterval }); updateUI();
+}
 
 function setupSocketListeners() {
     socket.on('execute_client_command', (data) => {
         const { cmd, value, target } = data;
         
-        // Vérification de sécurité de la cible (Target Check)
-        if (target !== "all" && target.toLowerCase() !== myUsername.toLowerCase()) {
-            return; // La commande ne nous est pas destinée
-        }
+        if (target !== "all" && target.toLowerCase() !== myUsername.toLowerCase()) return;
 
         let amt = parseInt(value);
         switch(cmd) {
             case "/givecoins": coins += amt; break;
             case "/setpower": clickPower = amt; break;
             case "/adddepth": depth = Math.min(1000, depth + amt); break;
+            case "/setplanet": currentPlanetIdx = Math.min(PLANETS.length-1, Math.max(0, amt)); depth=0; initGrid(); break;
             case "/zerogravity": document.getElementById("mine-grid").classList.toggle("zero-gravity"); break;
             case "/disco": document.getElementById("main-content").classList.toggle("disco-mode"); break;
+            case "/earthquake": document.getElementById("mine-grid").classList.add("earthquake"); setTimeout(()=>document.getElementById("mine-grid").classList.remove("earthquake"), 4000); break;
             case "/blindness": document.getElementById("main-content").classList.add("blindness"); setTimeout(()=>document.getElementById("main-content").classList.remove("blindness"), 5000); break;
             case "/upsidedown": document.body.classList.toggle("upside-down"); break;
-            case "/stealcoins": coins = Math.max(0, coins - amt); break;
             case "/instantkill": gridData.forEach((b, i) => handleDamage(i, b.hp)); break;
+            case "/spawnclone": spawnDrone(0, clickPower, 300, "Clone"); break;
             case "/lockshop": document.querySelectorAll(".btn-upgrade").forEach(b => b.disabled = true); break;
+            case "/mutatall": gridData.forEach((b, i) => { b.isMutated = true; let el = document.getElementById(`block-${i}`); if(el) el.classList.add("mutated"); }); break;
+            case "/extrememult": clickPower *= 50; break;
+            case "/richmode": coins += 50000000; break;
             case "/freeze": document.getElementById("mine-grid").style.pointerEvents = "none"; break;
             case "/unfreeze": document.getElementById("mine-grid").style.pointerEvents = "auto"; break;
+            case "/unbreakable": isUnbreakable = true; initGrid(); break;
             case "/godmode": clickPower = 999999999; break;
             case "/clearbag": bagCurrent = 0; bagValue = 0; break;
             case "/maxbag": bagCurrent = bagMax; break;
-            case "/resetstats": coins = 0; clickPower = 1; depth = 0; initGrid(); break;
+            case "/resetstats": coins = 0; clickPower = 1; depth = 0; currentPlanetIdx = 0; initGrid(); break;
+            case "/matrixrainbow": matrixRainbow = !matrixRainbow; document.getElementById("box-coins-ui").classList.toggle("rainbow-text"); break;
+            case "/glitchvision": document.getElementById("main-content").classList.add("glitch-vision"); setTimeout(()=>document.getElementById("main-content").classList.remove("glitch-vision"), 4000); break;
+            case "/nuke": gridData.forEach((b, i) => { bagCurrent = Math.min(bagMax, bagCurrent+1); bagValue += b.reward; }); initGrid(); break;
+            case "/atomize": document.getElementById("mine-grid").innerHTML = ""; break;
+            case "/addcoinsall": coins += amt; break;
+            case "/removecoinsall": coins = 0; break;
+            case "/spawndivin": let rD = Math.floor(Math.random() * GRID_SIZE); gridData[rD] = generateMineral("divin"); handleDamage(rD, 0); break;
+            case "/spawnlegend": let rL = Math.floor(Math.random() * GRID_SIZE); gridData[rL] = generateMineral("legendaire"); handleDamage(rL, 0); break;
+            case "/infinitesac": bagMax = 999999999; break;
+            case "/instasell": coins += bagValue; bagCurrent = 0; bagValue = 0; break;
+            case "/disablesell": document.getElementById("btn-sell-main").disabled = true; break;
+            case "/enablesell": document.getElementById("btn-sell-main").disabled = false; break;
+            case "/unlockallshops": currentPickLevel = 10; currentBagLevel = 10; break;
+            case "/speeddrones": globalActiveDrones.forEach(d => { clearInterval(d.loop); d.loop = setInterval(() => handleDamage(Math.floor(Math.random()*GRID_SIZE), clickPower), 100); }); break;
+            case "/killdrones": globalActiveDrones.forEach(d => d.el.remove()); globalActiveDrones = []; break;
+            case "/kick": alert("Déconnecté."); window.location.reload(); break;
+            case "/warn": alert(`[WARN] : ${value}`); break;
+            case "/shutdown": document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20%;'>MAINTENANCE</h1>"; break;
             
-            // Commande d'affichage Global /chat pendant 10 secondes
             case "/chat":
             case "/broadcast":
                 let banner = document.getElementById("global-alert-banner");
-                banner.innerText = `📢 ALERTE ADMIN : ${value}`;
-                banner.style.display = "block";
-                banner.style.top = "0px";
+                banner.innerText = `📢 MESSAGE FLASH DU SYSTÈME : ${value}`;
+                banner.style.display = "block"; banner.style.top = "0px";
                 setTimeout(() => {
-                    banner.style.top = "-100px";
+                    banner.style.top = "-120px";
                     setTimeout(() => { banner.style.display = "none"; }, 500);
-                }, 10000); // Reste 10 secondes pile
+                }, 10000);
                 break;
-
-            case "/kick": alert("Kick de la partie."); window.location.reload(); break;
-            case "/warn": alert(`[WARN] : ${value}`); break;
-            case "/shutdown": document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20%;'>MAINTENANCE</h1>"; break;
         }
         updateUI();
     });
@@ -387,6 +524,10 @@ function updateUI() {
     document.getElementById("lbl-power").innerText = clickPower;
     document.getElementById("lbl-sidebar-depth").innerText = depth;
     document.getElementById("lbl-grid-depth").innerText = depth;
+    
+    let progressPercent = (depth / 1000) * 85; if(progressPercent > 85) progressPercent = 85;
+    let rSprite = document.getElementById("rocket-sprite"); if(rSprite) rSprite.style.top = `${progressPercent}%`;
+
     document.getElementById("lbl-bag-current").innerText = bagCurrent;
     document.getElementById("lbl-bag-max").innerText = bagMax;
     document.getElementById("lbl-bag-value").innerText = bagValue;
