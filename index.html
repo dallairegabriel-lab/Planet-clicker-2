@@ -243,7 +243,7 @@ function logoutAccount() {
 }
 
 function connectSocket() {
-    socket = io("http://localhost:3000");
+    socket = io("https://galaxy-miner-server.onrender.com");
     socket.on("connect", () => { socket.emit("register_user", myUsername); });
     setupSocketListeners();
 }
